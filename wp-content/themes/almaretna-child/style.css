@@ -1,0 +1,292 @@
+/*
+Theme Name: Almaretna Child
+Template: astra
+Version: 1.1.0
+Description: Child theme for Almaretna — Villa con piscina a Nunziata di Mascali, Sicilia
+Author: Sviluppatore
+Text Domain: almaretna-child
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+    /* Palette colori - Chiara, Armonica e Leggera (Toni del Beige e Bianco, no Antracite) */
+    --color-primary: #C5B49C;      /* Beige caldo del logo */
+    --color-secondary: #A6957E;    /* Beige scuro per contrasto */
+    --color-accent: #F7F4ED;       /* Crema chiarissimo */
+    --color-bg: #FCFAF7;           /* Bianco caldo dello sfondo */
+    --color-text: #5C5246;         /* Marrone caldo scuro per il testo (alta leggibilità) */
+    --color-text-light: #8C8070;   /* Sabbia spento per testi secondari */
+    --color-success: #708A72;      /* Verde salvia */
+    --color-error: #C98B82;        /* Rosso ruggine chiaro */
+    --color-white: #FFFFFF;
+    --color-border: #EFEBE4;       /* Bordi crema leggero */
+
+    /* Tipografia */
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Font sizes */
+    --fs-xs:   0.75rem;
+    --fs-sm:   0.875rem;
+    --fs-base: 1rem;
+    --fs-md:   1.125rem;
+    --fs-lg:   1.25rem;
+    --fs-xl:   1.5rem;
+    --fs-2xl:  2rem;
+    --fs-3xl:  2.5rem;
+    --fs-4xl:  3.5rem;
+
+    /* Spacing scale */
+    --space-xs:  0.25rem;
+    --space-sm:  0.5rem;
+    --space-md:  1rem;
+    --space-lg:  1.5rem;
+    --space-xl:  2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
+
+    /* Border radius */
+    --radius-sm:   4px;
+    --radius-md:   8px;
+    --radius-lg:   16px;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08);
+
+    /* Transitions */
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.4s ease;
+
+    /* Layout */
+    --container-max: 1200px;
+    --header-height: 80px;
+}
+
+/* ── Astra reset: nasconde header/footer Astra, usa i nostri ── */
+#masthead,
+.ast-primary-header-bar,
+.ast-above-header-bar,
+.ast-below-header-bar,
+#ast-fixed-header,
+.ast-sticky-active,
+.site-footer-primary-section,
+.site-footer-content-section,
+#colophon {
+    display: none !important;
+}
+
+/* Rimuove padding/margin aggiunti da Astra al body e al wrapper */
+body.ast-page-builder-template .entry-content,
+body .ast-separate-container .ast-article-post,
+body .ast-separate-container .ast-article-single,
+body .ast-container {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Forza il body a partire da 0 */
+body {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Base */
+body {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text);
+}
+
+a {
+    color: var(--color-primary);
+    transition: color var(--transition-base);
+}
+
+a:hover {
+    color: var(--color-secondary);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ─── OVERRIDES TEMA CHIARO BEIGE E BIANCO ────────────────────────── */
+
+/* Rimuove i gradienti scuri o blu degli overlay */
+.page-hero__overlay,
+.hero__overlay,
+.room-details__hero::before {
+    background: linear-gradient(180deg, rgba(252, 250, 247, 0.45) 0%, rgba(252, 250, 247, 0.78) 100%) !important;
+}
+
+.hero__content,
+.page-hero__content,
+.room-details__hero-content {
+    color: var(--color-text) !important;
+}
+
+.hero__title,
+.page-hero__title,
+.room-details__hero-title {
+    color: var(--color-text) !important;
+}
+
+.hero__eyebrow,
+.page-hero__eyebrow {
+    color: var(--color-secondary) !important;
+}
+
+.hero__subtitle,
+.page-hero__subtitle,
+.room-details__hero-excerpt {
+    color: var(--color-text-light) !important;
+}
+
+.hero__scroll,
+.hero__scroll span {
+    color: var(--color-text-light) !important;
+}
+
+.btn-outline-light {
+    color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.btn-outline-light:hover {
+    background-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+}
+
+/* Header */
+.site-header {
+    background: #F7F4ED !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    box-shadow: 0 1px 8px rgba(197, 180, 156, 0.1) !important;
+}
+
+.site-logo {
+    --logo-max-height: 225px;
+}
+
+@media (max-width: 768px) {
+    .site-logo {
+        --logo-max-height: 120px;
+    }
+}
+
+.site-header--home:not(.is-scrolled) {
+    background: #F7F4ED !important;
+}
+
+.site-header--home:not(.is-scrolled) .site-nav__list li a {
+    color: var(--color-text) !important;
+}
+
+.site-header--home:not(.is-scrolled) .site-nav__list li a:hover {
+    background: rgba(197, 180, 156, 0.12) !important;
+    color: var(--color-primary) !important;
+}
+
+.site-header--home:not(.is-scrolled) .hamburger__line {
+    background: var(--color-text) !important;
+}
+
+.site-header--home:not(.is-scrolled) .site-header__book-btn {
+    background: var(--color-primary) !important;
+    border: none !important;
+    color: var(--color-white) !important;
+}
+
+/* Card camere e widget */
+.room-card,
+.card {
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 2px 10px rgba(197, 180, 156, 0.08) !important;
+}
+
+.room-price-box {
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 4px 20px rgba(197, 180, 156, 0.15) !important;
+    background: var(--color-white) !important;
+}
+
+.room-price-box__amount,
+.room-card__price-amount {
+    color: var(--color-primary) !important;
+}
+
+/* Shimmer / Skeleton Loader */
+.skeleton-card {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    overflow: hidden;
+    height: 100%;
+}
+
+.skeleton-image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #FAF8F5;
+    border-radius: var(--radius-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-text {
+    height: 16px;
+    background: #FAF8F5;
+    margin-top: var(--space-md);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-text--title {
+    width: 60%;
+    height: 24px;
+}
+
+.skeleton-text--short {
+    width: 40%;
+}
+
+.shimmer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(239, 236, 230, 0.8), transparent);
+    animation: shimmer-effect 1.5s infinite;
+}
+
+@keyframes shimmer-effect {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Zoom effect globally available */
+.hover-scale {
+    transition: transform var(--transition-slow) !important;
+}
+.hover-scale:hover {
+    transform: scale(1.05) !important;
+}

@@ -1,0 +1,15 @@
+# Normalizza fine riga: LF su tutti i sistemi
+* text=auto eol=lf
+
+# File binari: non toccare
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary

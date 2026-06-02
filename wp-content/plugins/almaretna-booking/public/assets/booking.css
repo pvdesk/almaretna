@@ -1,0 +1,7 @@
+/* Almaretna Booking plugin — public styles
+   Booking form styles are in the child theme's assets/css/booking.css.
+   This file handles any plugin-specific overrides only. */
+
+.alm-booking-wizard {
+    width: 100%;
+}

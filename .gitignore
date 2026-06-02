@@ -1,0 +1,99 @@
+# ============================================================
+# Almaretna — .gitignore
+#
+# Traccia SOLO le personalizzazioni:
+#   wp-content/themes/almaretna-child/
+#   wp-content/plugins/almaretna-booking/
+#   build-packages.php  (script packaging)
+#   dist/               (ZIP generati)
+#   .gitignore
+#
+# Esclude tutto il resto: core WP, plugin di terze parti,
+# temi stock, upload, configurazione, log.
+# ============================================================
+
+# ── WordPress core ───────────────────────────────────────────
+/wp-admin/
+/wp-includes/
+/index.php
+/license.txt
+/readme.html
+/wp-activate.php
+/wp-blog-header.php
+/wp-comments-post.php
+/wp-config-sample.php
+/wp-cron.php
+/wp-links-opml.php
+/wp-load.php
+/wp-login.php
+/wp-mail.php
+/wp-settings.php
+/wp-signup.php
+/wp-trackback.php
+/xmlrpc.php
+/.htaccess
+
+# ── Configurazione (contiene credenziali DB) ─────────────────
+/wp-config.php
+
+# ── Tutto wp-content tranne i nostri file ────────────────────
+/wp-content/uploads/
+/wp-content/upgrade/
+/wp-content/backup-db/
+/wp-content/blogs.dir/
+/wp-content/cache/
+/wp-content/advanced-cache.php
+/wp-content/db.php
+/wp-content/object-cache.php
+
+# Temi: esclude TUTTI tranne il nostro child theme
+/wp-content/themes/astra/
+/wp-content/themes/twentytwentyfive/
+/wp-content/themes/twentytwentyfour/
+/wp-content/themes/twentytwentythree/
+/wp-content/themes/twentytwentytwo/
+/wp-content/themes/twentytwentyone/
+/wp-content/themes/index.php
+
+# Plugin: esclude TUTTI tranne i nostri custom plugin
+/wp-content/plugins/akismet/
+/wp-content/plugins/hello.php
+/wp-content/plugins/index.php
+
+# ── File di sistema e IDE ────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log
+*.bak
+*.orig
+*.swp
+*.tmp
+
+# ── Node / npm ────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+
+# ── PWA manifest (generato, non personalizzato) ──────────────
+/manifest.json
+/sw.js
+
+# ── File index.php di sicurezza WP (non personalizzati) ─────
+/wp-content/index.php
+
+# ── Misc WordPress ───────────────────────────────────────────
+sitemap*.xml
+*.sql
+/wp-content/themes/*/screenshot.png
+
+# ── I file che VOGLIAMO tracciare ────────────────────────────
+# (esplicitamente inclusi con !)
+!build-packages.php
+!dist/
+!dist/*.zip
+!dist/*.md
+!dist/*.php
+!wp-content/themes/almaretna-child/
+!wp-content/plugins/almaretna-booking/

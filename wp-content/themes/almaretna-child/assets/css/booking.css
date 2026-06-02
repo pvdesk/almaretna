@@ -111,7 +111,7 @@
 
 .booking-widget__field input,
 .booking-widget__field select {
-    padding: 0.75rem var(--space-md);
+    height: 48px !important;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     font-size: var(--fs-base);
@@ -119,6 +119,30 @@
     background: var(--color-bg);
     transition: border-color var(--transition-base), box-shadow var(--transition-base);
     width: 100%;
+    box-sizing: border-box;
+}
+
+.booking-widget__field input {
+    padding-top: 11px !important;
+    padding-bottom: 11px !important;
+    padding-left: var(--space-md) !important;
+    padding-right: var(--space-md) !important;
+    line-height: 1.4 !important;
+}
+
+.booking-widget__field select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%235C5246' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: var(--space-md) !important;
+    padding-right: 2.25rem !important;
+    line-height: normal !important;
 }
 
 .booking-widget__field input:focus,
@@ -181,15 +205,41 @@
 }
 
 .form-control {
-    padding: 0.75rem var(--space-md);
+    padding: 0.625rem var(--space-md);
     border: 1.5px solid var(--color-border);
     border-radius: var(--radius-md);
     font-size: var(--fs-base);
     font-family: var(--font-body);
     color: var(--color-text);
     background: var(--color-white);
+    line-height: 1.4;
     transition: border-color var(--transition-base), box-shadow var(--transition-base);
     width: 100%;
+}
+
+input.form-control {
+    height: 48px !important;
+    padding-top: 11px !important;
+    padding-bottom: 11px !important;
+    line-height: 1.4 !important;
+}
+
+select.form-control {
+    height: 48px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: normal !important;
+}
+
+select.form-control {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%235C5246' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 16px 12px !important;
+    padding-right: 2.25rem !important;
 }
 
 .form-control:focus {

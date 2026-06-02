@@ -13,7 +13,7 @@ declare(strict_types=1);
 get_header();
 ?>
 
-<main id="main-content" class="page-booking bg-white">
+<main id="main-content" class="page-booking">
 
     <!-- Hero prenotazione -->
     <section style="
@@ -23,11 +23,11 @@ get_header();
         text-align: center;
     ">
         <div style="max-width:680px;margin:0 auto;">
-            <p style="font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--color-secondary);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:.75rem;">
-                <a href="<?php echo esc_url(home_url('/')); ?>" style="color:var(--color-text-light);text-decoration:none;">Home</a>
+            <div class="page-hero__breadcrumb" style="display:flex;align-items:center;justify-content:center;gap:.75rem;text-transform:uppercase;font-weight:700;letter-spacing:.22em;font-size:.7rem;">
+                <a href="<?php echo esc_url(home_url('/')); ?>">Home</a>
                 <span style="color:var(--color-border);">/</span>
                 <span style="color:var(--color-secondary);"><?php the_title(); ?></span>
-            </p>
+            </div>
             <h1 style="font-family:var(--font-heading);font-size:clamp(1.75rem,4vw,2.75rem);font-weight:700;color:var(--color-text);letter-spacing:-.02em;margin-bottom:.875rem;">
                 <?php the_title(); ?>
             </h1>
@@ -45,31 +45,27 @@ get_header();
             <nav class="booking-steps d-flex align-items-center justify-content-between mx-auto mb-5 text-center flex-wrap gap-2" 
                  style="max-width: 680px;" aria-label="<?php esc_attr_e('Fasi prenotazione', 'almaretna-child'); ?>">
                 
-                <div class="booking-step booking-steps__item is-active d-flex flex-column align-items-center" data-step="1">
-                    <div class="booking-step__number d-flex align-items-center justify-content-center rounded-circle fw-bold text-white mb-2" 
-                         style="width: 36px; height: 36px; background-color: var(--color-primary); font-size: 0.9rem;">1</div>
-                    <div class="booking-step__label small fw-bold text-primary"><?php esc_html_e('Date', 'almaretna-child'); ?></div>
+                <div class="booking-step booking-steps__item is-active" data-step="1">
+                    <div class="booking-step__number">1</div>
+                    <div class="booking-step__label"><?php esc_html_e('Date', 'almaretna-child'); ?></div>
                 </div>
-                <div class="booking-step-connector flex-grow-1 border-top" style="border-color: var(--color-border);" data-connector="1"></div>
+                <div class="booking-step-connector" data-connector="1"></div>
                 
-                <div class="booking-step booking-steps__item d-flex flex-column align-items-center" data-step="2">
-                    <div class="booking-step__number d-flex align-items-center justify-content-center rounded-circle fw-bold text-muted mb-2" 
-                         style="width: 36px; height: 36px; background-color: var(--color-border); font-size: 0.9rem;">2</div>
-                    <div class="booking-step__label small fw-medium text-muted"><?php esc_html_e('Camera', 'almaretna-child'); ?></div>
+                <div class="booking-step booking-steps__item" data-step="2">
+                    <div class="booking-step__number">2</div>
+                    <div class="booking-step__label"><?php esc_html_e('Camera', 'almaretna-child'); ?></div>
                 </div>
-                <div class="booking-step-connector flex-grow-1 border-top" style="border-color: var(--color-border);" data-connector="2"></div>
+                <div class="booking-step-connector" data-connector="2"></div>
                 
-                <div class="booking-step booking-steps__item d-flex flex-column align-items-center" data-step="3">
-                    <div class="booking-step__number d-flex align-items-center justify-content-center rounded-circle fw-bold text-muted mb-2" 
-                         style="width: 36px; height: 36px; background-color: var(--color-border); font-size: 0.9rem;">3</div>
-                    <div class="booking-step__label small fw-medium text-muted"><?php esc_html_e('Dati', 'almaretna-child'); ?></div>
+                <div class="booking-step booking-steps__item" data-step="3">
+                    <div class="booking-step__number">3</div>
+                    <div class="booking-step__label"><?php esc_html_e('Dati', 'almaretna-child'); ?></div>
                 </div>
-                <div class="booking-step-connector flex-grow-1 border-top" style="border-color: var(--color-border);" data-connector="3"></div>
+                <div class="booking-step-connector" data-connector="3"></div>
                 
-                <div class="booking-step booking-steps__item d-flex flex-column align-items-center" data-step="4">
-                    <div class="booking-step__number d-flex align-items-center justify-content-center rounded-circle fw-bold text-muted mb-2" 
-                         style="width: 36px; height: 36px; background-color: var(--color-border); font-size: 0.9rem;">4</div>
-                    <div class="booking-step__label small fw-medium text-muted"><?php esc_html_e('Pagamento', 'almaretna-child'); ?></div>
+                <div class="booking-step booking-steps__item" data-step="4">
+                    <div class="booking-step__number">4</div>
+                    <div class="booking-step__label"><?php esc_html_e('Pagamento', 'almaretna-child'); ?></div>
                 </div>
             </nav>
 

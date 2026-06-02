@@ -1316,8 +1316,8 @@ body.front-page .site-content {
 }
 
 .home-page,
-.page-booking main,
-.page-rooms main {
+main.page-booking,
+main.page-rooms {
     padding-top: 0;
 }
 

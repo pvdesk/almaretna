@@ -356,16 +356,28 @@ function alm_insert_default_terms(): void {
 
     // amenity
     $amenities = [
-        ['name' => 'Bagno privato',       'slug' => 'bagno-privato'],
-        ['name' => 'Bagno condiviso',     'slug' => 'bagno-condiviso'],
-        ['name' => 'Vista mare',          'slug' => 'vista-mare'],
-        ['name' => 'Vista Etna',          'slug' => 'vista-etna'],
-        ['name' => 'Aria condizionata',   'slug' => 'aria-condizionata'],
-        ['name' => 'Riscaldamento',       'slug' => 'riscaldamento'],
-        ['name' => 'Wi-Fi',               'slug' => 'wifi'],
-        ['name' => 'Televisione',         'slug' => 'televisione'],
-        ['name' => 'Frigorifero',         'slug' => 'frigorifero'],
-        ['name' => 'Cassaforte',          'slug' => 'cassaforte'],
+        // Vista / posizione
+        ['name' => 'Vista mare',            'slug' => 'vista-mare'],
+        ['name' => 'Vista Etna',            'slug' => 'vista-etna'],
+        ['name' => 'Terrazza/Balcone',      'slug' => 'terrazza'],
+        // Comfort
+        ['name' => 'Aria condizionata',     'slug' => 'aria-condizionata'],
+        ['name' => 'Riscaldamento',         'slug' => 'riscaldamento'],
+        ['name' => 'Wi-Fi',                 'slug' => 'wifi'],
+        // Bagno
+        ['name' => 'Bagno privato',         'slug' => 'bagno-privato'],
+        ['name' => 'Bagno condiviso',       'slug' => 'bagno-condiviso'],
+        ['name' => 'Doccia',                'slug' => 'doccia'],
+        ['name' => 'Vasca da bagno',        'slug' => 'vasca'],
+        ['name' => 'Phon',                  'slug' => 'phon'],
+        ['name' => 'Asciugamani',           'slug' => 'asciugamani'],
+        // In camera
+        ['name' => 'Biancheria inclusa',    'slug' => 'biancheria'],
+        ['name' => 'Frigorifero',           'slug' => 'frigorifero'],
+        ['name' => 'Cassaforte',            'slug' => 'cassaforte'],
+        // Extra
+        ['name' => 'Pulizia inclusa',       'slug' => 'pulizia'],
+        ['name' => 'Parcheggio',            'slug' => 'parcheggio'],
     ];
 
     foreach ($amenities as $term) {
@@ -389,6 +401,129 @@ add_action('init', function (): void {
 add_action('after_switch_theme', function (): void {
     update_option('alm_flush_rewrite_needed', '1');
 });
+
+// ─── Metabox: Traduzioni Camera ──────────────────────────────────────────────
+
+add_action('add_meta_boxes', function (): void {
+    add_meta_box(
+        'alm_room_translations',
+        __('Traduzioni Camera (EN / DE / FR / ES)', 'almaretna-child'),
+        'alm_room_translations_callback',
+        'almaretna_room',
+        'normal',
+        'high'
+    );
+});
+
+/**
+ * Renderizza il metabox per le traduzioni della camera.
+ */
+function alm_room_translations_callback(WP_Post $post): void {
+    wp_nonce_field('alm_save_room_translations', 'alm_room_translations_nonce');
+
+    $langs = ['en' => 'English', 'de' => 'Deutsch', 'fr' => 'Français', 'es' => 'Español'];
+    $fields = [
+        'title'   => ['label' => 'Titolo / Title', 'type' => 'text'],
+        'excerpt' => ['label' => 'Estratto / Excerpt', 'type' => 'textarea'],
+        'content' => ['label' => 'Descrizione completa / Content', 'type' => 'editor'],
+    ];
+    ?>
+    <style>
+    .alm-trans-tabs { display:flex; gap:0; border-bottom:1px solid #ddd; margin-bottom:16px; }
+    .alm-trans-tab { padding:7px 18px; cursor:pointer; font-size:13px; font-weight:600; border:1px solid #ddd; border-bottom:none; background:#f6f7f7; color:#666; margin-right:3px; border-radius:3px 3px 0 0; }
+    .alm-trans-tab.active { background:#fff; color:#1d2327; border-bottom:1px solid #fff; margin-bottom:-1px; }
+    .alm-trans-panel { display:none; }
+    .alm-trans-panel.active { display:block; }
+    .alm-trans-field { margin-bottom:14px; }
+    .alm-trans-field label { display:block; font-weight:600; font-size:12px; color:#555; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
+    .alm-trans-field input[type=text], .alm-trans-field textarea { width:100%; }
+    .alm-trans-field textarea { min-height:90px; resize:vertical; }
+    </style>
+    <div class="alm-trans-tabs" id="alm-trans-tabs">
+        <?php foreach ($langs as $code => $name) : ?>
+        <div class="alm-trans-tab<?php echo $code === 'en' ? ' active' : ''; ?>"
+             data-lang="<?php echo esc_attr($code); ?>">
+            <?php echo esc_html($name); ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php foreach ($langs as $code => $name) : ?>
+    <div class="alm-trans-panel<?php echo $code === 'en' ? ' active' : ''; ?>"
+         id="alm-trans-panel-<?php echo esc_attr($code); ?>">
+        <?php foreach ($fields as $fkey => $fconf) :
+            $meta_key = "_room_{$fkey}_{$code}";
+            $value    = get_post_meta($post->ID, $meta_key, true);
+        ?>
+        <div class="alm-trans-field">
+            <label for="<?php echo esc_attr($meta_key); ?>"><?php echo esc_html($fconf['label']); ?></label>
+            <?php if ($fconf['type'] === 'textarea') : ?>
+                <textarea id="<?php echo esc_attr($meta_key); ?>"
+                          name="<?php echo esc_attr($meta_key); ?>"
+                          rows="4"><?php echo esc_textarea((string) $value); ?></textarea>
+            <?php elseif ($fconf['type'] === 'editor') : ?>
+                <textarea id="<?php echo esc_attr($meta_key); ?>"
+                          name="<?php echo esc_attr($meta_key); ?>"
+                          rows="8"><?php echo esc_textarea((string) $value); ?></textarea>
+            <?php else : ?>
+                <input type="text"
+                       id="<?php echo esc_attr($meta_key); ?>"
+                       name="<?php echo esc_attr($meta_key); ?>"
+                       value="<?php echo esc_attr((string) $value); ?>" />
+            <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endforeach; ?>
+    <script>
+    (function () {
+        var tabs   = document.querySelectorAll('#alm-trans-tabs .alm-trans-tab');
+        var panels = document.querySelectorAll('.alm-trans-panel');
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                tabs.forEach(function (t) { t.classList.remove('active'); });
+                panels.forEach(function (p) { p.classList.remove('active'); });
+                tab.classList.add('active');
+                var panel = document.getElementById('alm-trans-panel-' + tab.dataset.lang);
+                if (panel) panel.classList.add('active');
+            });
+        });
+    })();
+    </script>
+    <p style="color:#888;font-size:12px;margin-top:8px;">
+        Lascia vuoto per usare il testo italiano predefinito.
+    </p>
+    <?php
+}
+
+// Salva metabox traduzioni
+add_action('save_post_almaretna_room', function (int $post_id): void {
+    if (!isset($_POST['alm_room_translations_nonce']) || !wp_verify_nonce($_POST['alm_room_translations_nonce'], 'alm_save_room_translations')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $langs  = ['en', 'de', 'fr', 'es'];
+    $fields = ['title', 'excerpt', 'content'];
+
+    foreach ($langs as $lang) {
+        foreach ($fields as $field) {
+            $meta_key = "_room_{$field}_{$lang}";
+            if (isset($_POST[$meta_key])) {
+                $value = wp_kses_post(wp_unslash($_POST[$meta_key]));
+                if ($value !== '') {
+                    update_post_meta($post_id, $meta_key, $value);
+                } else {
+                    delete_post_meta($post_id, $meta_key);
+                }
+            }
+        }
+    }
+}, 10);
 
 // ─── Metabox: Foto Footer Camera ─────────────────────────────────────────────
 

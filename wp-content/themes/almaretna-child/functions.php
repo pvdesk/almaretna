@@ -132,6 +132,14 @@ add_action('wp_enqueue_scripts', function (): void {
         'stripe_publishable_key' => defined('ALM_STRIPE_PUBLISHABLE_KEY') ? ALM_STRIPE_PUBLISHABLE_KEY : '',
         'siteurl'                => get_site_url(),
         'rest_url'               => get_rest_url(null, 'scv/v1/'),
+        'i18n'                   => [
+            'calculating'  => alm_t('js.calculating'),
+            'dates_unavail'=> alm_t('js.dates_unavail'),
+            'night_1'      => alm_t('js.night_1'),
+            'night_n'      => alm_t('js.night_n'),
+            'selected'     => alm_t('js.selected'),
+            'conn_error'   => alm_t('js.conn_error'),
+        ],
     ]);
 });
 
@@ -293,14 +301,17 @@ add_action('wp_footer', function (): void {
 // ─── Include files ───────────────────────────────────────────────────────────
 
 $alm_includes = [
+    'inc/i18n.php',              // Sistema multilingua (deve essere il primo)
     'inc/custom-post-types.php',
     'inc/helpers.php',
     'inc/shortcodes.php',
     'inc/schema-markup.php',
     'inc/seo-meta.php',
     'inc/sample-data.php',
+    'inc/room-translations.php',
     'inc/setup-pages.php',
     'inc/customizer.php',
+    'inc/admin-dashboard.php',  // Dashboard widget + menu rapido
 ];
 
 foreach ($alm_includes as $file) {
@@ -553,4 +564,20 @@ add_action('wp_head', function (): void {
     </style>
     <?php
 }, 999);
+
+// ─── Contact info seeder (prima esecuzione — scrive in DB una volta) ────────
+
+add_action('init', function (): void {
+    if (!get_option('alm_schema_facebook_url')) {
+        update_option('alm_schema_facebook_url', 'https://www.facebook.com/share/1H8YRGCYaC/');
+    }
+    if (!get_option('alm_schema_instagram_url')) {
+        update_option('alm_schema_instagram_url', 'https://www.instagram.com/alamretna_sicily/');
+    }
+    $settings = (array) get_option('alm_booking_settings', []);
+    $changed  = false;
+    if (empty($settings['host_email'])) { $settings['host_email'] = 'info@almaretna.it'; $changed = true; }
+    if (empty($settings['host_phone'])) { $settings['host_phone'] = '+393332621974'; $changed = true; }
+    if ($changed) update_option('alm_booking_settings', $settings);
+}, 1);
 

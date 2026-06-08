@@ -56,13 +56,15 @@
         </nav>
 
         <div class="site-header__end">
+            <?php echo alm_lang_switcher_html(); ?>
+            <div class="alm-lang-backdrop" onclick="document.getElementById('almLang').classList.remove('open')"></div>
             <a href="<?php echo esc_url($prenota_url); ?>" class="site-header__book-btn">
-                <?php esc_html_e('Prenota ora', 'almaretna-child'); ?>
+                <?php echo esc_html(alm_t('nav.book_now')); ?>
             </a>
             <button class="hamburger" id="nav-toggle"
                     aria-expanded="false"
                     aria-controls="mobile-nav"
-                    aria-label="<?php esc_attr_e('Apri menu', 'almaretna-child'); ?>">
+                    aria-label="<?php echo esc_attr(alm_t('nav.open_menu')); ?>">
                 <span class="hamburger__line"></span>
                 <span class="hamburger__line"></span>
                 <span class="hamburger__line"></span>
@@ -76,7 +78,7 @@
 <div class="mobile-nav" id="mobile-nav" aria-hidden="true" role="dialog" aria-label="<?php esc_attr_e('Menu mobile', 'almaretna-child'); ?>">
     <div class="mobile-nav__header">
         <span class="mobile-nav__brand">Almaretna</span>
-        <button class="mobile-nav__close" id="nav-close" aria-label="<?php esc_attr_e('Chiudi menu', 'almaretna-child'); ?>">
+        <button class="mobile-nav__close" id="nav-close" aria-label="<?php echo esc_attr(alm_t('nav.close_menu')); ?>">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
     </div>
@@ -93,7 +95,7 @@
         },
     ]); ?>
     <a href="<?php echo esc_url($prenota_url); ?>" class="mobile-nav__cta">
-        <?php esc_html_e('Prenota ora', 'almaretna-child'); ?>
+        <?php echo esc_html(alm_t('nav.book_now')); ?>
     </a>
 </div>
 <div class="nav-backdrop" id="nav-backdrop"></div>

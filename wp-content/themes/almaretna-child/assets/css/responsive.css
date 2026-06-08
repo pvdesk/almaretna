@@ -69,7 +69,7 @@
     /* ── Tipografia globale ──────────────────────────────────── */
     .section-headline   { font-size: clamp(1.6rem, 5vw, 2.25rem); }
     .section-title      { font-size: var(--fs-2xl); }
-    .hero-premium__title{ font-size: clamp(2rem, 8vw, 3rem); }
+    .hero-premium__title{ font-size: clamp(1.5rem, 5.6vw, 2.2rem); }
 
     /* ── Hero ────────────────────────────────────────────────── */
     .hero-premium__content { padding: 1.5rem; }
@@ -296,7 +296,7 @@
 
     :root { --header-h: 90px; }
 
-    .hero-premium__title { font-size: 1.85rem; }
+    .hero-premium__title { font-size: 1.5rem; }
 
     .hero-premium__cta-primary,
     .hero-premium__cta-ghost {

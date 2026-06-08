@@ -18,7 +18,7 @@
                     <img src="<?php echo esc_url(get_stylesheet_directory_uri() . '/assets/img/logo-white-transparent.png'); ?>" alt="Almaretna Villa Vacanze" class="site-logo-footer" style="max-height: 91px; width: auto; height: auto; display: block;" />
                 </a>
                 <p class="site-footer__tagline">
-                    <?php esc_html_e('Un rifugio di lusso alle pendici dell\'Etna, tra natura e benessere.', 'almaretna-child'); ?>
+                    <?php echo esc_html(alm_t('foot.tagline')); ?>
                 </p>
                 <div class="site-footer__social">
                     <?php $fb = get_option('alm_schema_facebook_url', ''); ?>
@@ -38,7 +38,7 @@
 
             <!-- Nav col -->
             <div class="site-footer__col">
-                <h4 class="site-footer__heading"><?php esc_html_e('Esplora', 'almaretna-child'); ?></h4>
+                <h4 class="site-footer__heading"><?php echo esc_html(alm_t('foot.explore')); ?></h4>
                 <?php
                 $camere_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-rooms.php', 'number' => 1]);
                 $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/');
@@ -54,8 +54,8 @@
                     'fallback_cb'    => function () use ($camere_url, $prenota_url): void {
                         echo '<ul class="site-footer__menu">';
                         echo '<li><a href="' . esc_url(home_url('/')) . '">Home</a></li>';
-                        echo '<li><a href="' . esc_url($camere_url) . '">Le nostre camere</a></li>';
-                        echo '<li><a href="' . esc_url($prenota_url) . '">Prenota</a></li>';
+                        echo '<li><a href="' . esc_url($camere_url) . '">' . esc_html(alm_t('foot.our_rooms')) . '</a></li>';
+                        echo '<li><a href="' . esc_url($prenota_url) . '">' . esc_html(alm_t('foot.book')) . '</a></li>';
                         echo '</ul>';
                     },
                 ]); ?>
@@ -63,7 +63,7 @@
 
             <!-- Contact col -->
             <div class="site-footer__col">
-                <h4 class="site-footer__heading"><?php esc_html_e('Contatti', 'almaretna-child'); ?></h4>
+                <h4 class="site-footer__heading"><?php echo esc_html(alm_t('foot.contacts')); ?></h4>
                 <address class="site-footer__address">
                     <p>
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -92,18 +92,18 @@
 
             <!-- Check-in col -->
             <div class="site-footer__col">
-                <h4 class="site-footer__heading"><?php esc_html_e('Informazioni', 'almaretna-child'); ?></h4>
+                <h4 class="site-footer__heading"><?php echo esc_html(alm_t('foot.info')); ?></h4>
                 <ul class="site-footer__info">
                     <?php
                     $cin_time  = sanitize_text_field($settings['checkin_time']  ?? '15:00');
                     $cout_time = sanitize_text_field($settings['checkout_time'] ?? '11:00');
                     ?>
-                    <li><?php esc_html_e('Check-in:', 'almaretna-child'); ?> <?php echo esc_html('dalle ' . $cin_time); ?></li>
-                    <li><?php esc_html_e('Check-out:', 'almaretna-child'); ?> <?php echo esc_html('entro le ' . $cout_time); ?></li>
-                    <li><?php esc_html_e('Piscina panoramica', 'almaretna-child'); ?></li>
-                    <li><?php esc_html_e('Colazione artigianale', 'almaretna-child'); ?></li>
-                    <li><?php esc_html_e('Wi-Fi gratuito', 'almaretna-child'); ?></li>
-                    <li><?php esc_html_e('Parcheggio gratuito', 'almaretna-child'); ?></li>
+                    <li><?php echo esc_html(alm_t('foot.cin')); ?> <?php echo esc_html(alm_t('foot.cin_from') . $cin_time); ?></li>
+                    <li><?php echo esc_html(alm_t('foot.cout')); ?> <?php echo esc_html(alm_t('foot.cout_by') . $cout_time); ?></li>
+                    <li><?php echo esc_html(alm_t('foot.pool')); ?></li>
+                    <li><?php echo esc_html(alm_t('foot.bar')); ?></li>
+                    <li><?php echo esc_html(alm_t('foot.wifi')); ?></li>
+                    <li><?php echo esc_html(alm_t('foot.parking')); ?></li>
                 </ul>
             </div>
 
@@ -112,9 +112,9 @@
 
     <div class="site-footer__bottom">
         <div class="site-footer__container">
-            <p>&copy; <?php echo esc_html(date('Y')); ?> Almaretna. <?php esc_html_e('Tutti i diritti riservati.', 'almaretna-child'); ?></p>
+            <p>&copy; <?php echo esc_html(date('Y')); ?> Almaretna. <?php echo esc_html(alm_t('foot.rights')); ?></p>
             <p style="display:inline-flex;align-items:center;gap:.5rem;">
-                <span><?php esc_html_e('Pagamenti sicuri con', 'almaretna-child'); ?></span>
+                <span><?php echo esc_html(alm_t('foot.payments')); ?></span>
                 <svg width="44" height="20" viewBox="0 0 44 20" fill="none" style="flex-shrink:0;opacity:.85;display:block;" xmlns="http://www.w3.org/2000/svg">
                     <rect width="44" height="20" rx="3" fill="#635BFF"/>
                     <text x="6" y="14" font-size="8.5" fill="white" font-family="Arial,sans-serif" font-weight="600">Stripe</text>

@@ -102,12 +102,12 @@
 
 .hero-premium__title {
     font-family: var(--font-heading);
-    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-size: clamp(1.8rem, 4vw, 3.4rem);
     font-weight: 700;
-    line-height: 1.0;
+    line-height: 1.08;
     color: #fff;
-    letter-spacing: -.02em;
-    margin-bottom: 1.5rem;
+    letter-spacing: -.025em;
+    margin-bottom: 1.75rem;
 }
 
 .hero-premium__title em {
@@ -294,6 +294,80 @@
 }
 
 .booking-strip__btn:hover { background: #A6957E; }
+
+/* ─── Booking strip — stati interattivi premium ──────────────────── */
+
+.booking-strip__field {
+    cursor: pointer;
+    transition: background .18s;
+}
+.booking-strip__field:hover {
+    background: #FDFBF9;
+}
+.booking-strip__field:focus-within {
+    background: #FAF7F3;
+}
+
+/* Placeholder elegante per date non selezionate */
+.booking-strip__input::placeholder {
+    color: #C5B49C;
+    font-weight: 400;
+    font-style: italic;
+    font-size: .9rem;
+}
+
+/* Flatpickr usato nel booking strip: cursore pointer */
+.booking-strip .flatpickr-input {
+    cursor: pointer;
+}
+
+/* ─── Flatpickr — Brand palette ──────────────────────────────────── */
+
+.flatpickr-calendar.booking-cal {
+    font-family: var(--font-body);
+    border-radius: 0;
+    box-shadow: 0 16px 56px rgba(0,0,0,.14);
+    border: 1px solid #EFEBE4;
+}
+.flatpickr-calendar.booking-cal .flatpickr-day.selected,
+.flatpickr-calendar.booking-cal .flatpickr-day.selected:hover {
+    background: #C5B49C;
+    border-color: #C5B49C;
+}
+.flatpickr-calendar.booking-cal .flatpickr-day.inRange {
+    background: rgba(197,180,156,.18);
+    border-color: transparent;
+    box-shadow: -5px 0 0 rgba(197,180,156,.18), 5px 0 0 rgba(197,180,156,.18);
+}
+.flatpickr-calendar.booking-cal .flatpickr-day:hover {
+    background: #EFEBE4;
+}
+.flatpickr-calendar.booking-cal .flatpickr-day.today {
+    border-color: #C5B49C;
+}
+.flatpickr-calendar.booking-cal .flatpickr-months .flatpickr-month {
+    background: #1a1e22;
+    color: #fff;
+}
+.flatpickr-calendar.booking-cal .flatpickr-current-month {
+    color: #fff;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+}
+.flatpickr-calendar.booking-cal .flatpickr-months .flatpickr-prev-month,
+.flatpickr-calendar.booking-cal .flatpickr-months .flatpickr-next-month {
+    fill: rgba(255,255,255,.75);
+}
+.flatpickr-calendar.booking-cal .flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-calendar.booking-cal .flatpickr-months .flatpickr-next-month:hover {
+    fill: #C5B49C;
+}
+.flatpickr-calendar.booking-cal .flatpickr-weekday {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #8C8070;
+}
 
 /* ─── Amenities bar ──────────────────────────────────────────── */
 

@@ -1,0 +1,1432 @@
+<?php
+/**
+ * Almaretna — Admin Dashboard
+ * 4 widget separati: Prenotazioni | Servizi Camere | Foto Sito | Foto Camere
+ *
+ * @package AlmaretnaChild
+ */
+
+declare(strict_types=1);
+
+defined('ABSPATH') || exit;
+
+/* ═══════════════════════════════════════════════════════════════
+   COSTANTI
+   ═══════════════════════════════════════════════════════════════ */
+
+define('ALM_DASH_NONCE', 'alm_dashboard_v1');
+
+// Tutti i servizi disponibili
+function alm_all_amenities(): array {
+    return [
+        // Vista / posizione
+        'vista-mare'        => ['🌊', 'Vista mare'],
+        'vista-etna'        => ['🌋', 'Vista Etna'],
+        'terrazza'          => ['🏡', 'Terrazza/Balcone'],
+        // Comfort
+        'aria-condizionata' => ['❄️',  'Aria condizionata'],
+        'riscaldamento'     => ['🔥', 'Riscaldamento'],
+        'wifi'              => ['📶', 'Wi-Fi'],
+        // Bagno
+        'bagno-privato'     => ['🚿', 'Bagno privato'],
+        'bagno-condiviso'   => ['🚿', 'Bagno condiviso'],
+        'doccia'            => ['🚿', 'Doccia'],
+        'vasca'             => ['🛁', 'Vasca da bagno'],
+        'phon'              => ['💨', 'Phon'],
+        'asciugamani'       => ['🏖️', 'Asciugamani'],
+        // In camera
+        'biancheria'        => ['🛏️', 'Biancheria inclusa'],
+        'frigorifero'       => ['🧊', 'Frigorifero'],
+        'cassaforte'        => ['🔒', 'Cassaforte'],
+        // Extra
+        'pulizia'           => ['🧹', 'Pulizia inclusa'],
+        'parcheggio'        => ['🅿️',  'Parcheggio'],
+    ];
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CSS — admin_head
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('admin_head', function (): void { ?>
+<style id="alm-dash-css">
+:root {
+    --ad-sand:   #C5B49C;
+    --ad-dark:   #1a1e22;
+    --ad-warm:   #F9F7F3;
+    --ad-muted:  #8C8070;
+    --ad-border: #EFEBE4;
+    --ad-green:  #28a745;
+}
+
+/* Tutte le inside dei widget Almaretna */
+#alm-w-bookings .inside,
+#alm-w-services .inside,
+#alm-w-media .inside,
+#alm-w-room-photos .inside,
+#alm-w-prices .inside { padding: 0 !important; overflow: hidden; }
+
+.ad { font-family: -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif; font-size: .85rem; }
+
+/* ── Header colorato sotto il titolo widget ── */
+.ad-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 14px;
+    border-bottom: 2px solid var(--ad-sand);
+    background: var(--ad-warm);
+}
+.ad-head__label {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+}
+.ad-head__link { font-size: .75rem; color: var(--ad-sand) !important; text-decoration: none; }
+.ad-head__link:hover { text-decoration: underline; }
+
+/* ── Stats prenotazioni ── */
+.ad-stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    border-bottom: 1px solid var(--ad-border);
+}
+.ad-stat {
+    padding: 13px 8px;
+    text-align: center;
+    border-right: 1px solid var(--ad-border);
+    text-decoration: none !important;
+    display: block;
+    transition: background .15s;
+}
+.ad-stat:last-child { border-right: none; }
+.ad-stat:hover { background: var(--ad-warm); }
+.ad-stat__n {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ad-dark);
+    line-height: 1;
+    margin-bottom: 3px;
+}
+.ad-stat__n--hi { color: var(--ad-sand); }
+.ad-stat__l {
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+}
+
+/* ── Sezione interna ── */
+.ad-section {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--ad-border);
+}
+.ad-section:last-child { border-bottom: none; }
+.ad-section__title {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+    margin: 0 0 8px;
+}
+
+/* ── Pulsanti ── */
+.ad-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ad-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    font-size: .78rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none !important;
+    border: none;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+.ad-btn:hover { opacity: .82; transform: translateY(-1px); }
+.ad-btn--sand   { background: var(--ad-sand); color: #fff !important; }
+.ad-btn--dark   { background: var(--ad-dark); color: #fff !important; }
+.ad-btn--ghost  { background: transparent; color: var(--ad-dark) !important; border: 1px solid var(--ad-border); }
+.ad-btn--ghost:hover { background: var(--ad-warm); }
+.ad-btn--sm { padding: 3px 8px; font-size: .72rem; }
+
+/* ── Lista prenotazioni ── */
+.ad-list { margin: 0; padding: 0; list-style: none; }
+.ad-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--ad-border);
+    transition: background .15s;
+}
+.ad-row:last-child { border-bottom: none; }
+.ad-row:hover { background: var(--ad-warm); }
+.ad-row__name { font-weight: 600; color: var(--ad-dark) !important; text-decoration: none; }
+.ad-row__name:hover { text-decoration: underline; }
+.ad-row__dates { color: var(--ad-muted); font-size: .72rem; }
+.ad-badge {
+    font-size: .6rem; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 20px; flex-shrink: 0;
+}
+.ad-b--confirmed { background:#d4edda; color:#155724; }
+.ad-b--pending   { background:#fff3cd; color:#856404; }
+.ad-b--paid      { background:#cce5ff; color:#004085; }
+.ad-b--cancelled { background:#f8d7da; color:#721c24; }
+
+/* ── Vuoto ── */
+.ad-empty { padding: 12px 14px; color: var(--ad-muted); font-size: .82rem; margin: 0; }
+
+/* ── Media grid ── */
+.ad-media-grid {
+    display: grid;
+    grid-template-columns: repeat(6,1fr);
+    gap: 3px;
+    padding: 10px 14px;
+}
+.ad-thumb {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 3px;
+    display: block;
+    position: relative;
+    cursor: pointer;
+}
+.ad-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .2s;
+    display: block;
+}
+.ad-thumb:hover img { transform: scale(1.08); }
+.ad-thumb__over {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.42);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; opacity: 0; transition: opacity .2s;
+}
+.ad-thumb:hover .ad-thumb__over { opacity: 1; }
+
+/* ── Shortcode ── */
+.ad-sc-list { display:flex; flex-direction:column; gap:4px; padding:0 14px 12px; }
+.ad-sc-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--ad-warm);
+    border: 1px solid var(--ad-border);
+    border-radius: 4px;
+    padding: 6px 9px;
+}
+.ad-sc-row code { flex:1; font-size:.73rem; color:#c7254e; background:none; padding:0; word-break:break-all; }
+.ad-sc-row__desc { font-size:.66rem; color:var(--ad-muted); margin-top:1px; }
+.ad-copy-btn {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    font-size: .68rem; font-weight: 600;
+    background: var(--ad-dark); color: #fff;
+    border: none; border-radius: 3px; cursor: pointer;
+    transition: background .15s;
+}
+.ad-copy-btn:hover  { background: var(--ad-sand); }
+.ad-copy-btn.copied { background: var(--ad-green); }
+
+/* ── Foto camere ── */
+.ad-room-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.ad-room-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--ad-border);
+    transition: background .15s;
+}
+.ad-room-row:last-child { border-bottom: none; }
+.ad-room-row:hover { background: var(--ad-warm); }
+.ad-room-row__thumb {
+    width: 52px; height: 40px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--ad-border);
+    flex-shrink: 0;
+    position: relative;
+}
+.ad-room-row__thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.ad-room-row__thumb--empty {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; color: var(--ad-muted);
+}
+.ad-room-row__name { flex: 1; font-weight: 600; font-size: .82rem; color: var(--ad-dark); }
+.ad-room-row__actions { display:flex; gap:5px; flex-shrink:0; }
+
+/* Feedback caricamento foto */
+.ad-room-row__thumb.is-loading::after {
+    content: '⟳';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,.8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    animation: ad-spin .6s linear infinite;
+}
+@keyframes ad-spin { to { transform: rotate(360deg); } }
+
+/* ── Servizi camere — card style (riusa .ad-room-row) ── */
+.ad-room-row--svc { align-items: flex-start; padding: 10px 14px; }
+.ad-room-row__body { flex: 1; min-width: 0; }
+.ad-room-row__top  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.ad-room-row__name-link {
+    font-weight: 600; font-size: .83rem;
+    color: var(--ad-dark) !important; text-decoration: none;
+}
+.ad-room-row__name-link:hover { text-decoration: underline; }
+.ad-svc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ad-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 8px;
+    font-size: .69rem;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1.5px solid var(--ad-border);
+    background: #fff;
+    color: var(--ad-muted);
+    cursor: pointer;
+    user-select: none;
+    transition: all .15s;
+    white-space: nowrap;
+}
+.ad-chip:hover { border-color: var(--ad-sand); color: var(--ad-dark); }
+.ad-chip.on {
+    background: var(--ad-sand);
+    border-color: var(--ad-sand);
+    color: #fff;
+}
+.ad-chip.saving { opacity: .5; pointer-events: none; }
+.ad-chip.saved-ok { background: var(--ad-green); border-color: var(--ad-green); }
+
+/* ── Prezzi camere ── */
+.ad-price-room {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--ad-border);
+}
+.ad-price-room:last-child { border-bottom: none; }
+
+.ad-price-room__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.ad-price-room__name {
+    flex: 1;
+    font-weight: 700;
+    font-size: .83rem;
+    color: var(--ad-dark);
+}
+
+/* Riga prezzo base */
+.ad-price-base {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 9px;
+    flex-wrap: wrap;
+}
+.ad-price-base__label {
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+    white-space: nowrap;
+}
+.ad-price-input {
+    width: 90px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--ad-border);
+    border-radius: 4px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--ad-dark);
+    background: #fff;
+    text-align: right;
+    transition: border-color .15s;
+}
+.ad-price-input:focus { border-color: var(--ad-sand); outline: none; }
+.ad-price-input--sm { width: 75px; }
+.ad-price-suffix {
+    font-size: .72rem;
+    color: var(--ad-muted);
+    white-space: nowrap;
+}
+.ad-save-btn {
+    padding: 5px 11px;
+    font-size: .72rem;
+    font-weight: 600;
+    background: var(--ad-sand);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    white-space: nowrap;
+}
+.ad-save-btn:hover   { background: #b8a48c; transform: translateY(-1px); }
+.ad-save-btn.saving  { opacity: .55; pointer-events: none; }
+.ad-save-btn.saved   { background: var(--ad-green); }
+
+/* Lista prezzi speciali */
+.ad-specials { margin: 0 0 8px; padding: 0; list-style: none; }
+.ad-special-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    background: var(--ad-warm);
+    border: 1px solid var(--ad-border);
+    border-radius: 4px;
+    font-size: .78rem;
+    margin-bottom: 4px;
+}
+.ad-special-item__note {
+    font-weight: 700;
+    color: var(--ad-dark);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+.ad-special-item__dates { color: var(--ad-muted); font-size: .71rem; flex: 1; }
+.ad-special-item__price {
+    font-weight: 700;
+    color: var(--ad-dark);
+    white-space: nowrap;
+}
+.ad-del-btn {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ad-muted);
+    cursor: pointer;
+    font-size: .85rem;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+}
+.ad-del-btn:hover { background: #f8d7da; color: #721c24; }
+.ad-del-btn.deleting { opacity: .4; pointer-events: none; }
+
+/* Form aggiungi prezzo speciale */
+.ad-add-toggle {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--ad-sand);
+    background: none;
+    border: 1.5px dashed var(--ad-border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    transition: border-color .15s, color .15s;
+}
+.ad-add-toggle:hover { border-color: var(--ad-sand); }
+
+.ad-add-form {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 7px;
+    padding: 10px;
+    background: var(--ad-warm);
+    border: 1px solid var(--ad-border);
+    border-radius: 4px;
+}
+.ad-add-form.open { display: flex; }
+.ad-add-form__row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ad-add-form__label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ad-muted);
+    white-space: nowrap;
+    min-width: 30px;
+}
+.ad-date-input {
+    flex: 1;
+    min-width: 120px;
+    padding: 5px 7px;
+    border: 1.5px solid var(--ad-border);
+    border-radius: 4px;
+    font-size: .8rem;
+    color: var(--ad-dark);
+    background: #fff;
+    transition: border-color .15s;
+}
+.ad-date-input:focus { border-color: var(--ad-sand); outline: none; }
+.ad-note-input {
+    flex: 1;
+    min-width: 100px;
+    padding: 5px 7px;
+    border: 1.5px solid var(--ad-border);
+    border-radius: 4px;
+    font-size: .8rem;
+    color: var(--ad-dark);
+    background: #fff;
+    transition: border-color .15s;
+}
+.ad-note-input:focus { border-color: var(--ad-sand); outline: none; }
+.ad-note-input::placeholder { color: #bbb; }
+.ad-add-form__actions { display: flex; gap: 5px; justify-content: flex-end; }
+
+/* ── Menu laterale ── */
+#adminmenu #toplevel_page_alm-booking > a {
+    background: rgba(197,180,156,.09) !important;
+    border-left: 3px solid #C5B49C !important;
+}
+</style>
+<?php });
+
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA UPLOADER (solo dashboard)
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('admin_enqueue_scripts', function (string $hook): void {
+    if ($hook !== 'index.php') return;
+    wp_enqueue_media();
+    wp_enqueue_script(
+        'alm-dashboard-js',
+        get_stylesheet_directory_uri() . '/assets/js/admin-dashboard.js',
+        ['jquery'],
+        '1.0',
+        true
+    );
+    wp_localize_script('alm-dashboard-js', 'almDash', [
+        'ajax'    => admin_url('admin-ajax.php'),
+        'nonce'   => wp_create_nonce(ALM_DASH_NONCE),
+        'chooseTxt' => __('Scegli immagine', 'almaretna-child'),
+        'useTxt'    => __('Usa questa immagine', 'almaretna-child'),
+    ]);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Imposta immagine camera
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_set_room_thumb', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id  = (int) ($_POST['room_id']  ?? 0);
+    $media_id = (int) ($_POST['media_id'] ?? 0);
+
+    if (!$room_id || !$media_id) wp_send_json_error('Dati mancanti');
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    set_post_thumbnail($room_id, $media_id);
+    $src = wp_get_attachment_image_src($media_id, 'thumbnail');
+
+    wp_send_json_success(['thumb' => $src ? esc_url($src[0]) : '']);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Toggle servizio camera
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_toggle_amenity', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id = (int) ($_POST['room_id'] ?? 0);
+    $slug    = sanitize_key($_POST['amenity'] ?? '');
+    $enable  = filter_var($_POST['enable'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+    if (!$room_id || !$slug) wp_send_json_error('Dati mancanti');
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    // Assicura che il termine esista nella tassonomia
+    if (!term_exists($slug, 'amenity')) {
+        $all = alm_all_amenities();
+        if (isset($all[$slug])) {
+            wp_insert_term($all[$slug][1], 'amenity', ['slug' => $slug]);
+        }
+    }
+
+    $current = wp_get_object_terms($room_id, 'amenity', ['fields' => 'slugs']);
+    if (!is_array($current)) $current = [];
+
+    if ($enable) {
+        $current[] = $slug;
+    } else {
+        $current = array_values(array_filter($current, fn($s) => $s !== $slug));
+    }
+
+    wp_set_object_terms($room_id, array_unique($current), 'amenity');
+    wp_send_json_success();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Salva prezzo base camera
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_save_base_price', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id = (int) ($_POST['room_id'] ?? 0);
+    $price   = (float) ($_POST['price'] ?? -1);
+
+    if (!$room_id || $price < 0) wp_send_json_error('Dati non validi');
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    update_post_meta($room_id, '_room_base_price', round($price, 2));
+    wp_send_json_success(['price' => round($price, 2)]);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Aggiungi prezzo speciale
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_add_special_price', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id = (int) ($_POST['room_id'] ?? 0);
+    $from    = sanitize_text_field($_POST['from']  ?? '');
+    $to      = sanitize_text_field($_POST['to']    ?? '');
+    $price   = (float) ($_POST['price'] ?? -1);
+    $note    = sanitize_text_field($_POST['note']  ?? '');
+
+    if (!$room_id || !$from || !$to || $price < 0) wp_send_json_error('Dati non validi');
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+        wp_send_json_error('Formato data non valido');
+    }
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    $raw  = get_post_meta($room_id, '_room_special_prices', true);
+    $list = $raw ? json_decode($raw, true) : [];
+    if (!is_array($list)) $list = [];
+
+    $new = [
+        'id'    => wp_generate_uuid4(),
+        'from'  => $from,
+        'to'    => $to,
+        'price' => round($price, 2),
+        'note'  => $note,
+    ];
+    $list[] = $new;
+
+    update_post_meta($room_id, '_room_special_prices', wp_json_encode($list));
+    wp_send_json_success($new);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Elimina prezzo speciale
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_delete_special_price', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id   = (int) ($_POST['room_id'] ?? 0);
+    $entry_id  = sanitize_text_field($_POST['entry_id'] ?? '');
+
+    if (!$room_id || !$entry_id) wp_send_json_error('Dati mancanti');
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    $raw  = get_post_meta($room_id, '_room_special_prices', true);
+    $list = $raw ? json_decode($raw, true) : [];
+    if (!is_array($list)) $list = [];
+
+    $list = array_values(array_filter($list, fn($e) => ($e['id'] ?? '') !== $entry_id));
+    update_post_meta($room_id, '_room_special_prices', wp_json_encode($list));
+    wp_send_json_success();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   REGISTRAZIONE WIDGET
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_dashboard_setup', function (): void {
+
+    // 1 — Prenotazioni (colonna sx, prima)
+    wp_add_dashboard_widget('alm-w-bookings',    '📅 Prenotazioni',    'alm_w_bookings',    null, null, 'normal', 'high');
+    // 2 — Servizi camere (colonna sx, seconda)
+    wp_add_dashboard_widget('alm-w-services',    '🛎️ Servizi Camere',   'alm_w_services',    null, null, 'normal', 'default');
+    // 3 — Foto sito (colonna dx, prima)
+    wp_add_dashboard_widget('alm-w-media',       '🖼️ Foto Sito',        'alm_w_media',       null, null, 'side',   'high');
+    // 4 — Foto camere (colonna dx, seconda)
+    wp_add_dashboard_widget('alm-w-room-photos', '📷 Foto Camere',      'alm_w_room_photos', null, null, 'side',   'default');
+    // 5 — Prezzi camere (colonna sx, terza)
+    wp_add_dashboard_widget('alm-w-prices',      '🏷️ Prezzi Camere',    'alm_w_prices',      null, null, 'normal', 'default');
+
+    // Rimuovi widget predefiniti ingombranti
+    remove_meta_box('dashboard_quick_press', 'dashboard', 'side');
+    remove_meta_box('dashboard_primary',     'dashboard', 'side');
+    remove_meta_box('dashboard_site_health', 'dashboard', 'normal');
+    remove_meta_box('e-dashboard-overview',  'dashboard', 'normal');
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDGET 1 — PRENOTAZIONI
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_w_bookings(): void {
+    if (!current_user_can('edit_posts') && !current_user_can('manage_options')) {
+        echo '<p class="ad-empty">Permessi insufficienti.</p>'; return;
+    }
+
+    global $wpdb;
+    $table   = $wpdb->prefix . 'alm_bookings';
+    $has_tbl = ($wpdb->get_var("SHOW TABLES LIKE '{$table}'") === $table);
+
+    $stats = ['total' => 0, 'pending' => 0, 'confirmed' => 0, 'paid' => 0];
+    $rows  = [];
+
+    if ($has_tbl) {
+        $stats['total']     = (int)$wpdb->get_var("SELECT COUNT(*) FROM `{$table}`");
+        $stats['pending']   = (int)$wpdb->get_var("SELECT COUNT(*) FROM `{$table}` WHERE status='pending'");
+        $stats['confirmed'] = (int)$wpdb->get_var("SELECT COUNT(*) FROM `{$table}` WHERE status='confirmed'");
+        $stats['paid']      = (int)$wpdb->get_var("SELECT COUNT(*) FROM `{$table}` WHERE status='paid'");
+        $rows = (array)$wpdb->get_results(
+            "SELECT id, guest_name, checkin, checkout, status, total_price FROM `{$table}` ORDER BY created_at DESC LIMIT 8"
+        );
+    }
+
+    $bu  = admin_url('admin.php?page=alm-bookings');
+    $su  = admin_url('admin.php?page=alm-settings');
+    $ru  = admin_url('edit.php?post_type=almaretna_room');
+    $rnu = admin_url('post-new.php?post_type=almaretna_room');
+
+    $smap = [
+        'pending'   => ['In attesa',  'ad-b--pending'],
+        'confirmed' => ['Confermata', 'ad-b--confirmed'],
+        'paid'      => ['Pagata',     'ad-b--paid'],
+        'cancelled' => ['Annullata',  'ad-b--cancelled'],
+    ];
+    ?>
+    <div class="ad">
+        <div class="ad-head">
+            <span class="ad-head__label">Riepilogo prenotazioni</span>
+            <a href="<?php echo esc_url($bu); ?>" class="ad-head__link">Vedi tutte →</a>
+        </div>
+
+        <div class="ad-stats">
+            <a href="<?php echo esc_url($bu); ?>" class="ad-stat">
+                <span class="ad-stat__n"><?php echo $stats['total']; ?></span>
+                <span class="ad-stat__l">Totale</span>
+            </a>
+            <a href="<?php echo esc_url($bu . '&status=pending'); ?>" class="ad-stat">
+                <span class="ad-stat__n ad-stat__n--hi"><?php echo $stats['pending']; ?></span>
+                <span class="ad-stat__l">In attesa</span>
+            </a>
+            <a href="<?php echo esc_url($bu . '&status=confirmed'); ?>" class="ad-stat">
+                <span class="ad-stat__n"><?php echo $stats['confirmed']; ?></span>
+                <span class="ad-stat__l">Confermate</span>
+            </a>
+            <a href="<?php echo esc_url($bu . '&status=paid'); ?>" class="ad-stat">
+                <span class="ad-stat__n"><?php echo $stats['paid']; ?></span>
+                <span class="ad-stat__l">Pagate</span>
+            </a>
+        </div>
+
+        <div class="ad-section">
+            <div class="ad-actions">
+                <a href="<?php echo esc_url($bu); ?>"  class="ad-btn ad-btn--sand">Tutte le prenotazioni</a>
+                <a href="<?php echo esc_url($ru); ?>"  class="ad-btn ad-btn--ghost">🛏️ Camere</a>
+                <a href="<?php echo esc_url($rnu); ?>" class="ad-btn ad-btn--ghost">+ Nuova camera</a>
+                <a href="<?php echo esc_url($su); ?>"  class="ad-btn ad-btn--ghost">⚙️ Impostazioni</a>
+            </div>
+        </div>
+
+        <?php if (!empty($rows)) : ?>
+        <ul class="ad-list">
+            <?php foreach ($rows as $b) :
+                [$lbl, $cls] = $smap[$b->status] ?? [ucfirst((string)$b->status), ''];
+                $link = admin_url('admin.php?page=alm-bookings&action=view&id=' . (int)$b->id);
+            ?>
+            <li class="ad-row">
+                <span>
+                    <a href="<?php echo esc_url($link); ?>" class="ad-row__name">
+                        <?php echo esc_html($b->guest_name ?: '—'); ?>
+                    </a><br>
+                    <span class="ad-row__dates">
+                        <?php
+                        echo esc_html(
+                            ($b->checkin  ? date_i18n('d M', strtotime((string)$b->checkin))      : '?') .
+                            ' → ' .
+                            ($b->checkout ? date_i18n('d M Y', strtotime((string)$b->checkout)) : '?')
+                        );
+                        if (!empty($b->total_price)) echo ' · €' . esc_html(number_format((float)$b->total_price, 0, ',', '.'));
+                        ?>
+                    </span>
+                </span>
+                <span class="ad-badge <?php echo esc_attr($cls); ?>"><?php echo esc_html($lbl); ?></span>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php else : ?>
+            <p class="ad-empty">Nessuna prenotazione. <a href="<?php echo esc_url($bu); ?>">Vai alle prenotazioni →</a></p>
+        <?php endif; ?>
+    </div>
+    <?php
+    // JS solo una volta
+    alm_dash_inline_js();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDGET 2 — SERVIZI CAMERE
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_w_services(): void {
+    if (!current_user_can('edit_posts')) {
+        echo '<p class="ad-empty">Permessi insufficienti.</p>'; return;
+    }
+
+    $rooms = get_posts([
+        'post_type'      => 'almaretna_room',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'menu_order',
+        'order'          => 'ASC',
+    ]);
+
+    $all_amenities = alm_all_amenities();
+    $nonce         = wp_create_nonce(ALM_DASH_NONCE);
+    ?>
+    <div class="ad">
+        <div class="ad-head">
+            <span class="ad-head__label">Clicca un servizio per attivarlo / disattivarlo</span>
+            <a href="<?php echo esc_url(admin_url('edit.php?post_type=almaretna_room')); ?>" class="ad-head__link">Gestisci camere →</a>
+        </div>
+
+        <?php if (empty($rooms)) : ?>
+            <p class="ad-empty">Nessuna camera trovata. <a href="<?php echo esc_url(admin_url('post-new.php?post_type=almaretna_room')); ?>">Crea la prima →</a></p>
+        <?php else : ?>
+        <div class="ad-room-grid">
+            <?php foreach ($rooms as $room) :
+                $active_slugs = wp_get_object_terms($room->ID, 'amenity', ['fields' => 'slugs']);
+                if (!is_array($active_slugs)) $active_slugs = [];
+                $has_thumb = has_post_thumbnail($room->ID);
+                $thumb_url = $has_thumb ? get_the_post_thumbnail_url($room->ID, 'thumbnail') : '';
+            ?>
+            <div class="ad-room-row ad-room-row--svc">
+
+                <?php /* Thumbnail — stessa card di Foto Camere */ ?>
+                <div class="ad-room-row__thumb <?php echo $has_thumb ? '' : 'ad-room-row__thumb--empty'; ?>">
+                    <?php if ($has_thumb) : ?>
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($room->post_title); ?>" />
+                    <?php else : ?>
+                        🖼️
+                    <?php endif; ?>
+                </div>
+
+                <?php /* Body: nome + chips */ ?>
+                <div class="ad-room-row__body">
+                    <div class="ad-room-row__top">
+                        <a href="<?php echo esc_url(get_edit_post_link($room->ID)); ?>"
+                           class="ad-room-row__name-link">
+                            <?php echo esc_html($room->post_title); ?>
+                        </a>
+                        <a href="<?php echo esc_url(get_edit_post_link($room->ID)); ?>"
+                           class="ad-btn ad-btn--ghost ad-btn--sm" title="Modifica camera">✏️</a>
+                    </div>
+
+                    <div class="ad-svc-chips">
+                        <?php foreach ($all_amenities as $slug => [$icon, $label]) :
+                            $is_on = in_array($slug, $active_slugs, true);
+                        ?>
+                        <button class="ad-chip <?php echo $is_on ? 'on' : ''; ?>"
+                                data-room="<?php echo (int)$room->ID; ?>"
+                                data-amenity="<?php echo esc_attr($slug); ?>"
+                                data-nonce="<?php echo esc_attr($nonce); ?>"
+                                onclick="almToggleAmenity(this)"
+                                title="<?php echo esc_attr($label); ?>">
+                            <?php echo $icon; ?> <?php echo esc_html($label); ?>
+                        </button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDGET 3 — FOTO SITO
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_w_media(): void {
+    if (!current_user_can('upload_files') && !current_user_can('edit_posts')) {
+        echo '<p class="ad-empty">Permessi insufficienti.</p>'; return;
+    }
+
+    $media = get_posts([
+        'post_type'      => 'attachment',
+        'post_mime_type' => 'image',
+        'posts_per_page' => 12,
+        'post_status'    => 'any',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ]);
+
+    $shortcodes = [
+        '[alm_booking_form]'           => 'Form prenotazione (wizard)',
+        '[alm_rooms_grid]'             => 'Griglia camere — tutte',
+        '[alm_rooms_grid columns="2"]' => 'Griglia camere — 2 colonne',
+        '[alm_availability_calendar]'  => 'Calendario disponibilità',
+    ];
+
+    $mu = admin_url('upload.php');
+    $mn = admin_url('media-new.php');
+    $cu = admin_url('customize.php');
+    ?>
+    <div class="ad">
+        <div class="ad-head">
+            <span class="ad-head__label">Ultime immagini caricate</span>
+            <a href="<?php echo esc_url($mu); ?>" class="ad-head__link">Libreria →</a>
+        </div>
+
+        <?php if (current_user_can('upload_files')) : ?>
+        <div class="ad-section">
+            <div class="ad-actions">
+                <a href="<?php echo esc_url($mn); ?>" class="ad-btn ad-btn--sand">➕ Carica foto</a>
+                <a href="<?php echo esc_url($mu); ?>" class="ad-btn ad-btn--dark">📂 Libreria</a>
+                <a href="<?php echo esc_url($cu); ?>" class="ad-btn ad-btn--ghost">🎨 Foto sito</a>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($media)) : ?>
+        <div class="ad-media-grid">
+            <?php foreach ($media as $img) :
+                $t = wp_get_attachment_image_src($img->ID, 'thumbnail');
+                if (!$t) continue;
+            ?>
+            <a href="<?php echo esc_url(admin_url('upload.php?item=' . $img->ID)); ?>"
+               class="ad-thumb" title="<?php echo esc_attr($img->post_title); ?>">
+                <img src="<?php echo esc_url($t[0]); ?>" alt="<?php echo esc_attr($img->post_title); ?>" loading="lazy" />
+                <span class="ad-thumb__over">✏️</span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <?php else : ?>
+            <p class="ad-empty">Nessuna immagine caricata.</p>
+        <?php endif; ?>
+
+        <?php if (current_user_can('edit_posts')) : ?>
+        <div class="ad-section" style="margin-top:4px;">
+            <p class="ad-section__title">⚡ Shortcode — copia e incolla nelle pagine</p>
+        </div>
+        <div class="ad-sc-list">
+            <?php foreach ($shortcodes as $code => $desc) : ?>
+            <div class="ad-sc-row">
+                <div style="flex:1;min-width:0;">
+                    <code><?php echo esc_html($code); ?></code>
+                    <div class="ad-sc-row__desc"><?php echo esc_html($desc); ?></div>
+                </div>
+                <button class="ad-copy-btn" onclick="almCopy(this,'<?php echo esc_js($code); ?>')">Copia</button>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDGET 4 — FOTO CAMERE
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_w_room_photos(): void {
+    if (!current_user_can('edit_posts')) {
+        echo '<p class="ad-empty">Permessi insufficienti.</p>'; return;
+    }
+
+    $rooms = get_posts([
+        'post_type'      => 'almaretna_room',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'menu_order',
+        'order'          => 'ASC',
+    ]);
+
+    $nonce = wp_create_nonce(ALM_DASH_NONCE);
+    ?>
+    <div class="ad">
+        <div class="ad-head">
+            <span class="ad-head__label">Immagine principale per camera</span>
+            <a href="<?php echo esc_url(admin_url('upload.php')); ?>" class="ad-head__link">Libreria →</a>
+        </div>
+
+        <?php if (empty($rooms)) : ?>
+            <p class="ad-empty">Nessuna camera trovata. <a href="<?php echo esc_url(admin_url('post-new.php?post_type=almaretna_room')); ?>">Crea la prima →</a></p>
+        <?php else : ?>
+        <div class="ad-room-grid">
+            <?php foreach ($rooms as $room) :
+                $has_thumb = has_post_thumbnail($room->ID);
+                $thumb_url = $has_thumb ? get_the_post_thumbnail_url($room->ID, 'thumbnail') : '';
+                $edit_link = get_edit_post_link($room->ID);
+            ?>
+            <div class="ad-room-row" id="alm-rr-<?php echo (int)$room->ID; ?>">
+
+                <div class="ad-room-row__thumb <?php echo $has_thumb ? '' : 'ad-room-row__thumb--empty'; ?>"
+                     id="alm-thumb-wrap-<?php echo (int)$room->ID; ?>">
+                    <?php if ($has_thumb) : ?>
+                        <img src="<?php echo esc_url($thumb_url); ?>"
+                             alt="<?php echo esc_attr($room->post_title); ?>"
+                             id="alm-thumb-img-<?php echo (int)$room->ID; ?>" />
+                    <?php else : ?>
+                        <span id="alm-thumb-img-<?php echo (int)$room->ID; ?>">🖼️</span>
+                    <?php endif; ?>
+                </div>
+
+                <span class="ad-room-row__name"><?php echo esc_html($room->post_title); ?></span>
+
+                <div class="ad-room-row__actions">
+                    <button class="ad-btn ad-btn--sand ad-btn--sm"
+                            onclick="almPickPhoto(<?php echo (int)$room->ID; ?>, '<?php echo esc_js($nonce); ?>')">
+                        📷 <?php echo $has_thumb ? 'Cambia' : 'Aggiungi'; ?>
+                    </button>
+                    <a href="<?php echo esc_url($edit_link); ?>"
+                       class="ad-btn ad-btn--ghost ad-btn--sm" title="Modifica camera">
+                        ✏️
+                    </a>
+                </div>
+
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
+        <div class="ad-section">
+            <p class="ad-section__title">Aggiungi nuova camera</p>
+            <div class="ad-actions">
+                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=almaretna_room')); ?>" class="ad-btn ad-btn--ghost">
+                    + Nuova camera
+                </a>
+                <a href="<?php echo esc_url(admin_url('media-new.php')); ?>" class="ad-btn ad-btn--ghost">
+                    ➕ Carica foto
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIDGET 5 — PREZZI CAMERE
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_w_prices(): void {
+    if (!current_user_can('edit_posts')) {
+        echo '<p class="ad-empty">Permessi insufficienti.</p>'; return;
+    }
+
+    $rooms = get_posts([
+        'post_type'      => 'almaretna_room',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'menu_order',
+        'order'          => 'ASC',
+    ]);
+
+    $nonce = wp_create_nonce(ALM_DASH_NONCE);
+    ?>
+    <div class="ad">
+        <div class="ad-head">
+            <span class="ad-head__label">Prezzo base + tariffe speciali per data</span>
+            <a href="<?php echo esc_url(admin_url('edit.php?post_type=almaretna_room')); ?>" class="ad-head__link">Camere →</a>
+        </div>
+
+        <?php if (empty($rooms)) : ?>
+            <p class="ad-empty">Nessuna camera trovata.</p>
+        <?php else :
+            foreach ($rooms as $room) :
+                $base_price    = (float) get_post_meta($room->ID, '_room_base_price', true);
+                $specials_raw  = get_post_meta($room->ID, '_room_special_prices', true);
+                $specials      = $specials_raw ? json_decode($specials_raw, true) : [];
+                if (!is_array($specials)) $specials = [];
+                $has_thumb     = has_post_thumbnail($room->ID);
+                $thumb_url     = $has_thumb ? get_the_post_thumbnail_url($room->ID, 'thumbnail') : '';
+                $uid           = 'alm-pr-' . (int)$room->ID;
+        ?>
+        <div class="ad-price-room">
+
+            <!-- Intestazione camera -->
+            <div class="ad-price-room__head">
+                <div class="ad-room-row__thumb <?php echo $has_thumb ? '' : 'ad-room-row__thumb--empty'; ?>">
+                    <?php if ($has_thumb) : ?>
+                        <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($room->post_title); ?>" />
+                    <?php else : ?>
+                        🛏️
+                    <?php endif; ?>
+                </div>
+                <span class="ad-price-room__name"><?php echo esc_html($room->post_title); ?></span>
+                <a href="<?php echo esc_url(get_edit_post_link($room->ID)); ?>"
+                   class="ad-btn ad-btn--ghost ad-btn--sm" title="Modifica">✏️</a>
+            </div>
+
+            <!-- Prezzo base -->
+            <div class="ad-price-base">
+                <span class="ad-price-base__label">Base</span>
+                <input type="number"
+                       class="ad-price-input"
+                       id="<?php echo esc_attr($uid); ?>-base"
+                       value="<?php echo esc_attr($base_price > 0 ? $base_price : ''); ?>"
+                       min="0" step="0.5" placeholder="0"
+                       onkeydown="if(event.key==='Enter'){almSaveBasePrice(<?php echo (int)$room->ID; ?>,'<?php echo esc_js($nonce); ?>')}" />
+                <span class="ad-price-suffix">€ / notte</span>
+                <button class="ad-save-btn"
+                        id="<?php echo esc_attr($uid); ?>-save-btn"
+                        onclick="almSaveBasePrice(<?php echo (int)$room->ID; ?>,'<?php echo esc_js($nonce); ?>')">
+                    Salva
+                </button>
+            </div>
+
+            <!-- Lista prezzi speciali -->
+            <?php if (!empty($specials)) : ?>
+            <ul class="ad-specials" id="<?php echo esc_attr($uid); ?>-specials">
+                <?php foreach ($specials as $sp) :
+                    if (empty($sp['id'])) continue;
+                    $d_from = date_i18n('d/m/Y', strtotime((string)($sp['from'] ?? '')));
+                    $d_to   = ($sp['to'] !== $sp['from'])
+                        ? ' → ' . date_i18n('d/m/Y', strtotime((string)($sp['to'] ?? '')))
+                        : '';
+                ?>
+                <li class="ad-special-item" id="alm-sp-<?php echo esc_attr($sp['id']); ?>">
+                    <span class="ad-special-item__note"><?php echo esc_html($sp['note'] ?: '—'); ?></span>
+                    <span class="ad-special-item__dates"><?php echo esc_html($d_from . $d_to); ?></span>
+                    <span class="ad-special-item__price">€<?php echo esc_html(number_format((float)($sp['price'] ?? 0), 0, ',', '.')); ?></span>
+                    <button class="ad-del-btn"
+                            title="Elimina"
+                            onclick="almDeleteSpecialPrice(this,<?php echo (int)$room->ID; ?>,'<?php echo esc_js($sp['id']); ?>','<?php echo esc_js($nonce); ?>')">✕</button>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else : ?>
+            <ul class="ad-specials" id="<?php echo esc_attr($uid); ?>-specials"></ul>
+            <?php endif; ?>
+
+            <!-- Toggle form aggiungi -->
+            <button class="ad-add-toggle"
+                    id="<?php echo esc_attr($uid); ?>-toggle"
+                    onclick="almToggleAddForm('<?php echo esc_js($uid); ?>')">
+                + Aggiungi tariffa speciale
+            </button>
+
+            <!-- Form aggiungi prezzo speciale -->
+            <div class="ad-add-form" id="<?php echo esc_attr($uid); ?>-form">
+                <div class="ad-add-form__row">
+                    <span class="ad-add-form__label">Dal</span>
+                    <input type="date" class="ad-date-input" id="<?php echo esc_attr($uid); ?>-from" />
+                    <span class="ad-add-form__label">Al</span>
+                    <input type="date" class="ad-date-input" id="<?php echo esc_attr($uid); ?>-to" />
+                </div>
+                <div class="ad-add-form__row">
+                    <span class="ad-add-form__label">€</span>
+                    <input type="number" class="ad-price-input ad-price-input--sm" id="<?php echo esc_attr($uid); ?>-sp-price"
+                           min="0" step="0.5" placeholder="Prezzo" />
+                    <span class="ad-price-suffix">/notte</span>
+                    <input type="text" class="ad-note-input" id="<?php echo esc_attr($uid); ?>-sp-note"
+                           placeholder="Etichetta (es. Estate, Natale…)" maxlength="40" />
+                </div>
+                <div class="ad-add-form__actions">
+                    <button class="ad-btn ad-btn--ghost ad-btn--sm"
+                            onclick="almToggleAddForm('<?php echo esc_js($uid); ?>')">Annulla</button>
+                    <button class="ad-save-btn"
+                            onclick="almAddSpecialPrice(<?php echo (int)$room->ID; ?>,'<?php echo esc_js($uid); ?>','<?php echo esc_js($nonce); ?>')">
+                        Aggiungi
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <?php endforeach; endif; ?>
+    </div>
+    <?php
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   JS INLINE — dichiarato una sola volta
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_dash_inline_js(): void {
+    static $printed = false;
+    if ($printed) return;
+    $printed = true;
+    ?>
+    <script>
+    /* ── Copia shortcode ── */
+    function almCopy(btn, code) {
+        function ok(){
+            btn.textContent = '✓ Copiato';
+            btn.classList.add('copied');
+            setTimeout(function(){ btn.textContent = 'Copia'; btn.classList.remove('copied'); }, 2200);
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(code).then(ok);
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = code; ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            try { document.execCommand('copy'); ok(); } catch(e){}
+            document.body.removeChild(ta);
+        }
+    }
+
+    /* ── Toggle amenity via AJAX ── */
+    function almToggleAmenity(btn) {
+        var roomId  = btn.dataset.room;
+        var amenity = btn.dataset.amenity;
+        var nonce   = btn.dataset.nonce;
+        var enable  = !btn.classList.contains('on'); // inverte lo stato
+
+        btn.classList.add('saving');
+
+        var fd = new FormData();
+        fd.append('action',  'alm_toggle_amenity');
+        fd.append('nonce',   nonce);
+        fd.append('room_id', roomId);
+        fd.append('amenity', amenity);
+        fd.append('enable',  enable ? '1' : '0');
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                btn.classList.remove('saving');
+                if (data.success) {
+                    btn.classList.toggle('on', enable);
+                    btn.classList.add('saved-ok');
+                    setTimeout(function(){ btn.classList.remove('saved-ok'); }, 900);
+                }
+            })
+            .catch(function(){ btn.classList.remove('saving'); });
+    }
+
+    /* ── Media uploader per foto camere ── */
+    function almPickPhoto(roomId, nonce) {
+        if (typeof wp === 'undefined' || !wp.media) {
+            alert('Media uploader non disponibile. Aggiorna la pagina.');
+            return;
+        }
+        var frame = wp.media({
+            title:    'Scegli immagine per la camera',
+            button:   { text: 'Usa questa immagine' },
+            multiple: false,
+            library:  { type: 'image' }
+        });
+        frame.on('select', function() {
+            var att  = frame.state().get('selection').first().toJSON();
+            var wrap = document.getElementById('alm-thumb-wrap-' + roomId);
+            var img  = document.getElementById('alm-thumb-img-'  + roomId);
+            if (wrap) wrap.classList.add('is-loading');
+
+            var fd = new FormData();
+            fd.append('action',   'alm_set_room_thumb');
+            fd.append('nonce',    nonce);
+            fd.append('room_id',  roomId);
+            fd.append('media_id', att.id);
+
+            fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(data) {
+                    if (wrap) wrap.classList.remove('is-loading');
+                    if (data.success && data.data.thumb) {
+                        wrap.classList.remove('ad-room-row__thumb--empty');
+                        // Sostituisce testo/icona con <img>
+                        if (img && img.tagName !== 'IMG') {
+                            var newImg = document.createElement('img');
+                            newImg.id  = img.id;
+                            newImg.alt = '';
+                            img.parentNode.replaceChild(newImg, img);
+                            img = newImg;
+                        }
+                        if (img) img.src = data.data.thumb + '?' + Date.now();
+                        // Aggiorna testo pulsante
+                        var row = document.getElementById('alm-rr-' + roomId);
+                        if (row) {
+                            var pickBtn = row.querySelector('.ad-btn--sand');
+                            if (pickBtn) pickBtn.textContent = '📷 Cambia';
+                        }
+                    }
+                })
+                .catch(function(){ if (wrap) wrap.classList.remove('is-loading'); });
+        });
+        frame.open();
+    }
+
+    /* ── Prezzi camere ── */
+
+    function almToggleAddForm(uid) {
+        var form   = document.getElementById(uid + '-form');
+        var toggle = document.getElementById(uid + '-toggle');
+        if (!form) return;
+        var opening = !form.classList.contains('open');
+        form.classList.toggle('open', opening);
+        if (toggle) toggle.textContent = opening ? '▲ Chiudi' : '+ Aggiungi tariffa speciale';
+    }
+
+    function almSaveBasePrice(roomId, nonce) {
+        var uid = 'alm-pr-' + roomId;
+        var inp = document.getElementById(uid + '-base');
+        var btn = document.getElementById(uid + '-save-btn');
+        if (!inp || !btn) return;
+        var price = parseFloat(inp.value);
+        if (isNaN(price) || price < 0) { inp.focus(); return; }
+
+        btn.classList.add('saving');
+
+        var fd = new FormData();
+        fd.append('action',  'alm_save_base_price');
+        fd.append('nonce',   nonce);
+        fd.append('room_id', roomId);
+        fd.append('price',   price);
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                btn.classList.remove('saving');
+                if (data.success) {
+                    btn.classList.add('saved');
+                    setTimeout(function(){ btn.classList.remove('saved'); }, 1500);
+                }
+            })
+            .catch(function(){ btn.classList.remove('saving'); });
+    }
+
+    function almAddSpecialPrice(roomId, uid, nonce) {
+        var fromEl  = document.getElementById(uid + '-from');
+        var toEl    = document.getElementById(uid + '-to');
+        var priceEl = document.getElementById(uid + '-sp-price');
+        var noteEl  = document.getElementById(uid + '-sp-note');
+        if (!fromEl || !toEl || !priceEl) return;
+
+        var from  = fromEl.value;
+        var to    = toEl.value   || from;
+        var price = parseFloat(priceEl.value);
+        var note  = noteEl ? noteEl.value : '';
+
+        if (!from || isNaN(price) || price < 0) {
+            if (!from)  fromEl.focus();
+            else        priceEl.focus();
+            return;
+        }
+
+        var fd = new FormData();
+        fd.append('action',  'alm_add_special_price');
+        fd.append('nonce',   nonce);
+        fd.append('room_id', roomId);
+        fd.append('from',    from);
+        fd.append('to',      to);
+        fd.append('price',   price);
+        fd.append('note',    note);
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                if (!data.success) return;
+                var sp = data.data;
+                var list = document.getElementById(uid + '-specials');
+                if (list) {
+                    var dFrom = new Date(sp.from).toLocaleDateString('it-IT');
+                    var dTo   = (sp.to !== sp.from) ? ' → ' + new Date(sp.to).toLocaleDateString('it-IT') : '';
+                    var li = document.createElement('li');
+                    li.className = 'ad-special-item';
+                    li.id = 'alm-sp-' + sp.id;
+                    li.innerHTML =
+                        '<span class="ad-special-item__note">' + (sp.note || '—') + '</span>' +
+                        '<span class="ad-special-item__dates">' + dFrom + dTo + '</span>' +
+                        '<span class="ad-special-item__price">€' + Math.round(sp.price) + '</span>' +
+                        '<button class="ad-del-btn" title="Elimina" onclick="almDeleteSpecialPrice(this,' + roomId + ',\'' + sp.id + '\',\'' + nonce + '\')">✕</button>';
+                    list.appendChild(li);
+                }
+                // Reset form
+                fromEl.value = ''; toEl.value = ''; priceEl.value = '';
+                if (noteEl) noteEl.value = '';
+                almToggleAddForm(uid);
+            });
+    }
+
+    function almDeleteSpecialPrice(btn, roomId, entryId, nonce) {
+        if (!confirm('Eliminare questa tariffa?')) return;
+        btn.classList.add('deleting');
+
+        var fd = new FormData();
+        fd.append('action',   'alm_delete_special_price');
+        fd.append('nonce',    nonce);
+        fd.append('room_id',  roomId);
+        fd.append('entry_id', entryId);
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var li = document.getElementById('alm-sp-' + entryId);
+                    if (li) li.remove();
+                } else {
+                    btn.classList.remove('deleting');
+                }
+            })
+            .catch(function(){ btn.classList.remove('deleting'); });
+    }
+    </script>
+    <?php
+}
+
+// Aggancia JS anche al widget media (viene dopo bookings)
+add_action('wp_dashboard_setup', function(): void {
+    add_action('wp_footer', 'alm_dash_inline_js', 99);
+    add_action('admin_footer', 'alm_dash_inline_js', 99);
+}, 20);
+
+/* ═══════════════════════════════════════════════════════════════
+   RIORDINA MENU ADMIN
+   ═══════════════════════════════════════════════════════════════ */
+
+add_filter('custom_menu_order', '__return_true');
+add_filter('menu_order', function (array $menu_order): array {
+    $priority = ['index.php', 'admin.php?page=alm-booking', 'upload.php', 'edit.php?post_type=almaretna_room'];
+    $result   = array_values(array_filter($priority, fn($i) => in_array($i, $menu_order, true)));
+    foreach ($menu_order as $item) {
+        if (!in_array($item, $result, true)) $result[] = $item;
+    }
+    return $result;
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN BAR
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('admin_bar_menu', function (WP_Admin_Bar $bar): void {
+    if (!is_admin_bar_showing() || !current_user_can('edit_posts')) return;
+    $bar->add_node(['id' => 'alm-quick', 'title' => '🏨 Almaretna', 'href' => admin_url()]);
+    $bar->add_node(['id' => 'alm-q-book',   'parent' => 'alm-quick', 'title' => '📅 Prenotazioni', 'href' => admin_url('admin.php?page=alm-bookings')]); // alm-bookings = lista prenotazioni (submenu)
+    $bar->add_node(['id' => 'alm-q-rooms',  'parent' => 'alm-quick', 'title' => '🛏️ Camere',        'href' => admin_url('edit.php?post_type=almaretna_room')]);
+    if (current_user_can('upload_files'))
+        $bar->add_node(['id' => 'alm-q-media', 'parent' => 'alm-quick', 'title' => '🖼️ Carica Foto', 'href' => admin_url('media-new.php')]);
+    if (current_user_can('customize'))
+        $bar->add_node(['id' => 'alm-q-cust', 'parent' => 'alm-quick', 'title' => '🎨 Foto sito',   'href' => admin_url('customize.php')]);
+}, 999);

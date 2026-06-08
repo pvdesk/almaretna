@@ -28,7 +28,7 @@ add_shortcode('alm_booking_form', function (array $atts = []): string {
 
     // Fallback: il plugin non è ancora attivo
     return '<div class="alert alert-info">' .
-        esc_html__('Il modulo di prenotazione è in fase di configurazione. Torna presto!', 'almaretna-child') .
+        esc_html(alm_t('wiz.form_unavailable')) .
         '</div>';
 });
 
@@ -59,7 +59,7 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
 
     if (!$rooms_query->have_posts()) {
         return '<p class="text-center text-light">' .
-            esc_html__('Nessuna camera disponibile con i filtri selezionati.', 'almaretna-child') .
+            esc_html(alm_t('sc.no_rooms')) .
             '</p>';
     }
 
@@ -96,7 +96,7 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
                         <a href="<?php the_permalink(); ?>">
                             <img class="room-card-premium__image"
                                  src="<?php echo esc_url($thumb_url); ?>"
-                                 alt="<?php echo esc_attr(get_the_title()); ?>"
+                                 alt="<?php echo esc_attr(alm_get_room_translated($post_id, 'title')); ?>"
                                  loading="lazy" width="600" height="450" />
                         </a>
                     <?php else : ?>
@@ -106,11 +106,11 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
                         </div>
                     <?php endif; ?>
 
-                    <span class="room-card-premium__badge"><?php the_title(); ?></span>
+                    <span class="room-card-premium__badge"><?php echo esc_html(alm_get_room_translated($post_id, 'title')); ?></span>
 
                     <?php if ($price > 0) : ?>
                     <span class="room-card-premium__price-tag">
-                        da €<?php echo esc_html(number_format($price, 0, ',', '.')); ?>/notte
+                        <?php echo esc_html(sprintf(alm_t('sc.price_tag'), number_format($price, 0, ',', '.'))); ?>
                     </span>
                     <?php endif; ?>
                 </div>
@@ -119,7 +119,7 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
                     <div class="room-card-premium__meta">
                         <span style="display:flex;align-items:center;gap:.3rem;">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                            <?php echo esc_html($adults . ' ospiti'); ?>
+                            <?php echo esc_html($adults . alm_t('rooms.guests_sfx')); ?>
                         </span>
                         <?php if ($room_floor) : ?>
                         <span style="display:flex;align-items:center;gap:.3rem;">
@@ -133,11 +133,11 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
                     </div>
 
                     <h3 class="room-card-premium__title">
-                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                        <a href="<?php the_permalink(); ?>"><?php echo esc_html(alm_get_room_translated($post_id, 'title')); ?></a>
                     </h3>
 
                     <p class="room-card-premium__excerpt">
-                        <?php echo esc_html(wp_trim_words(get_the_excerpt(), 18, '…')); ?>
+                        <?php echo esc_html(wp_trim_words(alm_get_room_translated($post_id, 'excerpt'), 18, '…')); ?>
                     </p>
 
                     <?php if (!empty($amenities)) : ?>
@@ -154,14 +154,14 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
                     <div class="room-card-premium__footer">
                         <?php if ($price > 0) : ?>
                         <div>
-                            <span class="room-card-premium__price-from">Da</span>
+                            <span class="room-card-premium__price-from"><?php echo esc_html(alm_t('rooms.from')); ?></span>
                             <span class="room-card-premium__price-amount">€<?php echo esc_html(number_format($price, 0, ',', '.')); ?></span>
                         </div>
                         <?php else : ?>
                         <div></div>
                         <?php endif; ?>
                         <a href="<?php echo esc_url($room_prenota); ?>" class="room-card-premium__cta">
-                            Prenota
+                            <?php echo esc_html(alm_t('rooms.book')); ?>
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                         </a>
                     </div>
@@ -205,12 +205,12 @@ add_shortcode('alm_availability_calendar', function (array|string $atts = []): s
         data-room-slug="<?php echo esc_attr($meta['room_id']); ?>"
     >
         <div class="availability-calendar__header">
-            <button class="availability-calendar__nav" data-dir="prev" aria-label="Mese precedente">&lsaquo;</button>
-            <span class="availability-calendar__month-title">Disponibilità</span>
-            <button class="availability-calendar__nav" data-dir="next" aria-label="Mese successivo">&rsaquo;</button>
+            <button class="availability-calendar__nav" data-dir="prev" aria-label="<?php echo esc_attr(alm_t('sc.cal_prev')); ?>">&lsaquo;</button>
+            <span class="availability-calendar__month-title"><?php echo esc_html(alm_t('sc.cal_title')); ?></span>
+            <button class="availability-calendar__nav" data-dir="next" aria-label="<?php echo esc_attr(alm_t('sc.cal_next')); ?>">&rsaquo;</button>
         </div>
         <p style="padding:var(--space-lg);text-align:center;color:var(--color-text-light);">
-            <?php esc_html_e('Calendario disponibilità in caricamento…', 'almaretna-child'); ?>
+            <?php echo esc_html(alm_t('sc.cal_loading')); ?>
         </p>
     </div>
     <?php
@@ -242,13 +242,10 @@ add_shortcode('alm_room_price', function (array|string $atts = []): string {
         <div class="room-price-box__capacita">
             <span class="dashicons dashicons-admin-users"></span>
             <?php
-            printf(
-                esc_html__('Fino a %d adulti', 'almaretna-child'),
-                $meta['capacity_adults']
-            );
+            echo esc_html(sprintf(alm_t('sc.up_to_adults'), $meta['capacity_adults']));
             if ($meta['capacity_children'] > 0) {
                 echo ' + ' . esc_html((string) $meta['capacity_children']) . ' ' .
-                    esc_html__('bambini', 'almaretna-child');
+                    esc_html(alm_t('sc.children'));
             }
             ?>
         </div>
@@ -258,45 +255,40 @@ add_shortcode('alm_room_price', function (array|string $atts = []): string {
                 <?php echo wp_kses_post(alm_format_price($meta['base_price'])); ?>
             </span>
             <span class="room-price-box__per-night">
-                <?php esc_html_e('/ notte', 'almaretna-child'); ?>
+                <?php echo esc_html(alm_t('rooms.night')); ?>
             </span>
         </div>
 
         <?php if ($meta['min_stay'] > 1) : ?>
             <p style="font-size:var(--fs-xs);color:var(--color-text-light);margin-bottom:var(--space-md);">
-                <?php
-                printf(
-                    esc_html__('Soggiorno minimo: %d notti', 'almaretna-child'),
-                    $meta['min_stay']
-                );
-                ?>
+                <?php echo esc_html(sprintf(alm_t('sc.min_stay'), $meta['min_stay'])); ?>
             </p>
         <?php endif; ?>
 
         <div class="room-price-box__form">
             <div class="form-group">
                 <label for="rpb-checkin-<?php echo esc_attr((string) $room_id); ?>">
-                    <?php esc_html_e('Check-in', 'almaretna-child'); ?>
+                    <?php echo esc_html(alm_t('strip.checkin')); ?>
                 </label>
                 <input
                     type="text"
                     id="rpb-checkin-<?php echo esc_attr((string) $room_id); ?>"
                     class="form-control alm-datepicker-checkin"
                     data-room-id="<?php echo esc_attr((string) $room_id); ?>"
-                    placeholder="<?php esc_attr_e('gg/mm/aaaa', 'almaretna-child'); ?>"
+                    placeholder="<?php echo esc_attr(alm_t('sc.date_ph')); ?>"
                     readonly
                 />
             </div>
             <div class="form-group">
                 <label for="rpb-checkout-<?php echo esc_attr((string) $room_id); ?>">
-                    <?php esc_html_e('Check-out', 'almaretna-child'); ?>
+                    <?php echo esc_html(alm_t('strip.checkout')); ?>
                 </label>
                 <input
                     type="text"
                     id="rpb-checkout-<?php echo esc_attr((string) $room_id); ?>"
                     class="form-control alm-datepicker-checkout"
                     data-room-id="<?php echo esc_attr((string) $room_id); ?>"
-                    placeholder="<?php esc_attr_e('gg/mm/aaaa', 'almaretna-child'); ?>"
+                    placeholder="<?php echo esc_attr(alm_t('sc.date_ph')); ?>"
                     readonly
                 />
             </div>
@@ -304,13 +296,13 @@ add_shortcode('alm_room_price', function (array|string $atts = []): string {
                 href="<?php echo esc_url($book_url ?: home_url('/prenota/')); ?>"
                 class="btn btn-primary btn-lg"
             >
-                <?php esc_html_e('Prenota ora', 'almaretna-child'); ?>
+                <?php echo esc_html(alm_t('nav.book_now')); ?>
             </a>
         </div>
 
         <p class="room-price-box__info">
             <span class="dashicons dashicons-lock" style="font-size:14px;vertical-align:middle;"></span>
-            <?php esc_html_e('Pagamento sicuro. Cancellazione gratuita.', 'almaretna-child'); ?>
+            <?php echo esc_html(alm_t('sc.secure_cancel')); ?>
         </p>
     </div>
     <?php

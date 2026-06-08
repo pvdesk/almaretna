@@ -43,7 +43,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['singola'],
                 'room_floor' => ['piano-1'],
-                'amenity'    => ['bagno-privato', 'vista-etna', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-privato', 'vista-etna', 'aria-condizionata', 'wifi'],
             ],
         ],
 
@@ -70,7 +70,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['matrimoniale'],
                 'room_floor' => ['piano-2'],
-                'amenity'    => ['bagno-privato', 'vista-mare', 'vista-etna', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-privato', 'vista-mare', 'vista-etna', 'aria-condizionata', 'wifi'],
             ],
         ],
 
@@ -95,7 +95,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['matrimoniale'],
                 'room_floor' => ['piano-2'],
-                'amenity'    => ['bagno-privato', 'vista-mare', 'vista-etna', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-privato', 'vista-mare', 'vista-etna', 'aria-condizionata', 'wifi'],
             ],
         ],
 
@@ -120,7 +120,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['suite-familiare'],
                 'room_floor' => ['piano-2'],
-                'amenity'    => ['bagno-condiviso', 'vista-mare', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-condiviso', 'vista-mare', 'aria-condizionata', 'wifi'],
             ],
         ],
 
@@ -145,7 +145,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['suite-familiare'],
                 'room_floor' => ['piano-2'],
-                'amenity'    => ['bagno-condiviso', 'vista-mare', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-condiviso', 'vista-mare', 'aria-condizionata', 'wifi'],
             ],
         ],
 
@@ -172,7 +172,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['matrimoniale'],
                 'room_floor' => ['mansarda'],
-                'amenity'    => ['bagno-condiviso', 'vista-etna', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-condiviso', 'vista-etna', 'aria-condizionata', 'wifi'],
             ],
         ],
 
@@ -197,7 +197,7 @@ function alm_insert_sample_rooms(): void {
             'taxonomies' => [
                 'room_type'  => ['matrimoniale'],
                 'room_floor' => ['mansarda'],
-                'amenity'    => ['bagno-condiviso', 'vista-mare', 'aria-condizionata', 'wifi', 'televisione'],
+                'amenity'    => ['bagno-condiviso', 'vista-mare', 'aria-condizionata', 'wifi'],
             ],
         ],
     ];

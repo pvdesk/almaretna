@@ -32,7 +32,7 @@ get_header();
                 <?php the_title(); ?>
             </h1>
             <p style="font-size:.95rem;color:var(--color-text-light);line-height:1.7;">
-                <?php esc_html_e('Check-in dalle 15:00 &nbsp;·&nbsp; Check-out entro le 11:00', 'almaretna-child'); ?>
+                <?php echo alm_t('book.checkin_info'); ?>
             </p>
         </div>
     </section>
@@ -43,29 +43,29 @@ get_header();
 
             <!-- Indicatore step -->
             <nav class="booking-steps d-flex align-items-center justify-content-between mx-auto mb-5 text-center flex-wrap gap-2" 
-                 style="max-width: 680px;" aria-label="<?php esc_attr_e('Fasi prenotazione', 'almaretna-child'); ?>">
+                 style="max-width: 680px;" aria-label="<?php echo esc_attr(alm_t('book.steps_label')); ?>">
                 
                 <div class="booking-step booking-steps__item is-active" data-step="1">
                     <div class="booking-step__number">1</div>
-                    <div class="booking-step__label"><?php esc_html_e('Date', 'almaretna-child'); ?></div>
+                    <div class="booking-step__label"><?php echo esc_html(alm_t('book.step1')); ?></div>
                 </div>
                 <div class="booking-step-connector" data-connector="1"></div>
                 
                 <div class="booking-step booking-steps__item" data-step="2">
                     <div class="booking-step__number">2</div>
-                    <div class="booking-step__label"><?php esc_html_e('Camera', 'almaretna-child'); ?></div>
+                    <div class="booking-step__label"><?php echo esc_html(alm_t('book.step2')); ?></div>
                 </div>
                 <div class="booking-step-connector" data-connector="2"></div>
                 
                 <div class="booking-step booking-steps__item" data-step="3">
                     <div class="booking-step__number">3</div>
-                    <div class="booking-step__label"><?php esc_html_e('Dati', 'almaretna-child'); ?></div>
+                    <div class="booking-step__label"><?php echo esc_html(alm_t('book.step3')); ?></div>
                 </div>
                 <div class="booking-step-connector" data-connector="3"></div>
                 
                 <div class="booking-step booking-steps__item" data-step="4">
                     <div class="booking-step__number">4</div>
-                    <div class="booking-step__label"><?php esc_html_e('Pagamento', 'almaretna-child'); ?></div>
+                    <div class="booking-step__label"><?php echo esc_html(alm_t('book.step4')); ?></div>
                 </div>
             </nav>
 
@@ -88,10 +88,10 @@ get_header();
                     <div class="px-3">
                         <span class="dashicons dashicons-lock d-inline-block mb-3" style="font-size: 32px; width: 32px; height: 32px; color: var(--color-secondary);"></span>
                         <h4 class="font-heading fw-bold mb-2 text-primary">
-                            <?php esc_html_e('Pagamento sicuro', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t('book.secure_pay')); ?>
                         </h4>
                         <p class="text-muted small mb-0" style="line-height: 1.6;">
-                            <?php esc_html_e('Dati crittografati SSL. Pagamento gestito e protetto da Stripe.', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t('book.secure_pay_desc')); ?>
                         </p>
                     </div>
                 </div>
@@ -99,10 +99,10 @@ get_header();
                     <div class="px-3">
                         <span class="dashicons dashicons-calendar-alt d-inline-block mb-3" style="font-size: 32px; width: 32px; height: 32px; color: var(--color-secondary);"></span>
                         <h4 class="font-heading fw-bold mb-2 text-primary">
-                            <?php esc_html_e('Prenotazione diretta', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t('book.direct')); ?>
                         </h4>
                         <p class="text-muted small mb-0" style="line-height: 1.6;">
-                            <?php esc_html_e('Senza intermediari. Miglior prezzo online garantito.', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t('book.direct_desc')); ?>
                         </p>
                     </div>
                 </div>
@@ -110,10 +110,10 @@ get_header();
                     <div class="px-3">
                         <span class="dashicons dashicons-email-alt d-inline-block mb-3" style="font-size: 32px; width: 32px; height: 32px; color: var(--color-secondary);"></span>
                         <h4 class="font-heading fw-bold mb-2 text-primary">
-                            <?php esc_html_e('Conferma immediata', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t(‘book.instant’)); ?>
                         </h4>
                         <p class="text-muted small mb-0" style="line-height: 1.6;">
-                            <?php esc_html_e('Ricevi la conferma via email all’istante, non appena completato il pagamento.', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t(‘book.instant_desc’)); ?>
                         </p>
                     </div>
                 </div>

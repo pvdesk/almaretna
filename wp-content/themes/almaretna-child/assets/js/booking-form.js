@@ -104,7 +104,7 @@
                 // Mostra stato di caricamento con fade-out temporaneo del prezzo
                 priceAmountEl.style.opacity = '0.4';
                 statusEl.style.color = 'var(--color-text-light)';
-                statusEl.textContent = 'Calcolo in corso...';
+                statusEl.textContent = (alm_theme_vars.i18n && alm_theme_vars.i18n.calculating) ? alm_theme_vars.i18n.calculating : 'Calcolo in corso...';
                 statusEl.style.opacity = '1';
 
                 try {
@@ -117,7 +117,7 @@
                     if (data.code) {
                         // Errore di disponibilità o soggiorno minimo
                         statusEl.style.color = 'var(--color-error)';
-                        statusEl.textContent = data.message || 'Date non disponibili.';
+                        statusEl.textContent = data.message || (alm_theme_vars.i18n && alm_theme_vars.i18n.dates_unavail ? alm_theme_vars.i18n.dates_unavail : 'Date non disponibili.');
                         bookBtn.classList.add('disabled');
                         bookBtn.style.pointerEvents = 'none';
                         animatePriceChange(basePriceHtml);
@@ -125,10 +125,12 @@
                         // Successo!
                         const nights = data.nights || 1;
                         const total = data.total || data.subtotal || 0;
-                        const nightsLabel = nights === 1 ? 'notte' : 'notti';
+                        const i18n = alm_theme_vars.i18n || {};
+                        const nightsLabel = nights === 1 ? (i18n.night_1 || 'notte') : (i18n.night_n || 'notti');
+                        const selectedLabel = i18n.selected || 'selezionate';
 
                         statusEl.style.color = 'var(--color-success)';
-                        statusEl.textContent = `${nights} ${nightsLabel} selezionate`;
+                        statusEl.textContent = `${nights} ${nightsLabel} ${selectedLabel}`;
 
                         // Formatta prezzo con euro
                         const formattedPrice = formatPrice(total);
@@ -143,7 +145,7 @@
                 } catch (e) {
                     priceAmountEl.style.opacity = '1';
                     statusEl.style.color = 'var(--color-error)';
-                    statusEl.textContent = 'Errore di connessione.';
+                    statusEl.textContent = (alm_theme_vars.i18n && alm_theme_vars.i18n.conn_error) ? alm_theme_vars.i18n.conn_error : 'Errore di connessione.';
                     animatePriceChange(basePriceHtml);
                 }
             }

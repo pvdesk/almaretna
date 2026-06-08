@@ -63,7 +63,7 @@ function alm_schema_lodging_business(): void {
             ['@type' => 'LocationFeatureSpecification', 'name' => 'Wi-Fi gratuito', 'value' => true],
             ['@type' => 'LocationFeatureSpecification', 'name' => 'Aria condizionata', 'value' => true],
             ['@type' => 'LocationFeatureSpecification', 'name' => 'Parcheggio gratuito', 'value' => true],
-            ['@type' => 'LocationFeatureSpecification', 'name' => 'Colazione inclusa', 'value' => true],
+            ['@type' => 'LocationFeatureSpecification', 'name' => 'Bar bordo piscina', 'value' => true],
         ],
         'sameAs' => array_filter([
             get_option('alm_schema_facebook_url',  ''),

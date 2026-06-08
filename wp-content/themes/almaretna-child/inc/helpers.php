@@ -87,12 +87,10 @@ function alm_get_amenity_icon(string $amenity_slug): string {
         'aria-condizionata'  => 'dashicons-cloud',
         'riscaldamento'      => 'dashicons-heating',
         'wifi'               => 'dashicons-wifi',
-        'televisione'        => 'dashicons-desktop',
         'frigorifero'        => 'dashicons-store',
         'cassaforte'         => 'dashicons-lock',
         'parcheggio'         => 'dashicons-car',
         'piscina'            => 'dashicons-water',
-        'colazione'          => 'dashicons-coffee',
     ];
     return $icons[$amenity_slug] ?? 'dashicons-yes-alt';
 }
@@ -105,9 +103,9 @@ function alm_get_amenity_icon(string $amenity_slug): string {
  */
 function alm_get_floor_label(string $floor_slug): string {
     $labels = [
-        'piano-1'  => 'Piano 1',
-        'piano-2'  => 'Piano 2',
-        'mansarda' => 'Mansarda',
+        'piano-1'  => alm_t('h.floor_1'),
+        'piano-2'  => alm_t('h.floor_2'),
+        'mansarda' => alm_t('h.floor_m'),
     ];
     return $labels[$floor_slug] ?? ucfirst(str_replace('-', ' ', $floor_slug));
 }
@@ -238,12 +236,53 @@ function alm_get_bathroom_sharing_note(int $post_id): string {
         $partner = alm_get_post_by_room_id($shared_with_id);
         if ($partner) {
             return sprintf(
-                __('Bagno condiviso con la camera adiacente (%s).', 'almaretna-child'),
+                alm_t('h.shared_bath_with'),
                 esc_html(get_the_title($partner->ID))
             );
         }
     }
-    return __('Bagno condiviso con la camera adiacente.', 'almaretna-child');
+    return alm_t('h.shared_bath');
+}
+
+/**
+ * Restituisce il campo testuale della camera tradotto nella lingua corrente.
+ *
+ * Legge da meta `_room_{field}_{lang}` (es. `_room_excerpt_en`).
+ * Se assente o vuoto, torna al campo WordPress nativo (IT).
+ *
+ * @param int    $post_id
+ * @param string $field   'title' | 'excerpt' | 'content'
+ * @param string $lang    Lingua esplicita; vuoto = lingua corrente.
+ * @return string
+ */
+function alm_get_room_translated(int $post_id, string $field, string $lang = ''): string {
+    $lang = $lang ?: alm_get_lang();
+
+    if ($lang !== 'it') {
+        $meta = get_post_meta($post_id, "_room_{$field}_{$lang}", true);
+        if (!empty($meta)) {
+            return (string) $meta;
+        }
+    }
+
+    // Fallback: valore nativo WordPress (IT)
+    $post = get_post($post_id);
+    if (!$post) return '';
+
+    switch ($field) {
+        case 'title':
+            return $post->post_title;
+        case 'excerpt':
+            if (!empty($post->post_excerpt)) {
+                return $post->post_excerpt;
+            }
+            // Se excerpt vuoto, genera da content
+            return wp_trim_words(wp_strip_all_tags($post->post_content), 25, '…');
+        case 'content':
+            return $post->post_content;
+        default:
+            return '';
+    }
 }
 
 /**

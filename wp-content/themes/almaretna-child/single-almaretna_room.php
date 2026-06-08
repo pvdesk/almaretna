@@ -53,9 +53,9 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
         <nav style="margin-bottom:1.5rem;">
             <a href="<?php echo esc_url(home_url('/')); ?>" style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;">Home</a>
             <span style="color:rgba(255,255,255,.3);margin:0 .625rem;">/</span>
-            <a href="<?php echo esc_url($camere_url); ?>" style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;"><?php esc_html_e('Camere', 'almaretna-child'); ?></a>
+            <a href="<?php echo esc_url($camere_url); ?>" style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;"><?php echo esc_html(alm_t('room.breadcrumb')); ?></a>
             <span style="color:rgba(255,255,255,.3);margin:0 .625rem;">/</span>
-            <span style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75);"><?php the_title(); ?></span>
+            <span style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75);"><?php echo esc_html(alm_get_room_translated($post_id, 'title')); ?></span>
         </nav>
 
         <!-- Badge piano/tipo -->
@@ -73,12 +73,12 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
         </div>
 
         <h1 style="font-family:var(--font-heading);font-size:clamp(2rem,6vw,3.5rem);font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:1rem;">
-            <?php the_title(); ?>
+            <?php echo esc_html(alm_get_room_translated($post_id, 'title')); ?>
         </h1>
 
-        <?php if (get_the_excerpt()) : ?>
+        <?php $room_excerpt_t = alm_get_room_translated($post_id, 'excerpt'); if ($room_excerpt_t) : ?>
         <p style="font-size:1.05rem;color:rgba(255,255,255,.70);line-height:1.75;max-width:640px;margin:0;">
-            <?php echo esc_html(get_the_excerpt()); ?>
+            <?php echo esc_html($room_excerpt_t); ?>
         </p>
         <?php endif; ?>
 
@@ -121,7 +121,7 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                              role="button" tabindex="0"
                              data-full="<?php echo esc_url($full[0]); ?>"
                              style="aspect-ratio:1;overflow:hidden;cursor:pointer;opacity:<?php echo $idx === 0 ? '1' : '.65'; ?>;transition:opacity .2s;<?php echo $idx === 0 ? 'outline:2px solid #C5B49C;outline-offset:-2px;' : ''; ?>"
-                             aria-label="<?php esc_attr_e('Vedi immagine', 'almaretna-child'); ?>">
+                             aria-label="<?php echo esc_attr(alm_t('room.img_view')); ?>">
                             <img src="<?php echo esc_url($thumb[0]); ?>" alt="" loading="lazy"
                                  style="width:100%;height:100%;object-fit:cover;display:block;" />
                         </div>
@@ -154,12 +154,15 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                 <?php endif; ?>
 
                 <!-- Descrizione completa -->
-                <?php if (get_the_content()) : ?>
+                <?php
+                $room_content_t = alm_get_room_translated($post_id, 'content');
+                if ($room_content_t) :
+                ?>
                     <div class="room-details__content bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light mb-4" style="line-height: 1.8;">
                         <h2 class="font-heading fw-bold text-primary mb-4 pb-2 border-bottom border-light">
-                            <?php esc_html_e('La camera', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t('room.the_room')); ?>
                         </h2>
-                        <?php the_content(); ?>
+                        <?php echo wp_kses_post(wpautop($room_content_t)); ?>
                     </div>
                 <?php endif; ?>
 
@@ -167,7 +170,7 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                 <?php if (!empty($amenities)) : ?>
                     <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light mb-4">
                         <h2 class="font-heading fw-bold text-primary mb-4 pb-2 border-bottom border-light">
-                            <?php esc_html_e('Dotazioni', 'almaretna-child'); ?>
+                            <?php echo esc_html(alm_t('room.amenities')); ?>
                         </h2>
                         <div class="row row-cols-2 row-cols-md-3 g-3">
                             <?php foreach ($amenities as $amenity) : ?>
@@ -193,7 +196,7 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                 <!-- Dettagli soggiorno -->
                 <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light mb-4">
                     <h2 class="font-heading fw-bold text-primary mb-4 pb-2 border-bottom border-light">
-                        <?php esc_html_e('Dettagli soggiorno', 'almaretna-child'); ?>
+                        <?php echo esc_html(alm_t('room.stay_details')); ?>
                     </h2>
                     <div class="row row-cols-1 row-cols-sm-2 g-3">
                         <div class="col d-flex align-items-center gap-2 py-1">
@@ -201,13 +204,13 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                             <span class="text-muted small">
                                 <?php
                                 printf(
-                                    esc_html(_n('Max %d adulto', 'Max %d adulti', $meta['capacity_adults'], 'almaretna-child')),
+                                    esc_html($meta['capacity_adults'] === 1 ? alm_t('room.adults_1') : alm_t('room.adults_n')),
                                     $meta['capacity_adults']
                                 );
                                 if ($meta['capacity_children'] > 0) {
                                     echo ' + ';
                                     printf(
-                                        esc_html(_n('%d bambino', '%d bambini', $meta['capacity_children'], 'almaretna-child')),
+                                        esc_html($meta['capacity_children'] === 1 ? alm_t('room.children_1') : alm_t('room.children_n')),
                                         $meta['capacity_children']
                                     );
                                 }
@@ -219,12 +222,9 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                             <span class="text-muted small">
                                 <?php
                                 if ($meta['min_stay'] > 1) {
-                                    printf(
-                                        esc_html(__('Minimo %d notti di soggiorno', 'almaretna-child')),
-                                        $meta['min_stay']
-                                    );
+                                    printf(esc_html(alm_t('room.min_stay_n')), $meta['min_stay']);
                                 } else {
-                                    esc_html_e('1 notte minimo di soggiorno', 'almaretna-child');
+                                    echo esc_html(alm_t('room.min_stay_1'));
                                 }
                                 ?>
                             </span>
@@ -232,13 +232,13 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                         <div class="col d-flex align-items-center gap-2 py-1">
                             <span class="dashicons dashicons-clock text-secondary"></span>
                             <span class="text-muted small">
-                                <?php esc_html_e('Check-in: ore 15:00', 'almaretna-child'); ?>
+                                <?php echo esc_html(alm_t('room.checkin_time')); ?>
                             </span>
                         </div>
                         <div class="col d-flex align-items-center gap-2 py-1">
                             <span class="dashicons dashicons-clock text-secondary"></span>
                             <span class="text-muted small">
-                                <?php esc_html_e('Check-out: ore 11:00', 'almaretna-child'); ?>
+                                <?php echo esc_html(alm_t('room.checkout_time')); ?>
                             </span>
                         </div>
                     </div>
@@ -247,7 +247,7 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
                 <!-- Calendario disponibilità -->
                 <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light mb-4">
                     <h2 class="font-heading fw-bold text-primary mb-4 pb-2 border-bottom border-light">
-                        <?php esc_html_e('Disponibilità camera', 'almaretna-child'); ?>
+                        <?php echo esc_html(alm_t('room.availability')); ?>
                     </h2>
                     <?php echo do_shortcode('[alm_availability_calendar room_id="' . esc_attr((string) $post_id) . '"]'); ?>
                 </div>
@@ -296,7 +296,7 @@ if ($related_query->have_posts()) : ?>
     <section class="related-rooms py-5 bg-white border-top border-light">
         <div class="container py-4">
             <h2 class="display-5 fw-bold font-heading text-primary text-center mb-5">
-                <?php esc_html_e('Camere correlate', 'almaretna-child'); ?>
+                <?php echo esc_html(alm_t('room.related')); ?>
             </h2>
             <div class="row g-4">
                 <?php while ($related_query->have_posts()) : $related_query->the_post(); ?>
@@ -328,18 +328,18 @@ if ($related_query->have_posts()) : ?>
                             </div>
                             <div class="card-body p-4 d-flex flex-column">
                                 <h3 class="fs-5 fw-bold font-heading mb-3 text-primary">
-                                    <a href="<?php the_permalink(); ?>" class="text-decoration-none text-primary hover-text-secondary"><?php the_title(); ?></a>
+                                    <a href="<?php the_permalink(); ?>" class="text-decoration-none text-primary hover-text-secondary"><?php echo esc_html(alm_get_room_translated($rel_id, 'title')); ?></a>
                                 </h3>
-                                <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;"><?php echo esc_html(get_the_excerpt()); ?></p>
+                                <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;"><?php echo esc_html(wp_trim_words(alm_get_room_translated($rel_id, 'excerpt'), 18, '…')); ?></p>
                                 <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light">
                                     <div class="room-card__price">
                                         <span class="fs-5 fw-bold text-primary">
                                             <?php echo wp_kses_post(alm_format_price($rel_meta['base_price'])); ?>
                                         </span>
-                                        <span class="text-muted small">/ notte</span>
+                                        <span class="text-muted small"><?php echo esc_html(alm_t('room.per_night')); ?></span>
                                     </div>
                                     <a href="<?php the_permalink(); ?>" class="btn btn-outline-primary px-3 py-2 rounded-3 fw-semibold border-1" style="color: var(--color-primary); border-color: var(--color-primary); font-size: 0.85rem;">
-                                        <?php esc_html_e('Scopri', 'almaretna-child'); ?>
+                                        <?php echo esc_html(alm_t('room.discover')); ?>
                                     </a>
                                 </div>
                             </div>

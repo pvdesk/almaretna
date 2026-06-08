@@ -62,7 +62,7 @@ function alm_get_strings(): array {
     // Hero
     'hero.eyebrow'    => 'Nunziata di Mascali &nbsp;·&nbsp; Etna · Sicilia',
     'hero.scroll'     => 'Scorri',
-    'hero.title'      => "Un rifugio\ndove l'Etna\ntocca il cielo",
+    'hero.title'      => "Un rifugio dove l'Etna\ntocca il cielo",
     'hero.subtitle'   => "Villa con piscina panoramica alle pendici del vulcano, tra ulivi e silenzio",
     // Booking strip
     'strip.checkin'   => 'Check-in',
@@ -281,7 +281,7 @@ function alm_get_strings(): array {
     'cta.maps'        => 'Open in Google Maps',
     'hero.eyebrow'    => 'Nunziata di Mascali &nbsp;·&nbsp; Etna · Sicily',
     'hero.scroll'     => 'Scroll',
-    'hero.title'      => "A retreat\nwhere Etna\ntouches the sky",
+    'hero.title'      => "A retreat where Etna\ntouches the sky",
     'hero.subtitle'   => "Villa with panoramic pool on the slopes of the volcano, among olive trees and silence",
     'strip.checkin'   => 'Check-in',
     'strip.checkout'  => 'Check-out',
@@ -485,7 +485,7 @@ function alm_get_strings(): array {
     'cta.maps'        => 'In Google Maps öffnen',
     'hero.eyebrow'    => 'Nunziata di Mascali &nbsp;·&nbsp; Ätna · Sizilien',
     'hero.scroll'     => 'Scrollen',
-    'hero.title'      => "Ein Rückzugsort\nwo der Ätna\nden Himmel berührt",
+    'hero.title'      => "Ein Rückzugsort wo der Ätna\nden Himmel berührt",
     'hero.subtitle'   => "Villa mit Panoramabecken am Fuße des Vulkans, zwischen Olivenbäumen und Stille",
     'strip.checkin'   => 'Anreise',
     'strip.checkout'  => 'Abreise',
@@ -689,7 +689,7 @@ function alm_get_strings(): array {
     'cta.maps'        => 'Ouvrir dans Google Maps',
     'hero.eyebrow'    => 'Nunziata di Mascali &nbsp;·&nbsp; Etna · Sicile',
     'hero.scroll'     => 'Défiler',
-    'hero.title'      => "Un refuge\noù l'Etna\ntouche le ciel",
+    'hero.title'      => "Un refuge où l'Etna\ntouche le ciel",
     'hero.subtitle'   => "Villa avec piscine panoramique sur les pentes du volcan, entre oliviers et silence",
     'strip.checkin'   => 'Arrivée',
     'strip.checkout'  => 'Départ',
@@ -893,7 +893,7 @@ function alm_get_strings(): array {
     'cta.maps'        => 'Abrir en Google Maps',
     'hero.eyebrow'    => 'Nunziata di Mascali &nbsp;·&nbsp; Etna · Sicilia',
     'hero.scroll'     => 'Desplazar',
-    'hero.title'      => "Un refugio\ndonde el Etna\ntoca el cielo",
+    'hero.title'      => "Un refugio donde el Etna\ntoca el cielo",
     'hero.subtitle'   => "Villa con piscina panorámica en las faldas del volcán, entre olivos y silencio",
     'strip.checkin'   => 'Llegada',
     'strip.checkout'  => 'Salida',
@@ -1321,12 +1321,12 @@ add_action('wp_head', function (): void { ?>
     align-items: center;
     gap: 5px;
     background: transparent !important;
-    border: 1.5px solid #EFEBE4 !important;
+    border: 1.5px solid #C5B49C !important;
     border-radius: 6px;
     padding: 5px 10px;
     font-size: .75rem;
     font-weight: 600;
-    color: #1a1e22 !important;
+    color: #5C5246 !important;
     cursor: pointer;
     white-space: nowrap;
     transition: border-color .2s, color .2s;
@@ -1335,7 +1335,7 @@ add_action('wp_head', function (): void { ?>
     text-decoration: none !important;
 }
 .alm-lang__btn:hover,
-.alm-lang__btn:focus { border-color: #8B7355 !important; color: #8B7355 !important; outline: none !important; }
+.alm-lang__btn:focus { border-color: #5C5246 !important; color: #3a3028 !important; outline: none !important; }
 .alm-lang__code { letter-spacing: .06em; }
 .alm-lang__arrow { transition: transform .2s; flex-shrink: 0; }
 .alm-lang.open .alm-lang__arrow { transform: rotate(180deg); }
@@ -1375,10 +1375,6 @@ add_action('wp_head', function (): void { ?>
 }
 .alm-lang.open ~ .alm-lang-backdrop,
 .alm-lang.open + .alm-lang-backdrop { display: block; }
-/* Header trasparente home hero */
-.site-header--home:not(.is-scrolled) .alm-lang__btn { color: #fff !important; border-color: rgba(255,255,255,.45) !important; }
-.site-header--home:not(.is-scrolled) .alm-lang__btn:hover,
-.site-header--home:not(.is-scrolled) .alm-lang__btn:focus { border-color: rgba(255,255,255,.8) !important; color: rgba(255,255,255,.9) !important; }
 </style>
 <script>
 document.addEventListener('click', function(e) {

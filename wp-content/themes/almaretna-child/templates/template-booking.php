@@ -110,10 +110,10 @@ get_header();
                     <div class="px-3">
                         <span class="dashicons dashicons-email-alt d-inline-block mb-3" style="font-size: 32px; width: 32px; height: 32px; color: var(--color-secondary);"></span>
                         <h4 class="font-heading fw-bold mb-2 text-primary">
-                            <?php echo esc_html(alm_t(‘book.instant’)); ?>
+                            <?php echo esc_html(alm_t('book.instant')); ?>
                         </h4>
                         <p class="text-muted small mb-0" style="line-height: 1.6;">
-                            <?php echo esc_html(alm_t(‘book.instant_desc’)); ?>
+                            <?php echo esc_html(alm_t('book.instant_desc')); ?>
                         </p>
                     </div>
                 </div>

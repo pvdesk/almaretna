@@ -39,7 +39,7 @@ $hero_photo = $rooms_hero_custom ?: content_url('uploads/2026/06/camera-matrimon
                 <span style="display:block;width:28px;height:1px;background:rgba(255,255,255,.35);"></span>
             </p>
             <h1 style="font-family:var(--font-heading);font-size:clamp(2.25rem,6vw,3.75rem);font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:1.25rem;">
-                <?php the_title(); ?>
+                <?php echo esc_html(alm_t('rooms.page_h1')); ?>
             </h1>
             <p style="font-size:1.05rem;color:rgba(255,255,255,.75);line-height:1.75;max-width:560px;margin:0 auto;">
                 <?php

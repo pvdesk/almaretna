@@ -340,7 +340,7 @@ $hero_subtitle = ($lang === 'it')
                                 <a href="<?php echo esc_url($room_url); ?>">
                                     <img class="room-card-premium__image"
                                          src="<?php echo esc_url($thumb); ?>"
-                                         alt="<?php echo esc_attr($room->post_title); ?>"
+                                         alt="<?php echo esc_attr(alm_get_room_translated($room->ID, 'title')); ?>"
                                          loading="lazy" />
                                 </a>
                             <?php else : ?>
@@ -349,7 +349,7 @@ $hero_subtitle = ($lang === 'it')
                                     <svg width="48" height="48" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                                 </div>
                             <?php endif; ?>
-                            <span class="room-card-premium__badge"><?php echo esc_html($room->post_title); ?></span>
+                            <span class="room-card-premium__badge"><?php echo esc_html(alm_get_room_translated($room->ID, 'title')); ?></span>
                             <?php if ($price > 0) : ?>
                             <span class="room-card-premium__price-tag">
                                 <?php echo esc_html(alm_t('rooms.from')); ?> €<?php echo esc_html(number_format($price, 0, ',', '.')); ?><?php echo esc_html(alm_t('rooms.night')); ?>
@@ -369,11 +369,11 @@ $hero_subtitle = ($lang === 'it')
                             </div>
 
                             <h3 class="room-card-premium__title">
-                                <a href="<?php echo esc_url($room_url); ?>"><?php echo esc_html($room->post_title); ?></a>
+                                <a href="<?php echo esc_url($room_url); ?>"><?php echo esc_html(alm_get_room_translated($room->ID, 'title')); ?></a>
                             </h3>
 
                             <p class="room-card-premium__excerpt">
-                                <?php echo esc_html(wp_trim_words(get_the_excerpt($room->ID), 16, '…')); ?>
+                                <?php echo esc_html(wp_trim_words(alm_get_room_translated($room->ID, 'excerpt'), 16, '…')); ?>
                             </p>
 
                             <div class="room-card-premium__footer">

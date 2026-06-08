@@ -131,12 +131,12 @@ class ALM_Shortcodes {
                 <span class="dashicons dashicons-admin-users"></span>
                 <?php
                 printf(
-                    esc_html(_n('Max %d adulto', 'Max %d adulti', $room->capacity_adults, 'almaretna-booking')),
+                    esc_html($room->capacity_adults === 1 ? alm_t('room.adults_1') : alm_t('room.adults_n')),
                     $room->capacity_adults
                 );
                 if ($room->capacity_children > 0) {
                     echo ' + ' . esc_html((string) $room->capacity_children) . ' ' .
-                         esc_html__('bambini', 'almaretna-booking');
+                         esc_html(alm_t('sc.children'));
                 }
                 ?>
             </div>
@@ -146,7 +146,7 @@ class ALM_Shortcodes {
                     &euro;&nbsp;<?php echo esc_html(number_format($room->base_price, 2, ',', '.')); ?>
                 </span>
                 <span class="room-price-box__per-night">
-                    <?php esc_html_e('/ notte', 'almaretna-booking'); ?>
+                    <?php echo esc_html(alm_t('rooms.night')); ?>
                 </span>
             </div>
 
@@ -154,7 +154,7 @@ class ALM_Shortcodes {
                 <p style="font-size:var(--fs-xs);color:var(--color-text-light);margin-bottom:var(--space-md);">
                     <?php
                     printf(
-                        esc_html__('Soggiorno minimo: %d notti', 'almaretna-booking'),
+                        esc_html(alm_t('sc.min_stay')),
                         $room->min_stay
                     );
                     ?>
@@ -170,7 +170,7 @@ class ALM_Shortcodes {
                         type="text"
                         id="rpb-checkin-<?php echo esc_attr((string) $room_id); ?>"
                         class="form-control alm-datepicker-checkin"
-                        placeholder="<?php esc_attr_e('gg/mm/aaaa', 'almaretna-booking'); ?>"
+                        placeholder="<?php echo esc_attr(alm_t('sc.date_ph')); ?>"
                         readonly
                         data-room-id="<?php echo esc_attr((string) $room_id); ?>"
                     />
@@ -183,7 +183,7 @@ class ALM_Shortcodes {
                         type="text"
                         id="rpb-checkout-<?php echo esc_attr((string) $room_id); ?>"
                         class="form-control alm-datepicker-checkout"
-                        placeholder="<?php esc_attr_e('gg/mm/aaaa', 'almaretna-booking'); ?>"
+                        placeholder="<?php echo esc_attr(alm_t('sc.date_ph')); ?>"
                         readonly
                         data-room-id="<?php echo esc_attr((string) $room_id); ?>"
                     />
@@ -196,13 +196,13 @@ class ALM_Shortcodes {
                     class="btn btn-primary btn-lg"
                     id="rpb-btn-<?php echo esc_attr((string) $room_id); ?>"
                 >
-                    <?php esc_html_e('Prenota ora', 'almaretna-booking'); ?>
+                    <?php echo esc_html(alm_t('nav.book_now')); ?>
                 </a>
             </div>
 
             <p class="room-price-box__info">
                 <span class="dashicons dashicons-lock" style="font-size:14px;vertical-align:middle;"></span>
-                <?php esc_html_e('Pagamento sicuro. Nessun costo extra.', 'almaretna-booking'); ?>
+                <?php echo esc_html(alm_t('sc.no_extra')); ?>
             </p>
 
         </div>

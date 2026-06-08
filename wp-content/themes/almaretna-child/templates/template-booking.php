@@ -26,10 +26,10 @@ get_header();
             <div class="page-hero__breadcrumb" style="display:flex;align-items:center;justify-content:center;gap:.75rem;text-transform:uppercase;font-weight:700;letter-spacing:.22em;font-size:.7rem;">
                 <a href="<?php echo esc_url(home_url('/')); ?>">Home</a>
                 <span style="color:var(--color-border);">/</span>
-                <span style="color:var(--color-secondary);"><?php the_title(); ?></span>
+                <span style="color:var(--color-secondary);"><?php echo esc_html(alm_t('book.page_title')); ?></span>
             </div>
             <h1 style="font-family:var(--font-heading);font-size:clamp(1.75rem,4vw,2.75rem);font-weight:700;color:var(--color-text);letter-spacing:-.02em;margin-bottom:.875rem;">
-                <?php the_title(); ?>
+                <?php echo esc_html(alm_t('book.page_title')); ?>
             </h1>
             <p style="font-size:.95rem;color:var(--color-text-light);line-height:1.7;">
                 <?php echo alm_t('book.checkin_info'); ?>

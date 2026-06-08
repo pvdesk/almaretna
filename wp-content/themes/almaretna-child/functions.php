@@ -581,3 +581,20 @@ add_action('init', function (): void {
     if ($changed) update_option('alm_booking_settings', $settings);
 }, 1);
 
+// ─── Favicon ────────────────────────────────────────────────────────────────
+// Rimuove il placeholder WordPress e inserisce le icone generate dal logo
+remove_action('wp_head', 'wp_site_icon', 99);
+
+add_action('wp_head', function (): void {
+    $root = trailingslashit(home_url());
+    $img  = get_stylesheet_directory_uri() . '/assets/img/';
+    echo "\n";
+    echo '<link rel="icon" type="image/x-icon"   href="' . esc_url($root . 'favicon.ico') . '">' . "\n";
+    echo '<link rel="icon" type="image/png" sizes="32x32"  href="' . esc_url($root . 'favicon-32x32.png') . '">' . "\n";
+    echo '<link rel="icon" type="image/png" sizes="16x16"  href="' . esc_url($root . 'favicon-16x16.png') . '">' . "\n";
+    echo '<link rel="apple-touch-icon" sizes="180x180" href="' . esc_url($root . 'apple-touch-icon.png') . '">' . "\n";
+    echo '<link rel="icon" type="image/png" sizes="192x192" href="' . esc_url($img . 'favicon-192.png') . '">' . "\n";
+    echo '<link rel="icon" type="image/png" sizes="512x512" href="' . esc_url($img . 'favicon-512.png') . '">' . "\n";
+    echo '<meta name="theme-color" content="#5C5246">' . "\n";
+}, 1);
+

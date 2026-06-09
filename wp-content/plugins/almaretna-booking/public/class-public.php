@@ -38,12 +38,12 @@ class ALM_Public {
 
         // ── Stili ────────────────────────────────────────────────────────────
 
-        // Flatpickr datepicker
+        // Flatpickr datepicker — locale per evitare blocco da plugin Cookie Notice (CDN → locale)
         wp_enqueue_style(
             'flatpickr',
-            'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css',
+            $plugin_url . 'public/assets/flatpickr.min.css',
             [],
-            null
+            '4.6.13'
         );
 
         // CSS plugin
@@ -56,21 +56,21 @@ class ALM_Public {
 
         // ── Script ───────────────────────────────────────────────────────────
 
-        // Flatpickr core
+        // Flatpickr core — locale per evitare blocco da plugin Cookie Notice (CDN → locale)
         wp_enqueue_script(
             'flatpickr',
-            'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js',
+            $plugin_url . 'public/assets/flatpickr.min.js',
             [],
-            null,
+            '4.6.13',
             true
         );
 
         // Flatpickr locale italiano
         wp_enqueue_script(
             'flatpickr-it',
-            'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/it.js',
+            $plugin_url . 'public/assets/flatpickr-it.js',
             ['flatpickr'],
-            null,
+            '4.6.13',
             true
         );
 

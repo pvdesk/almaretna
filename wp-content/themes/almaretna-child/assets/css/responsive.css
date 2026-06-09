@@ -5,9 +5,20 @@
 
 /* ─── FIX GLOBALE ────────────────────────────────────────────── */
 
+html,
 body {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+/* Su mobile le animazioni reveal laterali diventano verticali:
+   translateX(±36px) su elementi vicino al bordo crea overflow orizzontale,
+   quindi forziamo solo translateY su viewport ≤ 768px */
+@media (max-width: 768px) {
+    [data-reveal="left"],
+    [data-reveal="right"] {
+        transform: translateY(24px);
+    }
 }
 
 /* Niente tap-highlight blu su Android/iOS */

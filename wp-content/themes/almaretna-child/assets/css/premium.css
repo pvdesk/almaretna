@@ -330,6 +330,7 @@
     border-radius: 0;
     box-shadow: 0 16px 56px rgba(0,0,0,.14);
     border: 1px solid #EFEBE4;
+    z-index: 9999 !important;
 }
 .flatpickr-calendar.booking-cal .flatpickr-day.selected,
 .flatpickr-calendar.booking-cal .flatpickr-day.selected:hover {

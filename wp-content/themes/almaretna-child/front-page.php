@@ -178,7 +178,6 @@ $hero_subtitle = ($lang === 'it')
             dateFormat:    'j F Y',
             minDate:       'today',
             disableMobile: true,
-            appendTo:      document.getElementById('booking-strip'),
             onReady: function (_, __, fp) {
                 fp.calendarContainer.classList.add('booking-cal');
             },
@@ -210,7 +209,6 @@ $hero_subtitle = ($lang === 'it')
             dateFormat:    'j F Y',
             minDate:       tomorrow,
             disableMobile: true,
-            appendTo:      document.getElementById('booking-strip'),
             onReady: function (_, __, fp) {
                 fp.calendarContainer.classList.add('booking-cal');
             },

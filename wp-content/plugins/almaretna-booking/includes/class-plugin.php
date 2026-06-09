@@ -109,14 +109,15 @@ class ALM_Plugin {
      * Registra gli hook per wp-cron.
      */
     private function define_cron_hooks(): void {
-        // Reminder pre-arrivo: process_reminder_queue trova le prenotazioni con checkin +2gg
+        // Reminder pre-arrivo
         add_action('alm_send_checkin_reminder', [ALM_Notifications::class, 'process_reminder_queue']);
 
-        // Aggiunge la frequenza custom di 5 volte al giorno (ogni 4.8 ore)
+        // Frequenza custom — display senza __() perché cron_schedules può sparare
+        // prima di init e causerebbe il notice "textdomain triggered too early"
         add_filter('cron_schedules', function (array $schedules): array {
             $schedules['five_times_daily'] = [
-                'interval' => 17280, // 86400 secondi / 5
-                'display'  => __('Cinque volte al giorno', 'almaretna-booking'),
+                'interval' => 17280,
+                'display'  => 'Cinque volte al giorno',
             ];
             return $schedules;
         });
@@ -128,16 +129,17 @@ class ALM_Plugin {
             }
         });
 
-        // Reschedula se la frequenza attuale non è five_times_daily
-        $current_schedule = wp_get_schedule('alm_sync_beds24');
-        if ($current_schedule && $current_schedule !== 'five_times_daily') {
-            wp_clear_scheduled_hook('alm_sync_beds24');
-        }
-
-        // Schedula sync se non già schedulato
-        if (!wp_next_scheduled('alm_sync_beds24')) {
-            wp_schedule_event(time(), 'five_times_daily', 'alm_sync_beds24');
-        }
+        // Scheduling su init: wp_schedule_event chiama wp_get_schedules() che spara
+        // cron_schedules → se fosse qui (plugins_loaded) triggererebbe __() troppo presto
+        add_action('init', function (): void {
+            $current_schedule = wp_get_schedule('alm_sync_beds24');
+            if ($current_schedule && $current_schedule !== 'five_times_daily') {
+                wp_clear_scheduled_hook('alm_sync_beds24');
+            }
+            if (!wp_next_scheduled('alm_sync_beds24')) {
+                wp_schedule_event(time(), 'five_times_daily', 'alm_sync_beds24');
+            }
+        }, 1);
     }
 
     /**

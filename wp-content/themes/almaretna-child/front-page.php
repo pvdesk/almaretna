@@ -705,8 +705,8 @@ $hero_subtitle = ($lang === 'it')
                 <?php endforeach; ?>
             </ul>
 
-            <a href="<?php echo esc_url($camere_url); ?>" class="hero-premium__cta-primary"
-               style="display:inline-flex;margin-top:.5rem;">
+            <a href="<?php echo esc_url($camere_url); ?>" class="hero-premium__cta-primary alm-section-cta"
+               style="margin-top:.5rem;">
                 <?php echo esc_html(alm_t('story.cta')); ?>
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </a>
@@ -799,7 +799,7 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
                 </ul>
             </div>
 
-            <a href="<?php echo esc_url($prenota_url); ?>" class="hero-premium__cta-primary" style="display:inline-flex;margin-top:2rem;">
+            <a href="<?php echo esc_url($prenota_url); ?>" class="hero-premium__cta-primary alm-section-cta" style="margin-top:2rem;">
                 <?php echo esc_html(alm_t('cta.book')); ?>
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </a>
@@ -914,8 +914,7 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
         </div>
 
         <div class="testimonials-cta" data-reveal="up">
-            <a href="<?php echo esc_url($prenota_url); ?>" class="hero-premium__cta-primary"
-               style="display:inline-flex;">
+            <a href="<?php echo esc_url($prenota_url); ?>" class="hero-premium__cta-primary alm-section-cta">
                 <?php echo esc_html(alm_t('cta.book_exp')); ?>
             </a>
             <div class="testimonials-rating">
@@ -961,8 +960,8 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
 
             <a href="https://maps.google.com/?q=Via+Scorciavacca+Montarsi+48+Nunziata+di+Mascali"
                target="_blank" rel="noopener noreferrer"
-               class="hero-premium__cta-primary"
-               style="display:inline-flex;margin-top:2rem;">
+               class="hero-premium__cta-primary alm-section-cta"
+               style="margin-top:2rem;">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 <?php echo esc_html(alm_t('cta.maps')); ?>
             </a>

@@ -156,11 +156,19 @@ img, video, iframe, embed, object {
         border-width: 1px;
     }
 
-    /* Bottone "scopri le camere" nella story section: centrato su mobile */
-    .story-section__text .hero-premium__cta-primary {
+    /* Bottoni mid-section (story, pool, testimonials, location):
+       centrati su mobile, dimensioni uniformi tramite classe .alm-section-cta */
+    .alm-section-cta {
         display: block;
         width: fit-content;
-        margin: 1.25rem auto 0;
+        margin-left: auto;
+        margin-right: auto;
+        padding: .75rem 2.25rem;
+        font-size: .82rem;
+        font-weight: 600;
+        letter-spacing: .07em;
+        gap: .4rem;
+        text-align: center;
     }
 
     /* ── Booking strip ───────────────────────────────────────── */
@@ -287,7 +295,7 @@ img, video, iframe, embed, object {
     .final-cta              { padding: 5rem 1.25rem; }
     .final-cta__headline    { font-size: clamp(1.75rem, 5.5vw, 2.75rem); margin-bottom: 1.25rem; }
     .final-cta__text        { font-size: .95rem; margin-bottom: 2.5rem; }
-    .final-cta__btn         { padding: 1.1rem 2rem; min-height: 54px; width: 100%; justify-content: center; }
+    .final-cta__btn         { padding: .8rem 2.5rem; font-size: .82rem; letter-spacing: .08em; gap: .4rem; width: auto; justify-content: center; }
     .final-cta__actions     { gap: .875rem; width: 100%; max-width: 380px; margin: 0 auto; }
     .final-cta__guarantee   { gap: 1.25rem; margin-top: 2rem; flex-wrap: wrap; justify-content: center; }
 

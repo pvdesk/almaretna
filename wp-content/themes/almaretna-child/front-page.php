@@ -423,6 +423,7 @@ $hero_subtitle = ($lang === 'it')
 
 .rooms-carousel-outer {
     position: relative;
+    overflow: hidden; /* clip del track più largo del viewport a tutte le dimensioni */
 }
 
 .rooms-carousel__viewport {

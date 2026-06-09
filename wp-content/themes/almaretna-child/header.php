@@ -30,6 +30,16 @@
 <header class="site-header<?php echo is_front_page() ? ' site-header--home' : ''; ?>" id="site-header">
     <div class="site-header__inner">
 
+        <!-- Hamburger: primo figlio → appare a sinistra su mobile, display:none su desktop -->
+        <button class="hamburger" id="nav-toggle"
+                aria-expanded="false"
+                aria-controls="mobile-nav"
+                aria-label="<?php echo esc_attr(alm_t('nav.open_menu')); ?>">
+            <span class="hamburger__line"></span>
+            <span class="hamburger__line"></span>
+            <span class="hamburger__line"></span>
+        </button>
+
         <a href="<?php echo esc_url(home_url('/')); ?>" class="site-header__logo" rel="home">
             <img src="<?php echo esc_url(get_stylesheet_directory_uri() . '/assets/img/logo-transparent.png'); ?>" alt="Almaretna Villa Vacanze" class="site-logo" />
         </a>
@@ -61,14 +71,6 @@
             <a href="<?php echo esc_url($prenota_url); ?>" class="site-header__book-btn">
                 <?php echo esc_html(alm_t('nav.book_now')); ?>
             </a>
-            <button class="hamburger" id="nav-toggle"
-                    aria-expanded="false"
-                    aria-controls="mobile-nav"
-                    aria-label="<?php echo esc_attr(alm_t('nav.open_menu')); ?>">
-                <span class="hamburger__line"></span>
-                <span class="hamburger__line"></span>
-                <span class="hamburger__line"></span>
-            </button>
         </div>
 
     </div>

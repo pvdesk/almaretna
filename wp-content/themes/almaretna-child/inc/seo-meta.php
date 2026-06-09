@@ -311,25 +311,6 @@ function alm_filter_document_title(array $title): array {
     return $title;
 }
 
-// ── Sitemap: includi camere ───────────────────────────────────────────────────
-
-add_filter('wp_sitemaps_posts_query_args', function (array $args, string $post_type): array {
-    if ($post_type === 'almaretna_room') {
-        $args['public'] = true;
-    }
-    return $args;
-}, 10, 2);
-
-// Escludi dalla sitemap le pagine noindex
-add_filter('wp_sitemaps_posts_entry', function (array $sitemap_entry, WP_Post $post): array {
-    $exclude = ['privacy-policy', 'cookie-policy', 'termini-condizioni', 'diritto-di-recesso', 'prenota'];
-    if (in_array($post->post_name, $exclude, true)) {
-        // Ritorna array vuoto per saltare questa entry
-        return [];
-    }
-    return $sitemap_entry;
-}, 10, 2);
-
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 function alm_meta_og(string $property, string $content): void {

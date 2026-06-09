@@ -325,6 +325,8 @@ $alm_includes = [
     'inc/schema-markup.php',
     'inc/seo-meta.php',
     'inc/seo-admin.php',
+    'inc/seo-settings.php',     // Settings page GA4 + Search Console
+    'inc/sitemap.php',          // Sitemap XML custom con hreflang
     'inc/sample-data.php',
     'inc/room-translations.php',
     'inc/setup-pages.php',

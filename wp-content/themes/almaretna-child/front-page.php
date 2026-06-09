@@ -152,7 +152,7 @@ $hero_subtitle = ($lang === 'it')
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    window.addEventListener('load', function () {
         if (typeof flatpickr === 'undefined') return;
 
         var locale = (flatpickr.l10ns && flatpickr.l10ns.it) ? flatpickr.l10ns.it : {};

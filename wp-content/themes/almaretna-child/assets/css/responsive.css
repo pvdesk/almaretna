@@ -152,7 +152,8 @@ img, video, iframe, embed, object {
     }
     .amenity-item {
         flex: unset;
-        min-width: 0;
+        min-width: 0;          /* annulla min-width: 160px da premium.css */
+        width: 100%;
         border-right: none;
         border-bottom: 1px solid #EFEBE4;
         padding: 1rem 1.25rem;
@@ -184,9 +185,10 @@ img, video, iframe, embed, object {
     .room-card-premium__body       { padding: 1.5rem; }
     .room-card-premium__title      { font-size: 1.2rem; }
 
-    /* Carosello */
-    .rooms-carousel__btn--prev { left: -14px; }
-    .rooms-carousel__btn--next { right: -14px; }
+    /* Carosello: clip outer, frecce dentro viewport */
+    .rooms-carousel-outer      { overflow: hidden; }
+    .rooms-carousel__btn--prev { left: 4px; }
+    .rooms-carousel__btn--next { right: 4px; }
 
     /* ── Story section ───────────────────────────────────────── */
     .story-section          { padding: 4rem 1.25rem; }

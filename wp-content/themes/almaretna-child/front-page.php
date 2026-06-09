@@ -152,7 +152,18 @@ $hero_subtitle = ($lang === 'it')
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     }
 
-    window.addEventListener('load', function () {
+    /* Retry fino a 6s: SiteGround può caricare flatpickr async */
+    var _fpAttempts = 0;
+    function initBookingStrip() {
+        if (typeof flatpickr === 'undefined') {
+            if (_fpAttempts++ < 60) setTimeout(initBookingStrip, 100);
+            return;
+        }
+        _runBookingStrip();
+    }
+    initBookingStrip();
+
+    function _runBookingStrip() {
         if (typeof flatpickr === 'undefined') return;
 
         var locale = (flatpickr.l10ns && flatpickr.l10ns.it) ? flatpickr.l10ns.it : {};
@@ -229,7 +240,7 @@ $hero_subtitle = ($lang === 'it')
                 checkoutFp.open();
             }
         });
-    });
+    } // fine _runBookingStrip
 })();
 </script>
 

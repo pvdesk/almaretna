@@ -89,6 +89,18 @@ img, video, iframe, embed, object {
     .story-section__img-accent { display: none; }
     .story-section__badge { right: 1rem; }
     .location-premium__grid { grid-template-columns: 1fr; gap: 3rem; }
+
+    /* Bottoni mid-section: centrati dal momento in cui i grid
+       diventano a colonna singola (≤1024px) */
+    .alm-section-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+        gap: .5rem;
+    }
     .testimonials-grid    { grid-template-columns: repeat(2, 1fr); }
     .pool-section__grid   { grid-template-columns: 1fr; gap: 3rem; }
     .pool-section__images { max-width: 520px; margin: 0 auto; }
@@ -165,19 +177,12 @@ img, video, iframe, embed, object {
         border-width: 1px;
     }
 
-    /* Bottoni mid-section (story, pool, testimonials, location):
-       centrati su mobile, dimensioni uniformi tramite classe .alm-section-cta */
+    /* Bottoni mid-section su mobile: ridimensiona e mantiene centramento */
     .alm-section-cta {
-        display: block;
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
         padding: .75rem 2.25rem;
         font-size: .82rem;
-        font-weight: 600;
         letter-spacing: .07em;
         gap: .4rem;
-        text-align: center;
     }
 
     /* ── Booking strip ───────────────────────────────────────── */

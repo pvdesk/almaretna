@@ -707,7 +707,7 @@ function alm_w_bookings(): void {
         $stats['confirmed'] = (int)$wpdb->get_var("SELECT COUNT(*) FROM `{$table}` WHERE status='confirmed'");
         $stats['paid']      = (int)$wpdb->get_var("SELECT COUNT(*) FROM `{$table}` WHERE status='paid'");
         $rows = (array)$wpdb->get_results(
-            "SELECT id, guest_name, checkin, checkout, status, total_price FROM `{$table}` ORDER BY created_at DESC LIMIT 8"
+            "SELECT id, guest_name, checkin_date AS checkin, checkout_date AS checkout, status, total_price FROM `{$table}` ORDER BY created_at DESC LIMIT 8"
         );
     }
 

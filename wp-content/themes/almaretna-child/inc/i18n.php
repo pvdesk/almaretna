@@ -163,6 +163,7 @@ function alm_get_strings(): array {
     'book.instant'         => 'Conferma immediata',
     'book.instant_desc'    => "Ricevi la conferma via email all'istante, non appena completato il pagamento.",
     'book.page_title'      => 'Prenota il tuo soggiorno',
+    'seo.prenota_desc'     => 'Prenota direttamente ad Almaretna: verifica disponibilità, pagamento sicuro con Stripe, miglior prezzo garantito.',
     // Pagina camere
     'rooms.page_h1'        => 'Camere',
     'rooms.page_subtitle'  => 'Sette camere distribuite su tre livelli, ognuna con la sua luce.',
@@ -379,6 +380,7 @@ function alm_get_strings(): array {
     'book.instant'         => 'Instant confirmation',
     'book.instant_desc'    => 'Receive email confirmation instantly, as soon as payment is complete.',
     'book.page_title'      => 'Book your stay',
+    'seo.prenota_desc'     => 'Book directly at Almaretna: check availability, secure payment with Stripe, best price guaranteed.',
     // Rooms page
     'rooms.page_h1'        => 'Rooms',
     'rooms.page_subtitle'  => 'Seven rooms on three levels, each with its own light.',
@@ -591,6 +593,7 @@ function alm_get_strings(): array {
     'book.instant'         => 'Sofortbestätigung',
     'book.instant_desc'    => 'Erhalten Sie sofort eine E-Mail-Bestätigung, sobald die Zahlung abgeschlossen ist.',
     'book.page_title'      => 'Ihren Aufenthalt buchen',
+    'seo.prenota_desc'     => 'Buchen Sie direkt bei Almaretna: Verfügbarkeit prüfen, sichere Zahlung mit Stripe, bester Preis garantiert.',
     // Zimmerseite
     'rooms.page_h1'        => 'Zimmer',
     'rooms.page_subtitle'  => 'Sieben Zimmer auf drei Ebenen, jedes mit seinem eigenen Licht.',
@@ -803,6 +806,7 @@ function alm_get_strings(): array {
     'book.instant'         => 'Confirmation immédiate',
     'book.instant_desc'    => 'Recevez la confirmation par e-mail instantanément, dès que le paiement est effectué.',
     'book.page_title'      => 'Réservez votre séjour',
+    'seo.prenota_desc'     => 'Réservez directement à Almaretna : vérifiez les disponibilités, paiement sécurisé avec Stripe, meilleur prix garanti.',
     // Page chambres
     'rooms.page_h1'        => 'Chambres',
     'rooms.page_subtitle'  => 'Sept chambres réparties sur trois niveaux, chacune avec sa propre lumière.',
@@ -1015,6 +1019,7 @@ function alm_get_strings(): array {
     'book.instant'         => 'Confirmación inmediata',
     'book.instant_desc'    => 'Recibe la confirmación por e-mail al instante, en cuanto se complete el pago.',
     'book.page_title'      => 'Reserve su estancia',
+    'seo.prenota_desc'     => 'Reserve directamente en Almaretna: compruebe disponibilidad, pago seguro con Stripe, mejor precio garantizado.',
     // Página habitaciones
     'rooms.page_h1'        => 'Habitaciones',
     'rooms.page_subtitle'  => 'Siete habitaciones distribuidas en tres niveles, cada una con su propia luz.',

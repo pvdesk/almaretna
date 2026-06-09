@@ -167,8 +167,8 @@ function alm_build_seo_meta(): array {
     // Pagina Prenota (noindex)
     if (is_page('prenota')) {
         return alm_apply_custom_seo([
-            'title'       => 'Prenota — Almaretna | Miglior prezzo garantito',
-            'description' => 'Prenota direttamente ad Almaretna: verifica disponibilità, pagamento sicuro con Stripe, miglior prezzo garantito.',
+            'title'       => alm_t('book.page_title') . ' — Almaretna',
+            'description' => alm_t('seo.prenota_desc'),
             'canonical'   => (string) (get_permalink(get_page_by_path('prenota')) ?: home_url('/prenota/')),
             'og_type'     => 'website',
             'image'       => alm_seo_default_image(),
@@ -294,7 +294,7 @@ function alm_filter_document_title(array $title): array {
     }
 
     if (is_page('prenota')) {
-        $title['title'] = 'Prenota — Almaretna | Miglior prezzo garantito';
+        $title['title'] = alm_t('book.page_title') . ' — Almaretna';
         $title['site']  = '';
         return $title;
     }

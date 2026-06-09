@@ -131,6 +131,11 @@ class ALM_Public {
      * @return bool
      */
     private function needs_booking_assets(): bool {
+        // Home page (ha il booking strip con calendari)
+        if (is_front_page()) {
+            return true;
+        }
+
         // Template pagina prenotazione
         if (is_page_template('templates/template-booking.php')) {
             return true;

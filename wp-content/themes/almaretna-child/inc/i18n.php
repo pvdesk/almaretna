@@ -26,10 +26,14 @@ add_action('send_headers', function (): void {
 
 function alm_get_lang(): string {
     $allowed = ['it', 'en', 'de', 'fr', 'es'];
-    // 1. Cookie (già aggiornato da send_headers se ?lang= presente)
+    // 1. ?lang= nella URL — priorità massima (clic selettore lingua)
+    //    Non aspetta send_headers: funziona anche su pagine in cache
+    $get_lang = sanitize_key((string) ($_GET['lang'] ?? ''));
+    if (in_array($get_lang, $allowed, true)) return $get_lang;
+    // 2. Cookie (richieste successive dopo il clic)
     $lang = $_COOKIE['alm_lang'] ?? '';
     if (in_array($lang, $allowed, true)) return $lang;
-    // 2. Browser Accept-Language
+    // 3. Browser Accept-Language
     $accept = strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
     foreach (['de', 'fr', 'es', 'en'] as $code) {
         if (str_contains($accept, $code)) return $code;

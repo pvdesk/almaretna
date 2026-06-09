@@ -309,10 +309,10 @@ $hero_subtitle = ($lang === 'it')
 
 <?php if (!empty($rooms)) : ?>
 <section class="rooms-section" id="section-camere">
-    <div style="max-width:1260px;margin:0 auto;padding-inline:2rem;">
+    <div class="rooms-section-inner" style="max-width:1260px;margin:0 auto;padding-inline:2rem;">
 
         <?php /* Header sezione */ ?>
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem;">
+        <div class="rooms-section-header" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem;">
             <div data-reveal="up">
                 <span class="section-eyebrow"><?php echo esc_html(alm_t('rooms.eyebrow')); ?></span>
                 <h2 class="section-headline"><?php echo alm_t('rooms.headline'); ?></h2>
@@ -407,10 +407,11 @@ $hero_subtitle = ($lang === 'it')
             </button>
         </div>
 
-        <?php /* Dots */ ?>
-        <div class="rooms-carousel__dots" id="roomsDots" aria-label="Navigazione camere"></div>
+    </div><!-- /rooms-section-inner -->
 
-    </div>
+    <?php /* Dots */ ?>
+    <div class="rooms-carousel__dots" id="roomsDots" aria-label="Navigazione camere"></div>
+
 </section>
 
 <style>
@@ -478,7 +479,7 @@ $hero_subtitle = ($lang === 'it')
 /* Dots */
 .rooms-carousel__dots {
     display: flex; justify-content: center; gap: .5rem;
-    margin-top: 2.25rem;
+    margin-top: 2rem; padding-bottom: .5rem;
 }
 .rooms-carousel__dot {
     width: 8px; height: 8px;
@@ -499,9 +500,20 @@ $hero_subtitle = ($lang === 'it')
     .rooms-carousel__btn--prev { left: -18px; }
     .rooms-carousel__btn--next { right: -18px; }
 }
-@media (max-width: 580px) {
-    .rooms-carousel__slide { flex: 0 0 85%; }
-    .rooms-carousel__btn { display: none; }
+@media (max-width: 640px) {
+    /* Carosello full-bleed su mobile */
+    .rooms-section-inner    { padding-inline: 0 !important; }
+    .rooms-section-header   { padding-inline: 1.25rem; }
+    .rooms-carousel__dots   { padding-inline: 1.25rem; }
+    .rooms-carousel__slide  { flex: 0 0 calc(100vw - 2.5rem); max-width: 420px; }
+    .rooms-carousel__btn    { display: none; }
+    .rooms-carousel__track  { gap: 1rem; padding-inline: 1.25rem; }
+    .rooms-carousel__viewport { overflow-x: auto; scroll-snap-type: x mandatory;
+                                -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .rooms-carousel__viewport::-webkit-scrollbar { display: none; }
+    .rooms-carousel__slide  { scroll-snap-align: start; }
+    /* Card più alta su mobile */
+    .rooms-carousel__slide .room-card-premium__image-wrap { height: 220px; }
 }
 </style>
 

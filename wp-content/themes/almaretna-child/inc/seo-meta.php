@@ -139,71 +139,89 @@ function alm_build_seo_meta(): array {
 
     // Singola camera
     if (is_singular('almaretna_room')) {
-        return alm_room_seo_meta();
+        return alm_apply_custom_seo(alm_room_seo_meta());
     }
 
     // Home
     if (is_front_page()) {
-        return [
+        return alm_apply_custom_seo([
             'title'       => 'Almaretna — Villa con piscina alle pendici dell\'Etna | Sicilia',
             'description' => 'Prenota il tuo soggiorno ad Almaretna: villa esclusiva con piscina a Nunziata di Mascali, tra Taormina e Catania. Vista sull\'Etna, camere eleganti, miglior prezzo garantito.',
             'canonical'   => home_url('/'),
             'og_type'     => 'website',
             'image'       => alm_seo_default_image(),
-        ];
+        ]);
     }
 
     // Pagina Camere / archivio
     if (is_page('camere') || is_post_type_archive('almaretna_room')) {
-        return [
+        return alm_apply_custom_seo([
             'title'       => 'Camere — Almaretna | Villa con piscina sull\'Etna',
             'description' => 'Sette camere eleganti ad Almaretna: suite con vista Etna, mansarda romantica, suite famiglia. Piscina esclusiva, parcheggio gratuito. Prenota direttamente al miglior prezzo.',
             'canonical'   => (string) (get_post_type_archive_link('almaretna_room') ?: get_permalink(get_page_by_path('camere'))),
             'og_type'     => 'website',
             'image'       => alm_seo_default_image(),
-        ];
+        ]);
     }
 
-    // Pagina Prenota (noindex: la checkout non deve essere indicizzata)
+    // Pagina Prenota (noindex)
     if (is_page('prenota')) {
-        return [
+        return alm_apply_custom_seo([
             'title'       => 'Prenota — Almaretna | Miglior prezzo garantito',
             'description' => 'Prenota direttamente ad Almaretna: verifica disponibilità, pagamento sicuro con Stripe, miglior prezzo garantito.',
             'canonical'   => (string) (get_permalink(get_page_by_path('prenota')) ?: home_url('/prenota/')),
             'og_type'     => 'website',
             'image'       => alm_seo_default_image(),
             'robots'      => 'noindex, follow',
-        ];
+        ]);
     }
 
-    // Pagine legali (noindex: boilerplate, non utile in SERP)
     global $post;
+
+    // Pagine legali (noindex)
     $legal_slugs = ['privacy-policy', 'cookie-policy', 'termini-condizioni', 'diritto-di-recesso'];
     if ($post instanceof WP_Post && in_array($post->post_name, $legal_slugs, true)) {
-        return [
+        return alm_apply_custom_seo([
             'title'       => get_the_title($post) . ' — Almaretna',
-            'description' => strip_tags(has_excerpt($post) ? get_the_excerpt($post) : wp_trim_words($post->post_content, 25, '…')),
+            'description' => wp_strip_all_tags(has_excerpt($post) ? get_the_excerpt($post) : wp_trim_words($post->post_content, 25, '…')),
             'canonical'   => (string) get_permalink($post),
             'og_type'     => 'website',
             'image'       => alm_seo_default_image(),
             'robots'      => 'noindex, follow',
-        ];
+        ]);
     }
 
     // Pagina generica
     if ($post instanceof WP_Post) {
-        return [
+        return alm_apply_custom_seo([
             'title'       => get_the_title($post) . ' — Almaretna',
             'description' => has_excerpt($post)
-                ? strip_tags(get_the_excerpt($post))
-                : wp_trim_words(strip_tags($post->post_content), 30, '…'),
+                ? wp_strip_all_tags(get_the_excerpt($post))
+                : wp_trim_words(wp_strip_all_tags($post->post_content), 30, '…'),
             'canonical'   => (string) get_permalink($post),
             'og_type'     => 'article',
             'image'       => get_the_post_thumbnail_url($post, 'large') ?: alm_seo_default_image(),
-        ];
+        ]);
     }
 
     return [];
+}
+
+/**
+ * Sovrappone i valori custom (_alm_seo_title / _alm_seo_description)
+ * salvati dalla meta box al meta array di default.
+ */
+function alm_apply_custom_seo(array $meta): array {
+    $post_id = get_queried_object_id();
+    if (!$post_id) return $meta;
+
+    $custom_title = (string) get_post_meta($post_id, '_alm_seo_title', true);
+    $custom_desc  = (string) get_post_meta($post_id, '_alm_seo_description', true);
+
+    if ($custom_title !== '') $meta['title']       = $custom_title;
+    if ($custom_desc  !== '') $meta['description'] = $custom_desc;
+
+    return $meta;
 }
 
 // ── SEO singola camera ────────────────────────────────────────────────────────
@@ -242,6 +260,18 @@ add_filter('document_title_parts', 'alm_filter_document_title');
 function alm_filter_document_title(array $title): array {
     if (defined('WPSEO_VERSION') || defined('RANK_MATH_VERSION')) {
         return $title;
+    }
+
+    // ── Valore custom dalla meta box (priorità massima) ──
+    $post_id = get_queried_object_id();
+    if ($post_id) {
+        $custom = (string) get_post_meta($post_id, '_alm_seo_title', true);
+        if ($custom !== '') {
+            $title['title']   = $custom;
+            $title['site']    = '';
+            $title['tagline'] = '';
+            return $title;
+        }
     }
 
     if (is_front_page()) {

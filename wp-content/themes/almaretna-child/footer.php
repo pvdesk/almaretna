@@ -90,6 +90,17 @@
                 </address>
             </div>
 
+            <!-- Legal col -->
+            <div class="site-footer__col">
+                <h4 class="site-footer__heading"><?php echo esc_html(alm_t('foot.legal')); ?></h4>
+                <ul class="site-footer__menu">
+                    <li><a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>"><?php echo esc_html(alm_t('foot.legal_privacy')); ?></a></li>
+                    <li><a href="<?php echo esc_url(home_url('/cookie-policy/')); ?>"><?php echo esc_html(alm_t('foot.legal_cookie')); ?></a></li>
+                    <li><a href="<?php echo esc_url(home_url('/termini-condizioni/')); ?>"><?php echo esc_html(alm_t('foot.legal_terms')); ?></a></li>
+                    <li><a href="<?php echo esc_url(home_url('/diritto-di-recesso/')); ?>"><?php echo esc_html(alm_t('foot.legal_recesso')); ?></a></li>
+                </ul>
+            </div>
+
             <!-- Check-in col -->
             <div class="site-footer__col">
                 <h4 class="site-footer__heading"><?php echo esc_html(alm_t('foot.info')); ?></h4>

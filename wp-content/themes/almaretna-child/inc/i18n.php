@@ -27,17 +27,12 @@ add_action('send_headers', function (): void {
 function alm_get_lang(): string {
     $allowed = ['it', 'en', 'de', 'fr', 'es'];
     // 1. ?lang= nella URL — priorità massima (clic selettore lingua)
-    //    Non aspetta send_headers: funziona anche su pagine in cache
     $get_lang = sanitize_key((string) ($_GET['lang'] ?? ''));
     if (in_array($get_lang, $allowed, true)) return $get_lang;
     // 2. Cookie (richieste successive dopo il clic)
     $lang = $_COOKIE['alm_lang'] ?? '';
     if (in_array($lang, $allowed, true)) return $lang;
-    // 3. Browser Accept-Language
-    $accept = strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
-    foreach (['de', 'fr', 'es', 'en'] as $code) {
-        if (str_contains($accept, $code)) return $code;
-    }
+    // 3. Default: italiano (lingua predefinita del sito)
     return 'it';
 }
 
@@ -149,6 +144,11 @@ function alm_get_strings(): array {
     'foot.parking'    => 'Parcheggio gratuito',
     'foot.rights'     => 'Tutti i diritti riservati.',
     'foot.payments'   => 'Pagamenti sicuri con',
+    'foot.legal'         => 'Informazioni legali',
+    'foot.legal_privacy' => 'Privacy Policy',
+    'foot.legal_cookie'  => 'Cookie Policy',
+    'foot.legal_terms'   => 'Termini e Condizioni',
+    'foot.legal_recesso' => 'Diritto di Recesso',
     // Pagina prenotazione
     'book.checkin_info'    => 'Check-in dalle 15:00 &nbsp;·&nbsp; Check-out entro le 11:00',
     'book.steps_label'     => 'Fasi prenotazione',
@@ -360,6 +360,11 @@ function alm_get_strings(): array {
     'foot.parking'    => 'Free parking',
     'foot.rights'     => 'All rights reserved.',
     'foot.payments'   => 'Secure payments with',
+    'foot.legal'         => 'Legal',
+    'foot.legal_privacy' => 'Privacy Policy',
+    'foot.legal_cookie'  => 'Cookie Policy',
+    'foot.legal_terms'   => 'Terms & Conditions',
+    'foot.legal_recesso' => 'Right of Withdrawal',
     // Booking page
     'book.checkin_info'    => 'Check-in from 3:00 PM &nbsp;·&nbsp; Check-out by 11:00 AM',
     'book.steps_label'     => 'Booking steps',
@@ -567,6 +572,11 @@ function alm_get_strings(): array {
     'foot.parking'    => 'Kostenloses Parken',
     'foot.rights'     => 'Alle Rechte vorbehalten.',
     'foot.payments'   => 'Sichere Zahlungen mit',
+    'foot.legal'         => 'Rechtliches',
+    'foot.legal_privacy' => 'Datenschutzerklärung',
+    'foot.legal_cookie'  => 'Cookie-Richtlinie',
+    'foot.legal_terms'   => 'AGB',
+    'foot.legal_recesso' => 'Widerrufsrecht',
     // Buchungsseite
     'book.checkin_info'    => 'Check-in ab 15:00 Uhr &nbsp;·&nbsp; Check-out bis 11:00 Uhr',
     'book.steps_label'     => 'Buchungsschritte',
@@ -774,6 +784,11 @@ function alm_get_strings(): array {
     'foot.parking'    => 'Parking gratuit',
     'foot.rights'     => 'Tous droits réservés.',
     'foot.payments'   => 'Paiements sécurisés avec',
+    'foot.legal'         => 'Informations légales',
+    'foot.legal_privacy' => 'Politique de confidentialité',
+    'foot.legal_cookie'  => 'Politique de cookies',
+    'foot.legal_terms'   => 'Conditions générales',
+    'foot.legal_recesso' => 'Droit de rétractation',
     // Page réservation
     'book.checkin_info'    => 'Arrivée à partir de 15h00 &nbsp;·&nbsp; Départ avant 11h00',
     'book.steps_label'     => 'Étapes de réservation',
@@ -981,6 +996,11 @@ function alm_get_strings(): array {
     'foot.parking'    => 'Aparcamiento gratuito',
     'foot.rights'     => 'Todos los derechos reservados.',
     'foot.payments'   => 'Pagos seguros con',
+    'foot.legal'         => 'Legal',
+    'foot.legal_privacy' => 'Política de privacidad',
+    'foot.legal_cookie'  => 'Política de cookies',
+    'foot.legal_terms'   => 'Términos y condiciones',
+    'foot.legal_recesso' => 'Derecho de desistimiento',
     // Página reserva
     'book.checkin_info'    => 'Llegada a partir de las 15:00 &nbsp;·&nbsp; Salida antes de las 11:00',
     'book.steps_label'     => 'Pasos de reserva',

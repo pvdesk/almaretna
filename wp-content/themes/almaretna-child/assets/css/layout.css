@@ -259,8 +259,7 @@ body.front-page .site-content {
     top: 0;
     right: 0;
     bottom: 0;
-    width: 300px;
-    max-width: 85vw;
+    width: min(300px, 85vw);
     background: #fff;
     z-index: 1100;
     box-shadow: -4px 0 30px rgba(0,0,0,0.15);

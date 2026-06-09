@@ -5,9 +5,10 @@
 
 /* ─── FIX GLOBALE: niente overflow orizzontale ───────────────── */
 
-html, body {
+/* Solo body (non html) per non interferire con position:fixed (mobile-nav) */
+body {
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;  /* clip non crea scroll container, più sicuro di hidden */
 }
 
 * { box-sizing: border-box; }

@@ -1518,6 +1518,11 @@
     .location-premium__grid    { grid-template-columns: 1fr; gap: 3rem; }
     .testimonials-grid         { grid-template-columns: repeat(2, 1fr); }
     .rooms-section             { padding: 5rem 1.5rem; }
+}
+
+/* ≤ 768px: le 3 card testimonials vanno in colonna singola */
+@media (max-width: 768px) {
+    .testimonials-grid         { grid-template-columns: 1fr; }
     .story-section             { padding: 5rem 1.5rem; }
     .testimonials-section      { padding: 5rem 1.5rem; }
     .location-premium          { padding: 5rem 1.5rem; }

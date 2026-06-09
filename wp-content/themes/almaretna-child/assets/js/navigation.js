@@ -170,3 +170,60 @@
     }
 
 }());
+
+/* ── Language propagation ─────────────────────────────────────────────────
+ * Legge la lingua corrente da ?lang= (priorità) o cookie alm_lang.
+ * Se diversa da 'it', aggiunge ?lang=XX a TUTTI i link interni
+ * (stesso origin) → il PHP riceve sempre $_GET['lang'] e non dipende
+ * solo dal cookie (più robusto con caching e browser policy).
+ * ───────────────────────────────────────────────────────────────────────── */
+(function () {
+    'use strict';
+
+    var ALLOWED = ['en', 'de', 'fr', 'es'];
+
+    function langFromUrl() {
+        var m = window.location.search.match(/[?&]lang=([a-z]{2})/);
+        return m ? m[1] : '';
+    }
+
+    function langFromCookie() {
+        var m = document.cookie.match(/(?:^|;\s*)alm_lang=([a-z]{2})/);
+        return m ? m[1] : '';
+    }
+
+    var lang = langFromUrl() || langFromCookie();
+    if (!lang || lang === 'it' || ALLOWED.indexOf(lang) === -1) return;
+
+    // Rinfreschi il cookie (utile dopo navigazione senza ?lang= in URL)
+    document.cookie = 'alm_lang=' + lang + '; path=/; max-age=' + (86400 * 365) + '; SameSite=Lax';
+
+    // Propaga ?lang=XX a tutti i link interni
+    function propagateLang() {
+        var origin = window.location.origin;
+        var links  = document.querySelectorAll('a[href]');
+
+        for (var i = 0; i < links.length; i++) {
+            var a    = links[i];
+            var href = a.getAttribute('href') || '';
+
+            if (!href || href.charAt(0) === '#' ||
+                href.indexOf('mailto:') === 0 ||
+                href.indexOf('tel:') === 0) continue;
+
+            try {
+                var url = new URL(a.href, origin);
+                if (url.origin !== origin) continue;
+                if (url.searchParams.get('lang') === lang) continue;
+                url.searchParams.set('lang', lang);
+                a.href = url.toString();
+            } catch (e) {}
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', propagateLang);
+    } else {
+        propagateLang();
+    }
+}());

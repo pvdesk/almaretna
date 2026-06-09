@@ -24,6 +24,8 @@ class ALM_Shortcodes {
         add_shortcode('alm_booking_form',         [$this, 'booking_form']);
         add_shortcode('alm_availability_calendar', [$this, 'availability_calendar']);
         add_shortcode('alm_room_price',            [$this, 'room_price']);
+        add_shortcode('alm_my_bookings',           [$this, 'my_bookings']);
+        add_shortcode('alm_login_form',            [$this, 'login_form']);
         // alm_rooms_grid è gestito dal child theme
     }
 
@@ -205,6 +207,178 @@ class ALM_Shortcodes {
                 <?php echo esc_html(alm_t('sc.no_extra')); ?>
             </p>
 
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * [alm_my_bookings]
+     * Area personale ospite: lista delle prenotazioni dell'utente loggato.
+     *
+     * @param array<string, string>|string $atts
+     * @return string
+     */
+    public function my_bookings(array|string $atts = []): string {
+        global $wpdb;
+
+        ob_start();
+
+        $css = '
+<style>
+.alm-my-bookings{font-family:Arial,Helvetica,sans-serif;color:#1A1714;max-width:900px;margin:0 auto;}
+.alm-my-bookings__title{font-family:Georgia,"Times New Roman",serif;font-size:24px;color:#3B2F22;margin:0 0 24px;letter-spacing:1px;}
+.alm-my-bookings__login-wrap{background:#FAF8F5;border:1px solid #EFEBE4;border-top:3px solid #D4A96A;border-radius:4px;padding:32px;max-width:480px;margin:0 auto;}
+.alm-my-bookings__login-msg{font-size:15px;color:#3B2F22;margin:0 0 20px;line-height:1.6;}
+.alm-my-bookings__empty{background:#FAF8F5;border:1px solid #EFEBE4;border-radius:4px;padding:40px;text-align:center;color:#8A7B68;font-size:15px;}
+.alm-booking-card{background:#FAF8F5;border:1px solid #EFEBE4;border-radius:4px;margin:0 0 16px;overflow:hidden;box-shadow:0 1px 4px rgba(59,47,34,.06);}
+.alm-booking-card__header{background:#3B2F22;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.alm-booking-card__ref{font-family:Georgia,"Times New Roman",serif;font-size:15px;color:#FAF8F5;letter-spacing:1px;}
+.alm-booking-card__body{padding:20px 24px;}
+.alm-booking-card__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin:0 0 12px;}
+.alm-booking-card__item-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8A7B68;margin:0 0 4px;}
+.alm-booking-card__item-value{font-size:14px;color:#1A1714;font-weight:bold;margin:0;}
+.alm-booking-card__item-value--total{font-family:Georgia,"Times New Roman",serif;font-size:18px;color:#D4A96A;}
+.alm-status-badge{display:inline-block;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:2px;}
+.alm-status-badge--confirmed{background:#D4A96A;color:#3B2F22;}
+.alm-status-badge--pending{background:#C5B49C;color:#3B2F22;}
+.alm-status-badge--cancelled{background:#8A7B68;color:#FAF8F5;}
+.alm-status-badge--completed{background:#3B2F22;color:#D4A96A;}
+.alm-status-badge--no_show{background:#1A1714;color:#C5B49C;}
+</style>';
+
+        if (!is_user_logged_in()) {
+            $dashboard_page = get_page_by_path('le-mie-prenotazioni');
+            $redirect       = $dashboard_page ? get_permalink($dashboard_page) : home_url('/le-mie-prenotazioni/');
+
+            echo $css; // phpcs:ignore WordPress.Security.EscapeOutput
+            ?>
+            <div class="alm-my-bookings">
+              <div class="alm-my-bookings__login-wrap">
+                <p class="alm-my-bookings__login-msg">
+                  Accedi per visualizzare le tue prenotazioni.
+                </p>
+                <?php
+                wp_login_form([
+                    'redirect'       => esc_url($redirect),
+                    'form_id'        => 'alm-login-form',
+                    'label_username' => __('Email o username', 'almaretna-booking'),
+                    'label_password' => __('Password', 'almaretna-booking'),
+                    'label_log_in'   => __('Accedi', 'almaretna-booking'),
+                ]);
+                ?>
+              </div>
+            </div>
+            <?php
+            return (string) ob_get_clean();
+        }
+
+        $current_user_id = (int) get_current_user_id();
+
+        $bookings = $wpdb->get_results(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}alm_bookings
+                 WHERE user_id = %d
+                 ORDER BY checkin_date DESC",
+                $current_user_id
+            )
+        );
+
+        $status_labels = [
+            'pending'   => 'In attesa',
+            'confirmed' => 'Confermata',
+            'cancelled' => 'Annullata',
+            'completed' => 'Completata',
+            'no_show'   => 'No Show',
+        ];
+
+        echo $css; // phpcs:ignore WordPress.Security.EscapeOutput
+        ?>
+        <div class="alm-my-bookings">
+          <h2 class="alm-my-bookings__title">Le mie prenotazioni</h2>
+
+          <?php if (empty($bookings)) : ?>
+            <div class="alm-my-bookings__empty">
+              Nessuna prenotazione trovata.
+            </div>
+          <?php else : ?>
+            <?php foreach ($bookings as $row) :
+                $ci = DateTime::createFromFormat('Y-m-d', $row->checkin_date);
+                $co = DateTime::createFromFormat('Y-m-d', $row->checkout_date);
+                $ci_display = $ci ? $ci->format('d/m/Y') : esc_html($row->checkin_date);
+                $co_display = $co ? $co->format('d/m/Y') : esc_html($row->checkout_date);
+                $room_title = get_the_title((int) $row->room_id) ?: '—';
+                $status     = esc_attr($row->status);
+                $status_label = $status_labels[$row->status] ?? ucfirst($row->status);
+                $total_display = '&euro;&nbsp;' . number_format((float) $row->total_price + (float) $row->extras_total, 2, ',', '.');
+            ?>
+              <div class="alm-booking-card">
+                <div class="alm-booking-card__header">
+                  <span class="alm-booking-card__ref"><?php echo esc_html($row->booking_ref); ?></span>
+                  <span class="alm-status-badge alm-status-badge--<?php echo esc_attr($status); ?>">
+                    <?php echo esc_html($status_label); ?>
+                  </span>
+                </div>
+                <div class="alm-booking-card__body">
+                  <div class="alm-booking-card__grid">
+                    <div>
+                      <p class="alm-booking-card__item-label">Camera</p>
+                      <p class="alm-booking-card__item-value"><?php echo esc_html($room_title); ?></p>
+                    </div>
+                    <div>
+                      <p class="alm-booking-card__item-label">Check-in</p>
+                      <p class="alm-booking-card__item-value"><?php echo esc_html($ci_display); ?></p>
+                    </div>
+                    <div>
+                      <p class="alm-booking-card__item-label">Check-out</p>
+                      <p class="alm-booking-card__item-value"><?php echo esc_html($co_display); ?></p>
+                    </div>
+                    <div>
+                      <p class="alm-booking-card__item-label">Notti</p>
+                      <p class="alm-booking-card__item-value"><?php echo esc_html((string) $row->nights); ?></p>
+                    </div>
+                    <div>
+                      <p class="alm-booking-card__item-label">Totale</p>
+                      <p class="alm-booking-card__item-value alm-booking-card__item-value--total"><?php echo $total_display; // phpcs:ignore WordPress.Security.EscapeOutput ?></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
+
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * [alm_login_form]
+     * Form di login WordPress stilizzato per il tema Almaretna.
+     *
+     * @param array<string, string>|string $atts
+     * @return string
+     */
+    public function login_form(array|string $atts = []): string {
+        if (is_user_logged_in()) {
+            return '';
+        }
+
+        $dashboard_page = get_page_by_path('le-mie-prenotazioni');
+        $redirect       = $dashboard_page ? get_permalink($dashboard_page) : home_url('/le-mie-prenotazioni/');
+
+        ob_start();
+        ?>
+        <div style="max-width:480px;margin:0 auto;background:#FAF8F5;border:1px solid #EFEBE4;border-top:3px solid #D4A96A;border-radius:4px;padding:32px;font-family:Arial,Helvetica,sans-serif;">
+          <?php
+          wp_login_form([
+              'redirect'       => esc_url((string) $redirect),
+              'form_id'        => 'alm-login-form-sc',
+              'label_username' => __('Email o username', 'almaretna-booking'),
+              'label_password' => __('Password', 'almaretna-booking'),
+              'label_log_in'   => __('Accedi', 'almaretna-booking'),
+          ]);
+          ?>
         </div>
         <?php
         return (string) ob_get_clean();

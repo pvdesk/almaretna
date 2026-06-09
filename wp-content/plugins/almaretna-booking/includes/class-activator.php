@@ -18,14 +18,16 @@ defined('ABSPATH') || exit;
 class ALM_Activator {
 
     /** @var string Versione corrente dello schema DB. */
-    private const DB_VERSION = '1.0.0';
+    private const DB_VERSION = '1.1.0';
 
     /**
      * Attiva il plugin: crea tabelle, inserisce dati di default.
      */
     public static function activate(): void {
         self::create_tables();
+        self::maybe_migrate_db();
         self::insert_default_extras();
+        self::create_account_pages();
         update_option('alm_booking_db_version', self::DB_VERSION);
         flush_rewrite_rules();
     }
@@ -67,6 +69,7 @@ class ALM_Activator {
   notes           TEXT DEFAULT NULL,
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  user_id         BIGINT UNSIGNED DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY booking_ref (booking_ref),
   KEY idx_checkin (checkin_date),
@@ -164,6 +167,52 @@ class ALM_Activator {
 
         foreach ($extras as $extra) {
             $wpdb->insert($table, $extra, ['%s', '%s', '%f', '%s', '%d']);
+        }
+    }
+
+    /**
+     * Esegue le migrazioni DB incrementali.
+     */
+    private static function maybe_migrate_db(): void {
+        global $wpdb;
+
+        $installed_version = get_option('alm_booking_db_version', '');
+
+        // Migrazione 1.0.0 → 1.1.0: aggiunge colonna user_id
+        if ($installed_version === '1.0.0') {
+            $table  = $wpdb->prefix . 'alm_bookings';
+            $column = $wpdb->get_results(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+                $wpdb->prepare(
+                    "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                     WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'user_id'",
+                    DB_NAME,
+                    $table
+                )
+            );
+
+            if (empty($column)) {
+                $wpdb->query(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+                    "ALTER TABLE `{$table}` ADD COLUMN `user_id` BIGINT UNSIGNED DEFAULT NULL"
+                );
+            }
+
+            update_option('alm_booking_db_version', '1.1.0');
+        }
+    }
+
+    /**
+     * Crea le pagine necessarie all'area personale ospite se non esistono.
+     */
+    private static function create_account_pages(): void {
+        $page = get_page_by_path('le-mie-prenotazioni');
+        if (!$page) {
+            wp_insert_post([
+                'post_title'   => 'Le mie prenotazioni',
+                'post_name'    => 'le-mie-prenotazioni',
+                'post_status'  => 'publish',
+                'post_type'    => 'page',
+                'post_content' => '[alm_my_bookings]',
+            ]);
         }
     }
 }

@@ -7,113 +7,150 @@
  */
 
 defined('ABSPATH') || exit;
+
+$dashboard_url = !empty($data['dashboard_url']) ? $data['dashboard_url'] : $data['site_url'];
 ?>
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <title>Prenotazione confermata</title>
-<style>
-  body{margin:0;padding:0;background:#f5f5f0;font-family:Georgia,'Times New Roman',serif;color:#2C2C2C;}
-  .wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
-  .header{background:#1A4E6B;padding:32px 40px;text-align:center;}
-  .header h1{margin:0;color:#fff;font-size:24px;letter-spacing:.5px;}
-  .header p{margin:6px 0 0;color:rgba(255,255,255,.8);font-size:14px;}
-  .body{padding:40px;}
-  .greeting{font-size:18px;margin-bottom:24px;}
-  .box{background:#f9f7f3;border-left:4px solid #D4A017;border-radius:4px;padding:20px 24px;margin:24px 0;}
-  .box h2{margin:0 0 16px;font-size:16px;color:#1A4E6B;text-transform:uppercase;letter-spacing:.5px;}
-  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e8e3da;font-size:14px;}
-  .row:last-child{border-bottom:none;}
-  .row .label{color:#666;font-style:italic;}
-  .row .value{font-weight:bold;text-align:right;}
-  .total-row{padding-top:12px;margin-top:8px;font-size:16px;}
-  .total-row .label{color:#2C2C2C;font-style:normal;font-weight:bold;}
-  .total-row .value{color:#1A4E6B;font-size:18px;}
-  .info-box{background:#e8f5e9;border-radius:6px;padding:20px 24px;margin:24px 0;font-size:14px;line-height:1.6;}
-  .info-box strong{color:#1A4E6B;}
-  .btn{display:inline-block;background:#D4A017;color:#fff;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:bold;font-size:15px;margin:8px 0;}
-  .footer{background:#1A4E6B;padding:24px 40px;text-align:center;font-size:12px;color:rgba(255,255,255,.7);}
-  .footer a{color:#D4A017;text-decoration:none;}
+<style type="text/css">
+  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+  body { margin: 0 !important; padding: 0 !important; background-color: #EFEBE4; }
+  .email-wrapper { background-color: #EFEBE4; padding: 32px 16px; }
+  .email-card { max-width: 600px; margin: 0 auto; background-color: #FAF8F5; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 16px rgba(59,47,34,0.10); }
+  .header { background-color: #3B2F22; padding: 40px 48px; text-align: center; }
+  .header-title { font-family: Georgia, 'Times New Roman', serif; font-size: 28px; letter-spacing: 4px; color: #FAF8F5; margin: 0; text-transform: uppercase; }
+  .header-subtitle { font-family: Georgia, 'Times New Roman', serif; font-size: 13px; color: #C5B49C; letter-spacing: 2px; margin: 8px 0 0; text-transform: uppercase; }
+  .divider-gold { height: 2px; background-color: #D4A96A; margin: 0; }
+  .body-content { padding: 40px 48px; }
+  .greeting { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #1A1714; margin: 0 0 12px; }
+  .intro-text { font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #1A1714; line-height: 1.6; margin: 0 0 32px; }
+  .summary-box { background-color: #FAF8F5; border: 1px solid #EFEBE4; border-top: 3px solid #D4A96A; border-radius: 4px; padding: 24px 28px; margin: 0 0 28px; }
+  .summary-title { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8A7B68; margin: 0 0 18px; }
+  .summary-row { border-bottom: 1px solid #EFEBE4; padding: 9px 0; }
+  .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .summary-label { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #8A7B68; }
+  .summary-value { font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1A1714; font-weight: bold; text-align: right; }
+  .summary-total-label { font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #3B2F22; font-weight: bold; }
+  .summary-total-value { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #D4A96A; font-weight: bold; text-align: right; }
+  .info-block { background-color: #EFEBE4; border-radius: 4px; padding: 22px 28px; margin: 0 0 28px; }
+  .info-block-title { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #3B2F22; margin: 0 0 12px; }
+  .info-block-text { font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1A1714; line-height: 1.7; margin: 0; }
+  .info-block-text a { color: #8A7B68; text-decoration: underline; }
+  .cta-wrapper { text-align: center; padding: 8px 0 28px; }
+  .cta-btn { display: inline-block; background-color: #D4A96A; color: #FAF8F5; text-decoration: none; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; padding: 14px 36px; border-radius: 2px; }
+  .special-box { background-color: #FAF8F5; border-left: 3px solid #C5B49C; padding: 18px 22px; margin: 0 0 28px; border-radius: 2px; }
+  .special-label { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8A7B68; margin: 0 0 8px; }
+  .special-text { font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1A1714; line-height: 1.6; margin: 0; }
+  .footer { background-color: #3B2F22; padding: 28px 48px; text-align: center; }
+  .footer-text { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #C5B49C; line-height: 1.6; margin: 0 0 6px; }
+  .footer-text a { color: #D4A96A; text-decoration: none; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="email-wrapper">
+<div class="email-card">
 
+  <!-- Header -->
   <div class="header">
-    <h1>Almaretna</h1>
-    <p>Villa con piscina — Nunziata di Mascali (CT)</p>
+    <h1 class="header-title">Almaretna</h1>
+    <p class="header-subtitle">Villa con Piscina &mdash; Sicilia</p>
   </div>
+  <div class="divider-gold"></div>
 
-  <div class="body">
+  <!-- Body -->
+  <div class="body-content">
+
     <p class="greeting">Ciao <?php echo esc_html($data['first_name']); ?>,</p>
+    <p class="intro-text">
+      La tua prenotazione ad Almaretna &egrave; <strong>confermata</strong>.<br>
+      Non vediamo l&rsquo;ora di accoglierti nella nostra villa in Sicilia.
+    </p>
 
-    <p>La tua prenotazione è <strong>confermata</strong>. Non vediamo l'ora di accoglierti!</p>
-
-    <div class="box">
-      <h2>Riepilogo prenotazione</h2>
-      <div class="row">
-        <span class="label">N° prenotazione</span>
-        <span class="value"><?php echo esc_html($data['ref']); ?></span>
-      </div>
-      <div class="row">
-        <span class="label">Camera</span>
-        <span class="value"><?php echo esc_html($data['room_name']); ?></span>
-      </div>
-      <div class="row">
-        <span class="label">Check-in</span>
-        <span class="value"><?php echo esc_html($data['checkin_display']); ?> dalle ore <?php echo esc_html($data['checkin_time']); ?></span>
-      </div>
-      <div class="row">
-        <span class="label">Check-out</span>
-        <span class="value"><?php echo esc_html($data['checkout_display']); ?> entro le ore <?php echo esc_html($data['checkout_time']); ?></span>
-      </div>
-      <div class="row">
-        <span class="label">Durata</span>
-        <span class="value"><?php echo esc_html((string) $data['nights']); ?> <?php echo $data['nights'] === 1 ? 'notte' : 'notti'; ?></span>
-      </div>
-      <div class="row">
-        <span class="label">Ospiti</span>
-        <span class="value">
-          <?php echo esc_html((string) $data['adults']); ?> <?php echo $data['adults'] === 1 ? 'adulto' : 'adulti'; ?>
-          <?php if ($data['children'] > 0) : ?>
-            + <?php echo esc_html((string) $data['children']); ?> <?php echo $data['children'] === 1 ? 'bambino' : 'bambini'; ?>
-          <?php endif; ?>
-        </span>
-      </div>
-      <div class="row total-row">
-        <span class="label">Totale pagato</span>
-        <span class="value"><?php echo esc_html($data['total_display']); ?></span>
-      </div>
+    <!-- Riepilogo prenotazione -->
+    <div class="summary-box">
+      <p class="summary-title">Riepilogo prenotazione</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr class="summary-row">
+          <td class="summary-label">N&deg; prenotazione</td>
+          <td class="summary-value"><?php echo esc_html($data['ref']); ?></td>
+        </tr>
+        <tr class="summary-row">
+          <td class="summary-label">Camera</td>
+          <td class="summary-value"><?php echo esc_html($data['room_name']); ?></td>
+        </tr>
+        <tr class="summary-row">
+          <td class="summary-label">Check-in</td>
+          <td class="summary-value"><?php echo esc_html($data['checkin_display']); ?> &mdash; ore <?php echo esc_html($data['checkin_time']); ?></td>
+        </tr>
+        <tr class="summary-row">
+          <td class="summary-label">Check-out</td>
+          <td class="summary-value"><?php echo esc_html($data['checkout_display']); ?> &mdash; entro le <?php echo esc_html($data['checkout_time']); ?></td>
+        </tr>
+        <tr class="summary-row">
+          <td class="summary-label">Durata</td>
+          <td class="summary-value"><?php echo esc_html((string) $data['nights']); ?> <?php echo (int) $data['nights'] === 1 ? 'notte' : 'notti'; ?></td>
+        </tr>
+        <tr class="summary-row">
+          <td class="summary-label">Ospiti</td>
+          <td class="summary-value">
+            <?php echo esc_html((string) $data['adults']); ?> <?php echo (int) $data['adults'] === 1 ? 'adulto' : 'adulti'; ?>
+            <?php if ((int) $data['children'] > 0) : ?>
+              + <?php echo esc_html((string) $data['children']); ?> <?php echo (int) $data['children'] === 1 ? 'bambino' : 'bambini'; ?>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <tr style="border-top: 2px solid #EFEBE4;">
+          <td style="padding-top: 14px;" class="summary-total-label">Totale pagato</td>
+          <td style="padding-top: 14px;" class="summary-total-value"><?php echo esc_html($data['total_display']); ?></td>
+        </tr>
+      </table>
     </div>
 
     <?php if (!empty($data['special_requests'])) : ?>
-    <div class="box">
-      <h2>Richieste speciali</h2>
-      <p style="margin:0;font-size:14px;"><?php echo nl2br(esc_html($data['special_requests'])); ?></p>
+    <!-- Richieste speciali -->
+    <div class="special-box">
+      <p class="special-label">Richieste speciali</p>
+      <p class="special-text"><?php echo nl2br(esc_html($data['special_requests'])); ?></p>
     </div>
     <?php endif; ?>
 
-    <div class="info-box">
-      <strong>Come arrivarci</strong><br>
-      Via Scorciavacca Montarsi, 48 — Nunziata di Mascali (CT)<br><br>
-      <strong>Check-in:</strong> dalle ore <?php echo esc_html($data['checkin_time']); ?><br>
-      <strong>Check-out:</strong> entro le ore <?php echo esc_html($data['checkout_time']); ?><br><br>
-      Hai bisogno di aiuto? Scrivici a
-      <a href="mailto:<?php echo esc_attr($data['host_email']); ?>"><?php echo esc_html($data['host_email']); ?></a>
+    <!-- Come arrivarci -->
+    <div class="info-block">
+      <p class="info-block-title">Come arrivarci</p>
+      <p class="info-block-text">
+        Via Scorciavacca Montarsi, 48<br>
+        Nunziata di Mascali (CT) &mdash; Sicilia<br><br>
+        <strong>Check-in:</strong> dalle ore <?php echo esc_html($data['checkin_time']); ?><br>
+        <strong>Check-out:</strong> entro le ore <?php echo esc_html($data['checkout_time']); ?><br><br>
+        Per qualsiasi necessit&agrave; scrivi a
+        <a href="mailto:<?php echo esc_attr($data['host_email']); ?>"><?php echo esc_html($data['host_email']); ?></a>
+      </p>
     </div>
 
-    <p style="text-align:center;">
-      <a href="<?php echo esc_url($data['site_url']); ?>" class="btn">Visita il sito</a>
-    </p>
+    <!-- CTA -->
+    <div class="cta-wrapper">
+      <a href="<?php echo esc_url($dashboard_url); ?>" class="cta-btn">
+        Visualizza la tua prenotazione
+      </a>
+    </div>
+
   </div>
 
+  <!-- Footer -->
   <div class="footer">
-    <p>© <?php echo esc_html((string) gmdate('Y')); ?> Almaretna · Via Scorciavacca Montarsi, 48 · Nunziata di Mascali (CT)</p>
-    <p>Email inviata a <?php echo esc_html($data['email']); ?></p>
+    <p class="footer-text">Via Scorciavacca Montarsi, 48 &mdash; Nunziata di Mascali (CT) &mdash; Sicilia</p>
+    <p class="footer-text">Email inviata a <?php echo esc_html($data['email']); ?></p>
+    <p class="footer-text">&copy; <?php echo esc_html((string) gmdate('Y')); ?> Almaretna &mdash; <a href="<?php echo esc_url($data['site_url']); ?>">www.almaretna.com</a></p>
   </div>
 
+</div>
 </div>
 </body>
 </html>

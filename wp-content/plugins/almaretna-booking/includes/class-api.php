@@ -431,6 +431,9 @@ class ALM_API {
             return new WP_Error('confirm_failed', __('Impossibile confermare la prenotazione.', 'almaretna-booking'), ['status' => 500]);
         }
 
+        // Crea o collega account WP guest
+        self::link_or_create_guest_user($booking);
+
         // Notifiche
         ALM_Notifications::send_confirmation_guest($booking);
         ALM_Notifications::send_confirmation_host($booking);
@@ -512,6 +515,9 @@ class ALM_API {
                 if (!$booking || $booking->status === 'confirmed') break;
 
                 $booking->confirm($object->id);
+
+                // Crea o collega account WP guest
+                self::link_or_create_guest_user($booking);
 
                 // Sincronizza con Beds24
                 if (ALM_Beds24::is_configured()) {
@@ -686,6 +692,120 @@ class ALM_API {
         }
 
         return rest_ensure_response(['received' => true, 'action' => 'created']);
+    }
+
+    // ─── Guest user management ───────────────────────────────────────────────
+
+    /**
+     * Crea o collega un utente WP all'ospite che ha prenotato.
+     * Invia email di benvenuto solo se l'utente è appena stato creato.
+     *
+     * @param ALM_Booking $booking
+     * @return int User ID (0 in caso di errore)
+     */
+    private static function link_or_create_guest_user(ALM_Booking $booking): int {
+        global $wpdb;
+
+        if (empty($booking->guest_email)) return 0;
+
+        $is_new_user = false;
+        $set_password_url = '';
+
+        $user = get_user_by('email', $booking->guest_email);
+
+        if (!$user) {
+            // Genera username unico da nome
+            $base_login = sanitize_user(
+                strtolower(preg_replace('/\s+/', '.', trim($booking->guest_name))),
+                true
+            );
+            $base_login = $base_login ?: 'ospite';
+            $user_login = $base_login;
+            $suffix     = 1;
+            while (username_exists($user_login)) {
+                $user_login = $base_login . $suffix;
+                $suffix++;
+            }
+
+            // Separa nome e cognome
+            $name_parts = explode(' ', trim($booking->guest_name), 2);
+            $first_name = $name_parts[0] ?? '';
+            $last_name  = $name_parts[1] ?? '';
+
+            $user_id = wp_insert_user([
+                'user_login'  => $user_login,
+                'user_email'  => $booking->guest_email,
+                'display_name'=> $booking->guest_name,
+                'first_name'  => $first_name,
+                'last_name'   => $last_name,
+                'role'        => 'subscriber',
+                'user_pass'   => wp_generate_password(16),
+            ]);
+
+            if (is_wp_error($user_id)) {
+                error_log('[Almaretna] link_or_create_guest_user error: ' . $user_id->get_error_message());
+                return 0;
+            }
+
+            // Impedisce la notifica email di default di WP
+            update_user_meta($user_id, 'alm_suppress_wp_welcome', '1');
+
+            $user       = get_userdata($user_id);
+            $is_new_user = true;
+
+        } else {
+            $user_id    = $user->ID;
+            $first_name = $user->first_name ?: (explode(' ', $user->display_name, 2)[0] ?? '');
+        }
+
+        // Aggiorna meta nome/cognome se mancanti
+        $name_parts = explode(' ', trim($booking->guest_name), 2);
+        if (empty(get_user_meta($user_id, 'first_name', true))) {
+            update_user_meta($user_id, 'first_name', $name_parts[0] ?? '');
+        }
+        if (empty(get_user_meta($user_id, 'last_name', true))) {
+            update_user_meta($user_id, 'last_name', $name_parts[1] ?? '');
+        }
+
+        // Associa user_id alla prenotazione
+        $wpdb->update(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $wpdb->prefix . 'alm_bookings',
+            ['user_id' => $user_id],
+            ['id' => $booking->id],
+            ['%d'],
+            ['%d']
+        );
+
+        // Invia email di benvenuto solo ai nuovi utenti
+        if ($is_new_user && $user) {
+            $key = get_password_reset_key($user);
+            if (!is_wp_error($key)) {
+                $set_password_url = wp_nonce_url(
+                    network_home_url(
+                        "wp-login.php?action=rp&key={$key}&login=" . rawurlencode($user->user_login)
+                    ),
+                    'reset-password'
+                );
+            }
+
+            $dashboard_page = get_page_by_path('le-mie-prenotazioni');
+            $dashboard_url  = $dashboard_page
+                ? (string) get_permalink($dashboard_page)
+                : home_url('/le-mie-prenotazioni/');
+
+            $fn = get_user_meta($user_id, 'first_name', true) ?: (explode(' ', $booking->guest_name, 2)[0] ?? $booking->guest_name);
+
+            ALM_Notifications::send_account_welcome(
+                $user_id,
+                $booking->guest_email,
+                $fn,
+                $booking->booking_ref,
+                $dashboard_url,
+                $set_password_url
+            );
+        }
+
+        return $user_id;
     }
 
     // ─── Rate limiting ────────────────────────────────────────────────────────

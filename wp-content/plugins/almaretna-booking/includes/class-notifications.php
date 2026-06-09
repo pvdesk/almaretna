@@ -71,6 +71,112 @@ class ALM_Notifications {
         return $ok_guest && $ok_host;
     }
 
+    // ── Metodi statici richiesti da class-api.php ────────────────────────────────
+
+    /**
+     * Invia email di conferma all'ospite.
+     *
+     * @param ALM_Booking $booking
+     * @return bool
+     */
+    public static function send_confirmation_guest(ALM_Booking $booking): bool {
+        $data = self::prepare_data($booking->id);
+        if (!$data) return false;
+
+        return self::send_to_guest($data, 'booking-confirmation-guest.php',
+            sprintf(__('Prenotazione confermata — %s', 'almaretna-booking'), $data['ref'])
+        );
+    }
+
+    /**
+     * Invia notifica di nuova prenotazione all'host.
+     *
+     * @param ALM_Booking $booking
+     * @return bool
+     */
+    public static function send_confirmation_host(ALM_Booking $booking): bool {
+        $data = self::prepare_data($booking->id);
+        if (!$data) return false;
+
+        return self::send_to_host($data, 'booking-confirmation-host.php',
+            sprintf(__('[Almaretna] Nuova prenotazione — %s', 'almaretna-booking'), $data['ref'])
+        );
+    }
+
+    /**
+     * Schedula il reminder 48h prima del check-in via wp_schedule_single_event().
+     *
+     * @param ALM_Booking $booking
+     * @return void
+     */
+    public static function schedule_reminder(ALM_Booking $booking): void {
+        $ci = DateTime::createFromFormat('Y-m-d', $booking->checkin_date, new DateTimeZone('Europe/Rome'));
+        if (!$ci) return;
+
+        // Mezzanotte del giorno di check-in − 48h = mezzanotte 2 giorni prima
+        $ci->setTime(9, 0, 0);
+        $send_at = (clone $ci)->modify('-2 days');
+
+        // Non schedulare se la data di invio è già passata
+        if ($send_at->getTimestamp() <= time()) return;
+
+        wp_schedule_single_event(
+            $send_at->getTimestamp(),
+            'alm_send_checkin_reminder',
+            [$booking->id]
+        );
+    }
+
+    /**
+     * Invia notifica di cancellazione all'host.
+     *
+     * @param ALM_Booking $booking
+     * @return bool
+     */
+    public static function send_cancellation_host(ALM_Booking $booking): bool {
+        $data = self::prepare_data($booking->id);
+        if (!$data) return false;
+
+        return self::send_to_host($data, 'booking-cancelled.php',
+            sprintf(__('[Almaretna] Prenotazione annullata — %s', 'almaretna-booking'), $data['ref'])
+        );
+    }
+
+    /**
+     * Invia email di benvenuto con link per impostare la password.
+     *
+     * @param int    $user_id
+     * @param string $guest_email
+     * @param string $first_name
+     * @param string $booking_ref
+     * @param string $booking_page_url
+     * @param string $set_password_url
+     * @return bool
+     */
+    public static function send_account_welcome(
+        int $user_id,
+        string $guest_email,
+        string $first_name,
+        string $booking_ref,
+        string $booking_page_url,
+        string $set_password_url
+    ): bool {
+        $file = self::VIEWS_DIR . 'account-welcome.php';
+        if (!file_exists($file)) return false;
+
+        ob_start();
+        include $file;
+        $html = (string) ob_get_clean();
+
+        if (!$html || !$guest_email) return false;
+
+        return self::send(
+            $guest_email,
+            __('Benvenuto su Almaretna — Il tuo account è pronto', 'almaretna-booking'),
+            $html
+        );
+    }
+
     // ── Cron: invia reminder 48h prima del check-in ──────────────────────────────
 
     public static function process_reminder_queue(): void {
@@ -131,7 +237,13 @@ class ALM_Notifications {
             'site_url'         => home_url('/'),
             'checkin_time'     => '15:00',
             'checkout_time'    => '11:00',
+            'dashboard_url'    => self::get_dashboard_url(),
         ];
+    }
+
+    private static function get_dashboard_url(): string {
+        $page = get_page_by_path('le-mie-prenotazioni');
+        return $page ? get_permalink($page) : home_url('/le-mie-prenotazioni/');
     }
 
     private static function render(string $template, array $data): ?string {

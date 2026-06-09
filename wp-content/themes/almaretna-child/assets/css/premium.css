@@ -293,7 +293,9 @@
     gap: .75rem;
 }
 
-.booking-strip__btn:hover { background: #A6957E; }
+.booking-strip__btn:hover  { background: #A6957E; }
+.booking-strip__btn:focus  { outline: none; background: #A6957E; }
+.booking-strip__btn:active { background: #8A7B68; }
 
 /* ─── Booking strip — stati interattivi premium ──────────────────── */
 

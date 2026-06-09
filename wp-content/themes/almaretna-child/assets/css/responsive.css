@@ -22,6 +22,16 @@ button:focus-visible{ outline: 2px solid #C5B49C; outline-offset: 2px; }
 
 * { box-sizing: border-box; }
 
+/* Select ospiti: freccia custom (appearance:none è impostato inline) */
+select.booking-strip__input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238A7B68' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
 img, video, iframe, embed, object {
     max-width: 100%;
     height: auto;
@@ -141,7 +151,7 @@ img, video, iframe, embed, object {
         padding: 1rem 1.25rem;
         min-height: 64px;
     }
-    .booking-strip__label   { font-size: .6rem; margin-bottom: .25rem; }
+    .booking-strip__label   { font-size: .75rem; margin-bottom: .25rem; }
     .booking-strip__input   { font-size: .95rem; }
     .booking-strip__btn     {
         min-height: 56px;
@@ -198,6 +208,8 @@ img, video, iframe, embed, object {
     .rooms-carousel-outer      { overflow: hidden; }
     .rooms-carousel__btn--prev { left: 4px; }
     .rooms-carousel__btn--next { right: 4px; }
+    /* dot: touch target minimo 32px */
+    .rooms-carousel__dot       { padding: 8px; box-sizing: content-box; margin: -8px; }
 
     /* ── Story section ───────────────────────────────────────── */
     .story-section          { padding: 4rem 1.25rem; }
@@ -323,7 +335,7 @@ img, video, iframe, embed, object {
     }
 
     /* ── Booking strip ───────────────────────────────────────── */
-    .booking-strip__label   { font-size: .58rem; }
+    .booking-strip__label   { font-size: .75rem; }
     .booking-strip__input   { font-size: .9rem; }
     .booking-strip__field   { padding: .875rem 1rem; min-height: 60px; }
     .booking-strip__btn     { min-height: 52px; }
@@ -352,7 +364,7 @@ img, video, iframe, embed, object {
 
     /* Carosello: nasconde frecce, usa swipe */
     .rooms-carousel__btn    { display: none; }
-    .rooms-carousel__outer  { padding: 0; }
+    .rooms-carousel-outer   { padding: 0; }
 
     /* ── Story section ───────────────────────────────────────── */
     .story-section          { padding: 3.5rem 1rem; }
@@ -435,17 +447,36 @@ img, video, iframe, embed, object {
     }
 
     .rooms-carousel__dots   { gap: .35rem; }
-    .rooms-carousel__dot    { width: 7px; height: 7px; }
+    /* dot: visivamente 8px ma touch-target 32px con padding */
+    .rooms-carousel__dot    { width: 8px; height: 8px; padding: 8px; box-sizing: content-box; margin: -8px; }
 
     .section-headline       { font-size: 1.5rem; }
     .experience-section__quote { font-size: 1.15rem; }
     .number-item__num       { font-size: 2rem; }
-    .number-item__label     { font-size: .62rem; }
+    .number-item__label     { font-size: .7rem; }
     .final-cta__headline    { font-size: 1.55rem; }
 
     /* Booking strip ancora più compatto */
     .booking-strip__field   { padding: .75rem .875rem; min-height: 56px; }
-    .booking-strip__label   { font-size: .55rem; }
+    .booking-strip__label   { font-size: .72rem; }
+    .booking-strip__btn     { font-size: .8rem; letter-spacing: .03em; white-space: normal;
+                              text-align: center; line-height: 1.3; }
+}
+
+/* ─── FLATPICKR MOBILE FIX ──────────────────────────────────── */
+/* Evita che il calendario esca fuori schermo su viewport stretti */
+@media (max-width: 640px) {
+    .flatpickr-calendar.booking-cal {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        max-width: calc(100vw - 2rem) !important;
+        width: 308px !important;
+    }
+    /* Quando è aperto: assicura z-index sopra tutto */
+    .flatpickr-calendar.booking-cal.open {
+        z-index: 9999 !important;
+    }
 }
 
 /* ─── PRINT ──────────────────────────────────────────────────── */

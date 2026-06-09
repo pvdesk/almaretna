@@ -507,7 +507,8 @@ $hero_subtitle = ($lang === 'it')
     .rooms-carousel__btn    { display: none; }
     .rooms-carousel__track  { gap: 1rem; padding-inline: 1.25rem; }
     .rooms-carousel__viewport { overflow-x: auto; scroll-snap-type: x mandatory;
-                                -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+                                -webkit-overflow-scrolling: touch; scrollbar-width: none;
+                                scroll-padding-inline-start: 1.25rem; }
     .rooms-carousel__viewport::-webkit-scrollbar { display: none; }
     .rooms-carousel__slide  { scroll-snap-align: start; }
     /* Card più alta su mobile */
@@ -530,10 +531,15 @@ $hero_subtitle = ($lang === 'it')
     var autoTimer   = null;
     var AUTO_MS     = 4500;
 
+    /* Mobile: usa scroll nativo CSS (≤640px corrisponde al breakpoint CSS) */
+    function isMobileScroll(){
+        return viewport.offsetWidth <= 640;
+    }
+
     /* Calcola quante slide sono visibili in base alla larghezza */
     function visibleCount(){
         var vw = viewport.offsetWidth;
-        if(vw <= 580) return 1;
+        if(vw <= 640) return 1;
         if(vw <= 900) return 2;
         return 3;
     }
@@ -545,9 +551,14 @@ $hero_subtitle = ($lang === 'it')
     /* Sposta il track */
     function goTo(idx){
         current = Math.max(0, Math.min(idx, maxIndex()));
-        var slideW  = slides[0].offsetWidth;
-        var gap     = parseFloat(getComputedStyle(track).gap) || 28;
-        track.style.transform = 'translateX(-' + (current * (slideW + gap)) + 'px)';
+        var slideW = slides[0].offsetWidth;
+        var gap    = parseFloat(getComputedStyle(track).gap) || 28;
+        if(isMobileScroll()){
+            /* Mobile: usa scrollLeft — il CSS gestisce il layout con overflow-x:auto */
+            viewport.scrollLeft = current * (slideW + gap);
+        } else {
+            track.style.transform = 'translateX(-' + (current * (slideW + gap)) + 'px)';
+        }
         updateDots();
         updateArrows();
     }
@@ -586,15 +597,26 @@ $hero_subtitle = ($lang === 'it')
     }
     function resetAuto(){ startAuto(); }
 
-    /* Swipe touch */
+    /* Swipe touch — solo su desktop (mobile usa scroll nativo) */
     var touchStartX = 0;
     viewport.addEventListener('touchstart', function(e){ touchStartX = e.touches[0].clientX; }, {passive:true});
     viewport.addEventListener('touchend', function(e){
+        if(isMobileScroll()) return; /* scroll CSS nativo gestisce lo swipe */
         var dx = e.changedTouches[0].clientX - touchStartX;
         if(Math.abs(dx) > 40){
             goTo(dx < 0 ? current + 1 : current - 1);
             resetAuto();
         }
+    }, {passive:true});
+
+    /* Aggiorna dots/frecce durante lo scroll nativo mobile */
+    viewport.addEventListener('scroll', function(){
+        if(!isMobileScroll()) return;
+        var slideW = slides[0].offsetWidth;
+        var gap    = parseFloat(getComputedStyle(track).gap) || 16;
+        var newIdx = Math.round(viewport.scrollLeft / (slideW + gap));
+        newIdx = Math.max(0, Math.min(newIdx, maxIndex()));
+        if(newIdx !== current){ current = newIdx; updateDots(); updateArrows(); }
     }, {passive:true});
 
     /* Bottoni freccia */
@@ -612,6 +634,8 @@ $hero_subtitle = ($lang === 'it')
 
     /* Ricalcola al resize */
     window.addEventListener('resize', function(){
+        /* Se si passa a mobile, azzera il transform desktop */
+        if(isMobileScroll()) track.style.transform = '';
         buildDots();
         goTo(Math.min(current, maxIndex()));
     });

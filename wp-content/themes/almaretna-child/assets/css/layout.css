@@ -225,12 +225,12 @@ body.front-page .site-content {
     flex-direction: column;
     justify-content: center;
     gap: 5px;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 6px;
+    padding: 8px;
     border-radius: 6px;
     transition: background 0.2s;
 }
@@ -1374,7 +1374,6 @@ body.home .site-content {
 }
 
 @media (max-width: 768px) {
-    :root { --header-h: 110px; }
 
     .site-header__inner {
         padding-top: 0;

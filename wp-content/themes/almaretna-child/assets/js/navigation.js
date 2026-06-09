@@ -121,8 +121,8 @@
         }
     });
 
-    // Fallback di sicurezza ridotto: 300ms
-    var revealFallback = setTimeout(showAll, 300);
+    // Fallback di sicurezza: 3s (abbastanza per IO su mobile lento)
+    var revealFallback = setTimeout(showAll, 3000);
 
     // Counter animation for numbers section
     var numObserver = new IntersectionObserver(function (entries) {

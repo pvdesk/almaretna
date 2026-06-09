@@ -298,6 +298,23 @@ add_action('wp_footer', function (): void {
     <?php
 }, 99);
 
+// ─── Preconnect / DNS-prefetch (Core Web Vitals) ────────────────────────────
+
+add_filter('wp_resource_hints', function (array $hints, string $relation_type): array {
+    if ($relation_type === 'preconnect') {
+        $hints[] = ['href' => 'https://fonts.googleapis.com'];
+        $hints[] = ['href' => 'https://fonts.gstatic.com', 'crossorigin' => 'anonymous'];
+        $hints[] = ['href' => 'https://cdn.jsdelivr.net'];
+    }
+    if ($relation_type === 'dns-prefetch') {
+        $hints[] = ['href' => 'https://fonts.googleapis.com'];
+        $hints[] = ['href' => 'https://fonts.gstatic.com'];
+        $hints[] = ['href' => 'https://cdn.jsdelivr.net'];
+        $hints[] = ['href' => 'https://js.stripe.com'];
+    }
+    return $hints;
+}, 10, 2);
+
 // ─── Include files ───────────────────────────────────────────────────────────
 
 $alm_includes = [

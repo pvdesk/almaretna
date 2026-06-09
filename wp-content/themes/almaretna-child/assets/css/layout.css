@@ -1152,11 +1152,11 @@ body.front-page .site-content {
 }
 
 .site-footer__container {
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr 1fr;
-    gap: 3rem;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+    gap: 2.5rem;
 }
 
 .site-footer__col--brand {}
@@ -1350,7 +1350,7 @@ body.home .site-content {
     }
 
     .site-footer__container {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 2rem;
     }
 }

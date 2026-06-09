@@ -103,7 +103,7 @@ img, video, iframe, embed, object {
     .location-premium     { padding: 5rem 1.5rem; }
 
     /* Footer */
-    .site-footer__container { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .site-footer__container { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
 }
 
 /* ─── TABLET (≤ 768px) ───────────────────────────────────────── */

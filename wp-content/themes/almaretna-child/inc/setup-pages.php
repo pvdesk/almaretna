@@ -422,117 +422,227 @@ Per arrivi in orari diversi contattarci in anticipo.
         [
             'title'    => 'Privacy Policy',
             'slug'     => 'privacy-policy',
-            'template' => '',
-            'excerpt'  => 'Informativa sul trattamento dei dati personali ai sensi del GDPR.',
-            'content'  => '<section class="section-padding">
-<div class="container" style="max-width:800px;">
+            'template' => 'templates/template-legal.php',
+            'excerpt'  => 'Informativa sul trattamento dei dati personali ai sensi del GDPR (Reg. UE 2016/679).',
+            'content'  => '<p>Ai sensi del Regolamento UE 2016/679 (GDPR) e del D.Lgs. 196/2003 (Codice Privacy), questa informativa descrive come <strong>Almaretna</strong> raccoglie, utilizza e protegge i tuoi dati personali.</p>
 
-<h1 class="section-title">Privacy Policy</h1>
-<p style="color:var(--color-text-light);font-size:var(--fs-sm);margin-bottom:2rem;">Ultimo aggiornamento: ' . date('d/m/Y') . '</p>
+<h2>1. Titolare del trattamento</h2>
+<p>Gestore della struttura ricettiva <strong>Almaretna</strong><br>
+Via Scorciavacca Montarsi, 48 — Nunziata di Mascali (CT), 95016<br>
+Email: <a href="mailto:info@almaretna.it">info@almaretna.it</a> &nbsp;|&nbsp; Tel: <a href="tel:+393332621974">+39 333 262 1974</a></p>
 
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">1. Titolare del trattamento</h2>
-<p style="line-height:1.8;margin-bottom:2rem;">
-Il titolare del trattamento dei dati personali è il gestore della struttura ricettiva Almaretna, con sede in Via Scorciavacca Montarsi, 48 — Nunziata di Mascali (CT), 95016 Italia.<br>
-Email di contatto: <a href="mailto:">[inserire email titolare]</a>
-</p>
-
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">2. Dati raccolti</h2>
-<p style="line-height:1.8;margin-bottom:1rem;">In fase di prenotazione raccogliamo i seguenti dati personali:</p>
-<ul style="line-height:1.9;padding-left:1.5rem;margin-bottom:2rem;">
+<h2>2. Dati raccolti</h2>
+<p>In fase di prenotazione raccogliamo:</p>
+<ul>
 <li>Nome e cognome</li>
-<li>Indirizzo email</li>
-<li>Numero di telefono</li>
-<li>Dati relativi al soggiorno (date, numero ospiti)</li>
-<li>Dati di pagamento (gestiti da Stripe, non archiviati sul nostro server)</li>
-<li>Eventuali richieste speciali</li>
+<li>Indirizzo email e numero di telefono</li>
+<li>Date e dettagli del soggiorno (numero ospiti, richieste speciali)</li>
+<li>Dati di pagamento — elaborati da <strong>Stripe</strong>, mai archiviati sui nostri server</li>
 </ul>
-<p style="line-height:1.8;margin-bottom:2rem;">Attraverso i cookie raccogliamo dati tecnici di navigazione (vedi sezione Cookie policy).</p>
+<p>Tramite cookie tecnici raccogliamo dati anonimi di navigazione: preferenza lingua e sessione. Per i dettagli consulta la <a href="/cookie-policy/">Cookie Policy</a>.</p>
 
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">3. Finalità del trattamento</h2>
-<p style="line-height:1.8;margin-bottom:1rem;">I dati vengono trattati per le seguenti finalità:</p>
-<ul style="line-height:1.9;padding-left:1.5rem;margin-bottom:2rem;">
-<li><strong>Gestione della prenotazione:</strong> elaborazione, conferma e comunicazione del soggiorno</li>
-<li><strong>Adempimenti fiscali e contabili:</strong> fatturazione, registrazione ai fini ISTAT</li>
-<li><strong>Comunicazioni di servizio:</strong> email di conferma, reminder pre-arrivo</li>
-<li><strong>Miglioramento del servizio:</strong> analisi anonima del traffico web</li>
+<h2>3. Finalità e base giuridica</h2>
+<table>
+<thead><tr><th>Finalità</th><th>Base giuridica (GDPR art. 6)</th></tr></thead>
+<tbody>
+<tr><td>Gestione prenotazione e comunicazioni di soggiorno</td><td>Esecuzione del contratto — lett. b</td></tr>
+<tr><td>Adempimenti fiscali e registrazione ISTAT</td><td>Obbligo legale — lett. c</td></tr>
+<tr><td>Reminder pre-arrivo e comunicazioni di servizio</td><td>Legittimo interesse — lett. f</td></tr>
+<tr><td>Analisi anonima del traffico web</td><td>Legittimo interesse — lett. f</td></tr>
+</tbody>
+</table>
+
+<h2>4. Conservazione</h2>
+<ul>
+<li><strong>Dati di prenotazione:</strong> 10 anni per obbligo fiscale (D.P.R. 600/73)</li>
+<li><strong>Dati di contatto non legati a prenotazioni:</strong> eliminati entro 12 mesi dall\'ultima interazione</li>
+<li><strong>Log di accesso:</strong> 30 giorni</li>
 </ul>
 
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">4. Base giuridica</h2>
-<p style="line-height:1.8;margin-bottom:2rem;">
-Il trattamento è fondato sul contratto (art. 6, par. 1, lett. b GDPR) per la gestione delle prenotazioni, sull\'obbligo legale (lett. c) per gli adempimenti fiscali, e sul legittimo interesse (lett. f) per le comunicazioni di servizio connesse al soggiorno.
-</p>
+<h2>5. Condivisione con terze parti</h2>
+<p><strong>Stripe Inc.</strong> elabora i pagamenti online. È certificata PCI-DSS livello 1 e conforme al GDPR. Informativa: <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">stripe.com/privacy</a>.</p>
+<p>Non vendiamo né cediamo i tuoi dati personali a terzi per finalità di marketing.</p>
 
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">5. Conservazione dei dati</h2>
-<p style="line-height:1.8;margin-bottom:2rem;">
-I dati relativi alle prenotazioni sono conservati per 10 anni ai fini fiscali, come previsto dalla normativa italiana. I dati di contatto non connessi a prenotazioni vengono cancellati entro 12 mesi dall\'ultima interazione.
-</p>
-
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">6. Diritti dell\'interessato</h2>
-<p style="line-height:1.8;margin-bottom:1rem;">Hai il diritto di:</p>
-<ul style="line-height:1.9;padding-left:1.5rem;margin-bottom:2rem;">
-<li>Accedere ai tuoi dati personali (art. 15 GDPR)</li>
-<li>Rettificare dati inesatti (art. 16 GDPR)</li>
-<li>Richiedere la cancellazione (art. 17 GDPR)</li>
-<li>Limitare il trattamento (art. 18 GDPR)</li>
-<li>Portabilità dei dati (art. 20 GDPR)</li>
-<li>Opporti al trattamento (art. 21 GDPR)</li>
-<li>Proporre reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it)</li>
+<h2>6. I tuoi diritti</h2>
+<p>Puoi esercitare in qualsiasi momento i seguenti diritti scrivendo a <a href="mailto:info@almaretna.it">info@almaretna.it</a>:</p>
+<ul>
+<li><strong>Accesso</strong> — conoscere quali dati trattiamo (art. 15)</li>
+<li><strong>Rettifica</strong> — correggere dati inesatti (art. 16)</li>
+<li><strong>Cancellazione</strong> — "diritto all\'oblio" (art. 17)</li>
+<li><strong>Limitazione</strong> — sospendere il trattamento (art. 18)</li>
+<li><strong>Portabilità</strong> — ricevere i dati in formato leggibile (art. 20)</li>
+<li><strong>Opposizione</strong> — opporti al trattamento basato su legittimo interesse (art. 21)</li>
 </ul>
-<p style="line-height:1.8;margin-bottom:2rem;">Per esercitare i tuoi diritti scrivi a: <a href="mailto:">[inserire email titolare]</a></p>
+<p>Hai inoltre il diritto di proporre reclamo al <strong>Garante per la protezione dei dati personali</strong>: <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer">garanteprivacy.it</a></p>
 
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">7. Cookie policy</h2>
-<p style="line-height:1.8;margin-bottom:1rem;">Il sito utilizza i seguenti tipi di cookie:</p>
-<ul style="line-height:1.9;padding-left:1.5rem;margin-bottom:2rem;">
-<li><strong>Cookie tecnici necessari:</strong> sessione WordPress, preferenze lingua. Non richiedono consenso.</li>
-<li><strong>Cookie di terze parti:</strong> Stripe (pagamenti) — vedi <a href="https://stripe.com/privacy" target="_blank" rel="noopener">privacy policy Stripe</a>.</li>
-</ul>
-<p style="line-height:1.8;">Puoi gestire o disabilitare i cookie nelle impostazioni del tuo browser in qualsiasi momento.</p>
-
-</div>
-</section>',
+<h2>7. Cookie</h2>
+<p>Per l\'elenco completo dei cookie utilizzati e le istruzioni per disabilitarli consulta la <a href="/cookie-policy/">Cookie Policy</a>.</p>',
         ],
 
-        // ── Cancellazione ─────────────────────────────────────────────────────
+        // ── Cookie Policy ─────────────────────────────────────────────────────
+        [
+            'title'    => 'Cookie Policy',
+            'slug'     => 'cookie-policy',
+            'template' => 'templates/template-legal.php',
+            'excerpt'  => 'Informativa sui cookie utilizzati dal sito almaretna.it ai sensi del D.Lgs. 69/2012.',
+            'content'  => '<p>Questo sito utilizza esclusivamente cookie tecnici necessari al funzionamento. Non utilizziamo cookie di profilazione o di tracciamento pubblicitario.</p>
+
+<h2>1. Cosa sono i cookie</h2>
+<p>I cookie sono piccoli file di testo salvati nel browser durante la navigazione. Permettono al sito di ricordare le preferenze dell\'utente e di funzionare correttamente tra una visita e l\'altra.</p>
+
+<h2>2. Cookie tecnici necessari</h2>
+<p>Questi cookie sono strettamente necessari al funzionamento del sito e non richiedono consenso (art. 122 co. 1 D.Lgs. 196/2003):</p>
+<table>
+<thead><tr><th>Nome cookie</th><th>Scopo</th><th>Durata</th></tr></thead>
+<tbody>
+<tr><td><code>alm_lang</code></td><td>Salva la preferenza lingua selezionata dall\'utente (IT/EN/DE/FR/ES)</td><td>1 anno</td></tr>
+<tr><td><code>wordpress_logged_in_*</code></td><td>Sessione autenticata (solo area amministrativa)</td><td>Sessione</td></tr>
+<tr><td><code>cookie_notice_accepted</code></td><td>Registra l\'avvenuta visualizzazione del banner cookie</td><td>1 anno</td></tr>
+</tbody>
+</table>
+
+<h2>3. Cookie di terze parti</h2>
+<h3>Stripe (elaborazione pagamenti)</h3>
+<p>Durante il processo di pagamento, <strong>Stripe Inc.</strong> deposita cookie tecnici necessari per la sicurezza e il corretto completamento della transazione. Questi cookie sono attivi solo durante il checkout e sono soggetti alla <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy di Stripe</a>.</p>
+<p>Stripe è certificata PCI-DSS livello 1 e conforme al GDPR.</p>
+
+<h2>4. Cookie NON utilizzati</h2>
+<p>Questo sito <strong>non utilizza</strong>:</p>
+<ul>
+<li>Google Analytics o altri strumenti di analisi comportamentale</li>
+<li>Pixel di Facebook, TikTok o altri social</li>
+<li>Cookie pubblicitari o di retargeting</li>
+<li>Cookie di terze parti per profilazione</li>
+</ul>
+
+<h2>5. Come gestire i cookie</h2>
+<p>Puoi modificare le impostazioni dei cookie in qualsiasi momento dal tuo browser:</p>
+<ul>
+<li><a href="https://support.google.com/chrome/answer/95647?hl=it" target="_blank" rel="noopener noreferrer">Google Chrome</a></li>
+<li><a href="https://support.mozilla.org/it/kb/protezione-antitracciamento-avanzata-firefox-desktop" target="_blank" rel="noopener noreferrer">Mozilla Firefox</a></li>
+<li><a href="https://support.apple.com/it-it/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer">Apple Safari</a></li>
+<li><a href="https://support.microsoft.com/it-it/windows/eliminare-e-gestire-i-cookie-168dab11-0753-043d-7c16-ede5947fc64d" target="_blank" rel="noopener noreferrer">Microsoft Edge</a></li>
+</ul>
+<p>La disabilitazione dei cookie tecnici potrebbe compromettere alcune funzionalità del sito (es. selezione lingua, processo di prenotazione).</p>
+
+<h2>6. Contatti</h2>
+<p>Per qualsiasi domanda sui cookie o sul trattamento dei dati: <a href="mailto:info@almaretna.it">info@almaretna.it</a>.<br>
+Per l\'informativa completa sul trattamento dei dati personali consulta la <a href="/privacy-policy/">Privacy Policy</a>.</p>',
+        ],
+
+        // ── Termini e Condizioni ──────────────────────────────────────────────
+        [
+            'title'    => 'Termini e Condizioni',
+            'slug'     => 'termini-condizioni',
+            'template' => 'templates/template-legal.php',
+            'excerpt'  => 'Termini e condizioni generali di prenotazione e soggiorno presso Almaretna.',
+            'content'  => '<p>I presenti Termini e Condizioni regolano il rapporto contrattuale tra il gestore di <strong>Almaretna</strong> (di seguito "la struttura") e l\'ospite che effettua una prenotazione tramite il sito almaretna.it o altri canali autorizzati.</p>
+
+<h2>1. Prenotazione e conferma</h2>
+<p>La prenotazione si considera confermata al ricevimento dell\'email di conferma e del pagamento dell\'importo richiesto. La struttura invierà conferma all\'indirizzo email indicato entro 24 ore dalla prenotazione.</p>
+<p>Ogni prenotazione è <strong>nominativa e non trasferibile</strong> a terzi senza autorizzazione scritta della struttura.</p>
+<p>La struttura si riserva il diritto di rifiutare prenotazioni in caso di informazioni incomplete o errate.</p>
+
+<h2>2. Prezzi e pagamento</h2>
+<p>I prezzi indicati sono per camera/notte, IVA inclusa. Il pagamento avviene in modo sicuro tramite <strong>Stripe</strong>; la struttura non archivia i dati della carta di credito.</p>
+<p>Può essere richiesta una <strong>caparra confirmatoria</strong> (generalmente il 30% del totale) al momento della prenotazione. Il saldo si intende dovuto al check-in salvo diversa indicazione.</p>
+
+<h2>3. Cancellazione e rimborsi</h2>
+<p>Le condizioni di cancellazione dipendono dalla tariffa selezionata e sono indicate in fase di prenotazione:</p>
+<ul>
+<li><strong>Tariffa flessibile:</strong> cancellazione gratuita entro il termine indicato; oltre tale termine verrà addebitata la prima notte o la caparra versata.</li>
+<li><strong>Tariffa non rimborsabile:</strong> nessun rimborso in caso di cancellazione o no-show.</li>
+</ul>
+<p>I rimborsi sono elaborati entro <strong>5–10 giorni lavorativi</strong> sul metodo di pagamento originale.</p>
+<p>Per richiedere una cancellazione scrivere a <a href="mailto:info@almaretna.it">info@almaretna.it</a> indicando il numero di prenotazione (formato ALM-XXXX-XXXX).</p>
+
+<h2>4. Check-in e check-out</h2>
+<ul>
+<li><strong>Check-in:</strong> dalle ore <strong>15:00</strong> alle ore <strong>21:00</strong></li>
+<li><strong>Check-out:</strong> entro le ore <strong>11:00</strong></li>
+</ul>
+<p>Arrivi oltre le 21:00 o partenze anticipate devono essere comunicati anticipatamente. Check-in tardivi fuori orario sono possibili previo accordo scritto.</p>
+
+<h2>5. Regolamento della struttura</h2>
+<ul>
+<li>Vietato fumare negli ambienti interni</li>
+<li>Rispettare il silenzio dopo le <strong>23:00</strong></li>
+<li>Non introdurre animali domestici nella struttura</li>
+<li>Segnalare immediatamente danni o malfunzionamenti alla direzione</li>
+<li>La piscina è ad uso esclusivo degli ospiti; i minori devono essere sorvegliati da un adulto</li>
+<li>La struttura non è accessibile a persone con disabilità motorie gravi</li>
+</ul>
+<p>La struttura si riserva il diritto di richiedere l\'allontanamento di ospiti che non rispettino il regolamento, <strong>senza rimborso</strong>.</p>
+
+<h2>6. Responsabilità</h2>
+<p>La struttura non è responsabile per furto, smarrimento o danni a oggetti personali. Per valori importanti si consiglia di utilizzare la cassaforte in camera.</p>
+<p>La struttura declina ogni responsabilità per infortuni causati da inosservanza del regolamento o da comportamenti imprudenti (piscina, aree esterne).</p>
+
+<h2>7. Privacy</h2>
+<p>Il trattamento dei dati personali avviene nel rispetto del GDPR. Per i dettagli consulta la <a href="/privacy-policy/">Privacy Policy</a>.</p>
+
+<h2>8. Legge applicabile e foro competente</h2>
+<p>I presenti termini sono regolati dalla <strong>legge italiana</strong>. Per qualsiasi controversia non risolvibile in via amichevole, è competente il <strong>Foro di Catania</strong>.</p>
+
+<h2>9. Contatti</h2>
+<p><a href="mailto:info@almaretna.it">info@almaretna.it</a> &nbsp;|&nbsp; <a href="tel:+393332621974">+39 333 262 1974</a></p>',
+        ],
+
+        // ── Diritto di Recesso ────────────────────────────────────────────────
+        [
+            'title'    => 'Diritto di Recesso',
+            'slug'     => 'diritto-di-recesso',
+            'template' => 'templates/template-legal.php',
+            'excerpt'  => 'Informativa sul diritto di recesso per i contratti di alloggio turistico ai sensi del D.Lgs. 206/2005.',
+            'content'  => '<p>Questa pagina fornisce le informazioni previste dal <strong>D.Lgs. 206/2005 (Codice del Consumo)</strong> e dalla <strong>Direttiva UE 2011/83/UE</strong> in materia di diritto di recesso per i contratti conclusi a distanza.</p>
+
+<h2>1. Contratti di alloggio turistico: esenzione dal recesso standard</h2>
+<p>Ai sensi dell\'<strong>art. 47, comma 1, lettera g) del D.Lgs. 206/2005</strong> — che recepisce l\'art. 16, lettera l) della Direttiva 2011/83/UE — i contratti di <strong>fornitura di servizi di alloggio per fini non abitativi</strong> (quali i soggiorni turistici) con <strong>data o periodo di esecuzione specifici</strong> sono <em>esclusi</em> dall\'applicazione del diritto di recesso di 14 giorni previsto per i contratti a distanza.</p>
+<p>Questa esclusione si applica alle prenotazioni effettuate su almaretna.it: una volta confermata la prenotazione, non è possibile invocare il diritto di recesso ex art. 52 D.Lgs. 206/2005.</p>
+
+<h2>2. Perché esiste questa esenzione?</h2>
+<p>L\'esenzione è prevista dalla legge per tutelare le strutture ricettive che, a fronte di una prenotazione, devono bloccare disponibilità e organizzare risorse per date precise. Consentire recessi illimitati renderebbe impossibile la gestione delle disponibilità.</p>
+
+<h2>3. Cancellazione volontaria</h2>
+<p>Sebbene il diritto di recesso legale non si applichi, è sempre possibile <strong>cancellare volontariamente</strong> la prenotazione nel rispetto della politica di cancellazione specifica della tariffa scelta, come indicato nel riepilogo della prenotazione e nei <a href="/termini-condizioni/">Termini e Condizioni</a>.</p>
+<table>
+<thead><tr><th>Tariffa</th><th>Possibilità di cancellazione</th><th>Rimborso</th></tr></thead>
+<tbody>
+<tr><td>Flessibile</td><td>Entro il termine indicato in prenotazione</td><td>Sì, parziale o totale</td></tr>
+<tr><td>Non rimborsabile</td><td>Sempre possibile</td><td>No</td></tr>
+</tbody>
+</table>
+
+<h2>4. Modalità di cancellazione</h2>
+<p>Per cancellare una prenotazione scrivere a <a href="mailto:info@almaretna.it">info@almaretna.it</a> indicando:</p>
+<ul>
+<li>Numero di prenotazione (formato ALM-XXXX-XXXX)</li>
+<li>Nome del titolare della prenotazione</li>
+<li>Date del soggiorno</li>
+</ul>
+<p>La struttura confermerà la cancellazione entro 24 ore lavorative.</p>
+
+<h2>5. Rimborsi</h2>
+<p>Eventuali rimborsi previsti dalla politica di cancellazione sono elaborati entro <strong>5–10 giorni lavorativi</strong> tramite il metodo di pagamento originale (Stripe).</p>
+
+<h2>6. Riferimenti normativi</h2>
+<ul>
+<li>D.Lgs. 206/2005, art. 47 comma 1 lett. g) — Esclusioni dal diritto di recesso</li>
+<li>Direttiva UE 2011/83/UE, art. 16 lett. l) — Diritti dei consumatori</li>
+<li>Regolamento UE 2016/679 (GDPR) — Protezione dei dati personali</li>
+</ul>
+
+<h2>7. Contatti</h2>
+<p>Per qualsiasi domanda: <a href="mailto:info@almaretna.it">info@almaretna.it</a> &nbsp;|&nbsp; <a href="tel:+393332621974">+39 333 262 1974</a></p>',
+        ],
+
+        // ── Cancellazione (legacy — rimane per compatibilità) ─────────────────
         [
             'title'    => 'Politica di cancellazione',
             'slug'     => 'cancellazione',
             'template' => '',
             'excerpt'  => 'Politica di cancellazione e rimborso di Almaretna.',
-            'content'  => '<section class="section-padding">
-<div class="container" style="max-width:800px;">
-
-<h1 class="section-title">Politica di cancellazione</h1>
-<div class="divider"></div>
-
-<div class="alert alert-warning" style="margin-bottom:2rem;">
-<span class="dashicons dashicons-info"></span>
-<strong>Nota:</strong> La politica di cancellazione definitiva deve essere definita con il proprietario. Il contenuto qui sotto è un placeholder.
-</div>
-
-<p style="line-height:1.8;margin-bottom:2rem;color:var(--color-text-light);">
-<em>[Da definire con il proprietario della struttura prima del go live. Di seguito un esempio di struttura tipica per una casa vacanze in Sicilia.]</em>
-</p>
-
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">Condizioni generali</h2>
-<ul style="line-height:2;padding-left:1.5rem;margin-bottom:2rem;">
-<li><strong>Cancellazione gratuita:</strong> [X] giorni prima del check-in — rimborso completo</li>
-<li><strong>Cancellazione parziale:</strong> tra [X] e [Y] giorni prima — rimborso del [%]</li>
-<li><strong>Cancellazione tardiva:</strong> meno di [Y] giorni prima — nessun rimborso</li>
-<li><strong>No-show:</strong> addebito dell\'intero importo</li>
-</ul>
-
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">Come richiedere la cancellazione</h2>
-<p style="line-height:1.8;margin-bottom:2rem;">
-Per cancellare una prenotazione scrivi a <a href="mailto:">[email struttura]</a> indicando il numero di riferimento prenotazione (formato ALM-XXXX-XXXX).
-</p>
-
-<h2 style="font-family:var(--font-heading);font-size:var(--fs-xl);margin-bottom:1rem;">Rimborsi</h2>
-<p style="line-height:1.8;margin-bottom:2rem;">
-I rimborsi vengono elaborati entro 5-10 giorni lavorativi sul metodo di pagamento originale (carta di credito/debito via Stripe).
-</p>
-
-</div>
-</section>',
+            'content'  => '',
         ],
 
     ];
@@ -563,3 +673,54 @@ add_action('init', function (): void {
         update_option('alm_pages_updated_beige_v3', '1');
     }
 }, 20);
+
+// ─── Migrazione v2: pagine legali professionali ────────────────────────────────
+// Crea le 3 pagine legali mancanti, aggiorna la privacy policy e assegna
+// il template professionale a tutte e 4 le pagine legali.
+
+add_action('init', function (): void {
+    if (get_option('alm_legal_pages_v1') === '1') return;
+
+    $legal_slugs = ['privacy-policy', 'cookie-policy', 'termini-condizioni', 'diritto-di-recesso'];
+    $pages_config = alm_get_pages_config();
+
+    // Indicizza config per slug
+    $config_by_slug = [];
+    foreach ($pages_config as $p) {
+        $config_by_slug[$p['slug']] = $p;
+    }
+
+    foreach ($legal_slugs as $slug) {
+        if (!isset($config_by_slug[$slug])) continue;
+        $cfg = $config_by_slug[$slug];
+
+        $existing = get_page_by_path($slug);
+
+        if (!$existing instanceof WP_Post) {
+            // Crea la pagina se non esiste
+            $post_id = wp_insert_post([
+                'post_type'    => 'page',
+                'post_status'  => 'publish',
+                'post_title'   => $cfg['title'],
+                'post_name'    => $slug,
+                'post_content' => $cfg['content'],
+                'post_excerpt' => $cfg['excerpt'] ?? '',
+            ]);
+            if (!is_wp_error($post_id)) {
+                update_post_meta($post_id, '_wp_page_template', 'templates/template-legal.php');
+            }
+        } else {
+            // Aggiorna contenuto e template della pagina esistente
+            if (!empty($cfg['content'])) {
+                wp_update_post([
+                    'ID'           => $existing->ID,
+                    'post_content' => $cfg['content'],
+                    'post_excerpt' => $cfg['excerpt'] ?? '',
+                ]);
+            }
+            update_post_meta($existing->ID, '_wp_page_template', 'templates/template-legal.php');
+        }
+    }
+
+    update_option('alm_legal_pages_v1', '1');
+}, 25);

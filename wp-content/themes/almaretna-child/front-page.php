@@ -862,7 +862,7 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
     for ($g = 0; $g < 5; $g++) :
         $img = $gallery_imgs[$g] ?? '';
     ?>
-    <div class="gallery-strip__item">
+    <a href="<?php echo esc_url($camere_url); ?>" class="gallery-strip__item" aria-label="<?php echo esc_attr(alm_t('gallery.all')); ?>">
         <?php if ($img) : ?>
             <img class="gallery-strip__img" src="<?php echo esc_url($img); ?>"
                  alt="Almaretna gallery" loading="lazy" />
@@ -872,11 +872,11 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
         <?php endif; ?>
         <div class="gallery-strip__overlay"></div>
         <?php if ($g === 4) : ?>
-        <a href="<?php echo esc_url($camere_url); ?>" class="gallery-strip__view-all">
+        <span class="gallery-strip__view-all">
             <?php echo esc_html(alm_t('gallery.all')); ?>
-        </a>
+        </span>
         <?php endif; ?>
-    </div>
+    </a>
     <?php endfor; ?>
 </div>
 <?php endif; ?>

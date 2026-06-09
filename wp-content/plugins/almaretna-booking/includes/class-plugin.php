@@ -39,7 +39,8 @@ class ALM_Plugin {
      * Avvia il plugin: registra tutti gli hook.
      */
     public function run(): void {
-        $this->load_textdomain();
+        // WP 6.7+: load_plugin_textdomain deve essere sull'hook init o successivo
+        add_action('init', [$this, 'load_textdomain']);
         $this->define_admin_hooks();
         $this->define_public_hooks();
         $this->define_api_hooks();
@@ -48,8 +49,9 @@ class ALM_Plugin {
 
     /**
      * Carica il text domain per le traduzioni.
+     * Registrato su 'init' per rispettare WP 6.7.0+.
      */
-    private function load_textdomain(): void {
+    public function load_textdomain(): void {
         load_plugin_textdomain(
             'almaretna-booking',
             false,

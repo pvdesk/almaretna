@@ -89,10 +89,6 @@ $hero_subtitle = ($lang === 'it')
         </div>
     </div>
 
-    <a href="#booking-strip" class="hero-premium__scroll" aria-label="<?php echo esc_attr(alm_t('hero.scroll')); ?>">
-        <span class="hero-premium__scroll-label"><?php echo esc_html(alm_t('hero.scroll')); ?></span>
-        <span class="hero-premium__scroll-line"></span>
-    </a>
 </section>
 
 <?php /* ═══════════════════════════════════════════════════════

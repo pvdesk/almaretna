@@ -214,7 +214,7 @@
             try {
                 var url = new URL(a.href, origin);
                 if (url.origin !== origin) continue;
-                if (url.searchParams.get('lang') === lang) continue;
+                if (url.searchParams.has('lang')) continue; // preserva i link del selettore lingua
                 url.searchParams.set('lang', lang);
                 a.href = url.toString();
             } catch (e) {}

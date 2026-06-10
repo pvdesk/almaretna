@@ -19,15 +19,10 @@ add_action('send_headers', function (): void {
     $allowed = ['it', 'en', 'de', 'fr', 'es'];
     $lang    = sanitize_key((string) ($_GET['lang'] ?? ''));
     if (in_array($lang, $allowed, true)) {
-        // ?lang=XX presente: imposta cookie di SESSIONE (scade alla chiusura del browser)
+        // Cookie di SESSIONE (0 = scade alla chiusura del browser)
+        // Nessun cookie persistente: prima apertura del browser → sempre italiano
         setcookie('alm_lang', $lang, 0, '/');
         $_COOKIE['alm_lang'] = $lang;
-    } else {
-        // Nessun ?lang= nell'URL: cancella il cookie → la pagina mostra sempre italiano
-        if (isset($_COOKIE['alm_lang'])) {
-            setcookie('alm_lang', '', time() - 3600, '/');
-            unset($_COOKIE['alm_lang']);
-        }
     }
 });
 

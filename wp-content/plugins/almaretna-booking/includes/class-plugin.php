@@ -83,6 +83,10 @@ class ALM_Plugin {
         add_action('wp_ajax_alm_admin_get_calendar',  [$admin, 'ajax_get_calendar']);
         add_action('wp_ajax_alm_test_beds24',         [$admin, 'ajax_test_beds24']);
         add_action('wp_ajax_alm_write_stripe_config', [$admin, 'ajax_write_stripe_config']);
+        add_action('wp_ajax_alm_save_gsc',           [$admin, 'ajax_save_gsc']);
+        add_action('wp_ajax_alm_unlock_gsc',         [$admin, 'ajax_unlock_gsc']);
+        add_action('wp_ajax_alm_save_ga4',           [$admin, 'ajax_save_ga4']);
+        add_action('wp_ajax_alm_unlock_ga4',         [$admin, 'ajax_unlock_ga4']);
     }
 
     /**
@@ -92,6 +96,26 @@ class ALM_Plugin {
         $public = new ALM_Public($this->version);
 
         add_action('wp_enqueue_scripts', [$public, 'enqueue_assets']);
+
+        // Google Search Console — meta tag di verifica
+        add_action('wp_head', static function (): void {
+            $code = get_option('alm_gsc_verification', '');
+            if ($code !== '') {
+                echo '<meta name="google-site-verification" content="' . esc_attr($code) . '">' . "\n";
+            }
+        }, 1);
+
+        // Google Analytics 4 — snippet gtag.js
+        add_action('wp_head', static function (): void {
+            $id = get_option('alm_ga4_measurement_id', '');
+            if ($id !== '' && preg_match('/^G-[A-Z0-9]+$/i', $id)) {
+                $eid = esc_attr($id);
+                echo "<!-- Google tag (gtag.js) -->\n";
+                echo '<script async src="https://www.googletagmanager.com/gtag/js?id=' . $eid . '"></script>' . "\n";
+                echo '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}';
+                echo 'gtag(\'js\',new Date());gtag(\'config\',\'' . esc_js($id) . '\');</script>' . "\n";
+            }
+        }, 5);
 
         // Shortcodes
         $shortcodes = new ALM_Shortcodes();

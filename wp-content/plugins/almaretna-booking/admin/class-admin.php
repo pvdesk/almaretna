@@ -681,6 +681,56 @@ class ALM_Admin {
         ]);
     }
 
+    // ── AJAX: Google Search Console ───────────────────────────────────────────
+
+    public function ajax_save_gsc(): void {
+        check_ajax_referer('alm_save_gsc', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        $code = sanitize_text_field(wp_unslash($_POST['code'] ?? ''));
+        if ($code === '') {
+            wp_send_json_error('Inserisci il codice di verifica.');
+        }
+        update_option('alm_gsc_verification', $code);
+        update_option('alm_gsc_locked', true);
+        wp_send_json_success(['message' => 'Codice salvato. Card congelata.']);
+    }
+
+    public function ajax_unlock_gsc(): void {
+        check_ajax_referer('alm_unlock_gsc', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        update_option('alm_gsc_locked', false);
+        wp_send_json_success(['message' => 'Card sbloccata.']);
+    }
+
+    // ── AJAX: Google Analytics 4 ───────────────────────────────────────────────
+
+    public function ajax_save_ga4(): void {
+        check_ajax_referer('alm_save_ga4', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        $id = strtoupper(sanitize_text_field(wp_unslash($_POST['id'] ?? '')));
+        if (!preg_match('/^G-[A-Z0-9]+$/', $id)) {
+            wp_send_json_error('Measurement ID non valido (formato atteso: G-XXXXXXXXXX).');
+        }
+        update_option('alm_ga4_measurement_id', $id);
+        update_option('alm_ga4_locked', true);
+        wp_send_json_success(['message' => 'ID salvato. Card congelata.']);
+    }
+
+    public function ajax_unlock_ga4(): void {
+        check_ajax_referer('alm_unlock_ga4', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        update_option('alm_ga4_locked', false);
+        wp_send_json_success(['message' => 'Card sbloccata.']);
+    }
+
     // ── AJAX: testa la connessione Beds24 ─────────────────────────────────────
 
     public function ajax_test_beds24(): void {

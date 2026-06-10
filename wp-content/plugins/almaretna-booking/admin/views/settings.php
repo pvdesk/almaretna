@@ -82,7 +82,12 @@ $s = is_array($settings) ? $settings : [];
             </table>
         </div>
 
-        <!-- Stripe (card collassata) -->
+        <!-- ── Stripe ──────────────────────────────────────────────────────────────
+             Due card collassate:
+             1. "Stripe — chiavi (database)"  → chiavi via DB o mostra sola lettura se da wp-config
+             2. "Stripe — scrivi in wp-config" → scrive define() nel file wp-config.php
+             Clicca l'intestazione per espandere.
+        ─────────────────────────────────────────────────────────────────────── -->
         <?php
         $stripe_configured = ALM_Stripe::is_configured();
         $stripe_from_cfg   = ALM_Stripe::keys_source() === 'config';
@@ -470,6 +475,244 @@ define('ALM_BEDS24_WEBHOOK_TOKEN', 'webhook-secret');</pre>
         <?php submit_button(__('Salva impostazioni', 'almaretna-booking')); ?>
 
     </form>
+
+    <!-- ── Google Search Console ────────────────────────────────────────── -->
+    <?php
+    $gsc_code   = get_option('alm_gsc_verification', '');
+    $gsc_locked = (bool) get_option('alm_gsc_locked', false);
+    ?>
+    <div class="alm-admin-card" id="alm-gsc-card" style="max-width:720px;margin-top:32px;margin-bottom:24px;">
+
+        <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almGscToggle()">
+            <h2 style="display:flex;align-items:center;gap:10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Google Search Console
+            </h2>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <?php if ($gsc_locked) : ?>
+                    <span class="alm-badge alm-badge--success">Verificato 🔒</span>
+                <?php elseif ($gsc_code !== '') : ?>
+                    <span class="alm-badge alm-badge--warning">Codice inserito</span>
+                <?php else : ?>
+                    <span class="alm-badge alm-badge--error">Non configurato</span>
+                <?php endif; ?>
+                <span id="alm-gsc-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+            </div>
+        </div>
+
+        <div id="alm-gsc-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+
+            <?php if ($gsc_locked) : ?>
+            <!-- Sola lettura -->
+            <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#2e7d32;">
+                <strong>Card congelata — connessione stabilita.</strong><br>
+                Il tag di verifica è attivo nel <code>&lt;head&gt;</code> del sito.
+            </div>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th style="width:160px;">Codice verifica</th>
+                    <td><code style="color:#555;word-break:break-all;"><?php echo esc_html($gsc_code); ?></code></td>
+                </tr>
+            </table>
+            <div style="margin-top:16px;">
+                <button type="button" class="button button-secondary"
+                        onclick="almGscUnlock('<?php echo esc_js(wp_create_nonce('alm_unlock_gsc')); ?>')">
+                    🔓 Modifica (sblocca card)
+                </button>
+            </div>
+
+            <?php else : ?>
+            <!-- Form -->
+            <p style="font-size:13px;color:#666;margin:0 0 16px;">
+                Incolla il codice di verifica Google Search Console.<br>
+                Trovi il valore in <strong>GSC → Impostazioni → Verifica proprietà → Tag HTML</strong>
+                — copia solo il contenuto dell'attributo <code>content</code>, non tutto il tag.
+            </p>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th style="width:160px;"><label for="alm-gsc-code">Codice verifica</label></th>
+                    <td>
+                        <input type="text" id="alm-gsc-code" class="large-text"
+                               value="<?php echo esc_attr($gsc_code); ?>"
+                               placeholder="AbCdEf1234…" autocomplete="off" />
+                        <p class="description">Esempio: <code>AbCdEfGhIjKlMnOpQrStUvWxYz1234567</code></p>
+                    </td>
+                </tr>
+            </table>
+            <div id="alm-gsc-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
+            <div style="margin-top:16px;display:flex;align-items:center;gap:16px;">
+                <button type="button" id="alm-gsc-save" class="button button-primary"
+                        onclick="almGscSave('<?php echo esc_js(wp_create_nonce('alm_save_gsc')); ?>')">
+                    Salva e congela
+                </button>
+                <span style="font-size:12px;color:#999;">La card si blocca dopo il salvataggio.</span>
+            </div>
+            <?php endif; ?>
+
+        </div><!-- /body -->
+    </div><!-- /gsc-card -->
+
+    <!-- ── Google Analytics 4 ─────────────────────────────────────────────── -->
+    <?php
+    $ga4_id     = get_option('alm_ga4_measurement_id', '');
+    $ga4_locked = (bool) get_option('alm_ga4_locked', false);
+    ?>
+    <div class="alm-admin-card" id="alm-ga4-card" style="max-width:720px;margin-bottom:24px;">
+
+        <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almGa4Toggle()">
+            <h2 style="display:flex;align-items:center;gap:10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Google Analytics 4
+            </h2>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <?php if ($ga4_locked) : ?>
+                    <span class="alm-badge alm-badge--success">Attivo 🔒</span>
+                <?php elseif ($ga4_id !== '') : ?>
+                    <span class="alm-badge alm-badge--warning">ID inserito</span>
+                <?php else : ?>
+                    <span class="alm-badge alm-badge--error">Non configurato</span>
+                <?php endif; ?>
+                <span id="alm-ga4-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+            </div>
+        </div>
+
+        <div id="alm-ga4-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+
+            <?php if ($ga4_locked) : ?>
+            <!-- Sola lettura -->
+            <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#2e7d32;">
+                <strong>Card congelata — snippet GA4 attivo nel sito.</strong><br>
+                Il tag <code>gtag.js</code> viene caricato automaticamente su ogni pagina.
+            </div>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th style="width:160px;">Measurement ID</th>
+                    <td><code style="color:#555;"><?php echo esc_html($ga4_id); ?></code></td>
+                </tr>
+            </table>
+            <div style="margin-top:16px;">
+                <button type="button" class="button button-secondary"
+                        onclick="almGa4Unlock('<?php echo esc_js(wp_create_nonce('alm_unlock_ga4')); ?>')">
+                    🔓 Modifica (sblocca card)
+                </button>
+            </div>
+
+            <?php else : ?>
+            <!-- Form -->
+            <p style="font-size:13px;color:#666;margin:0 0 16px;">
+                Inserisci il Measurement ID del tuo property Google Analytics 4.<br>
+                Trovi l'ID in <strong>GA4 → Amministrazione → Flussi di dati → seleziona il flusso web → ID misurazione</strong>.
+            </p>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th style="width:160px;"><label for="alm-ga4-id">Measurement ID</label></th>
+                    <td>
+                        <input type="text" id="alm-ga4-id" class="regular-text"
+                               value="<?php echo esc_attr($ga4_id); ?>"
+                               placeholder="G-XXXXXXXXXX" autocomplete="off"
+                               style="font-family:monospace;letter-spacing:.5px;" />
+                        <p class="description">Formato: <code>G-</code> seguito da lettere e numeri.</p>
+                    </td>
+                </tr>
+            </table>
+            <div id="alm-ga4-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
+            <div style="margin-top:16px;display:flex;align-items:center;gap:16px;">
+                <button type="button" id="alm-ga4-save" class="button button-primary"
+                        onclick="almGa4Save('<?php echo esc_js(wp_create_nonce('alm_save_ga4')); ?>')">
+                    Salva e congela
+                </button>
+                <span style="font-size:12px;color:#999;">La card si blocca dopo il salvataggio.</span>
+            </div>
+            <?php endif; ?>
+
+        </div><!-- /body -->
+    </div><!-- /ga4-card -->
+
+    <script>
+    /* ── GSC ── */
+    function almGscToggle() {
+        var b = document.getElementById('alm-gsc-body');
+        var c = document.getElementById('alm-gsc-chevron');
+        var open = b.style.display === 'none';
+        b.style.display = open ? 'block' : 'none';
+        c.style.transform = open ? 'rotate(180deg)' : '';
+    }
+    function almGscSave(nonce) {
+        var code = (document.getElementById('alm-gsc-code') || {}).value || '';
+        code = code.trim();
+        if (!code) { almGscMsg('Inserisci il codice di verifica.', false); return; }
+        var btn = document.getElementById('alm-gsc-save');
+        btn.disabled = true; btn.textContent = 'Salvataggio…';
+        almAjax('alm_save_gsc', nonce, { code: code }, 'alm-gsc-msg', btn, 'Salva e congela');
+    }
+    function almGscUnlock(nonce) {
+        if (!confirm('Sbloccare la card GSC per modificare il codice?')) return;
+        almAjax('alm_unlock_gsc', nonce, {}, null, null, null);
+    }
+
+    /* ── GA4 ── */
+    function almGa4Toggle() {
+        var b = document.getElementById('alm-ga4-body');
+        var c = document.getElementById('alm-ga4-chevron');
+        var open = b.style.display === 'none';
+        b.style.display = open ? 'block' : 'none';
+        c.style.transform = open ? 'rotate(180deg)' : '';
+    }
+    function almGa4Save(nonce) {
+        var id = (document.getElementById('alm-ga4-id') || {}).value || '';
+        id = id.trim();
+        if (!id) { almGa4Msg('Inserisci il Measurement ID.', false); return; }
+        var btn = document.getElementById('alm-ga4-save');
+        btn.disabled = true; btn.textContent = 'Salvataggio…';
+        almAjax('alm_save_ga4', nonce, { id: id }, 'alm-ga4-msg', btn, 'Salva e congela');
+    }
+    function almGa4Unlock(nonce) {
+        if (!confirm('Sbloccare la card GA4 per modificare l\'ID?')) return;
+        almAjax('alm_unlock_ga4', nonce, {}, null, null, null);
+    }
+
+    /* ── Shared AJAX helper ── */
+    function almAjax(action, nonce, extra, msgId, btn, btnLabel) {
+        var fd = new FormData();
+        fd.append('action', action); fd.append('nonce', nonce);
+        Object.keys(extra).forEach(function(k) { fd.append(k, extra[k]); });
+        fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    if (msgId) {
+                        var el = document.getElementById(msgId);
+                        el.style.display = 'block';
+                        el.style.background = '#f0f9f0'; el.style.border = '1px solid #a8d5a2';
+                        el.style.color = '#2e7d32';
+                        el.textContent = '✓ ' + (data.data.message || 'OK');
+                    }
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    var msg = data.data || 'Errore.';
+                    if (msgId) {
+                        var el2 = document.getElementById(msgId);
+                        el2.style.display = 'block';
+                        el2.style.background = '#fdf0f0'; el2.style.border = '1px solid #f5a5a5';
+                        el2.style.color = '#c62828'; el2.textContent = msg;
+                    }
+                    if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
+                }
+            })
+            .catch(function() {
+                if (msgId) {
+                    var el3 = document.getElementById(msgId);
+                    el3.style.display = 'block'; el3.style.color = '#c62828';
+                    el3.textContent = 'Errore di rete. Riprova.';
+                }
+                if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
+            });
+    }
+
+    /* Auto-apri le card non ancora configurate */
+    <?php if (!$gsc_locked) : ?>almGscToggle();<?php endif; ?>
+    <?php if (!$ga4_locked) : ?>almGa4Toggle();<?php endif; ?>
+    </script>
 
     <!-- ── Checklist pre-lancio ────────────────────────────────────────── -->
     <div class="alm-admin-card" style="max-width:720px;margin-top:32px;margin-bottom:24px;">

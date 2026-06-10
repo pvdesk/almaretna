@@ -19,9 +19,9 @@ add_action('send_headers', function (): void {
     $allowed = ['it', 'en', 'de', 'fr', 'es'];
     $lang    = sanitize_key((string) ($_GET['lang'] ?? ''));
     if (in_array($lang, $allowed, true)) {
-        // Cookie di SESSIONE (0 = scade alla chiusura del browser)
-        // Nessun cookie persistente: prima apertura del browser → sempre italiano
-        setcookie('alm_lang', $lang, 0, '/');
+        // Cookie persistente 30 giorni — si imposta SOLO se l'utente clicca ?lang=
+        // Prima visita assoluta (nessun cookie) → default italiano
+        setcookie('alm_lang', $lang, time() + (30 * DAY_IN_SECONDS), '/');
         $_COOKIE['alm_lang'] = $lang;
     }
 });

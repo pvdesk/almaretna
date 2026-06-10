@@ -195,8 +195,10 @@
     var lang = langFromUrl() || langFromCookie();
     if (!lang || lang === 'it' || ALLOWED.indexOf(lang) === -1) return;
 
-    // Cookie di sessione — nessun max-age, scade alla chiusura del browser
-    document.cookie = 'alm_lang=' + lang + '; path=/; SameSite=Lax';
+    // Cookie persistente 30 giorni — si imposta solo dopo clic selettore
+    var d = new Date();
+    d.setDate(d.getDate() + 30);
+    document.cookie = 'alm_lang=' + lang + '; path=/; SameSite=Lax; expires=' + d.toUTCString();
 
     // Propaga ?lang=XX a tutti i link interni
     function propagateLang() {

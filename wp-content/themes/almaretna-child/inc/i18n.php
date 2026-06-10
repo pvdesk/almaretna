@@ -18,11 +18,17 @@ defined('ABSPATH') || exit;
 add_action('send_headers', function (): void {
     $allowed = ['it', 'en', 'de', 'fr', 'es'];
     $lang    = sanitize_key((string) ($_GET['lang'] ?? ''));
+
     if (in_array($lang, $allowed, true)) {
-        // Cookie persistente 30 giorni — si imposta SOLO se l'utente clicca ?lang=
-        // Prima visita assoluta (nessun cookie) → default italiano
+        // ?lang=XX esplicito → imposta cookie 30 giorni
         setcookie('alm_lang', $lang, time() + (30 * DAY_IN_SECONDS), '/');
         $_COOKIE['alm_lang'] = $lang;
+    } elseif (is_front_page() && ($_COOKIE['alm_lang'] ?? 'it') !== 'it') {
+        // Homepage senza ?lang= → reset a italiano.
+        // Evita che un cookie residuo da test/sessioni precedenti
+        // faccia apparire i link di navigazione con ?lang=XX.
+        setcookie('alm_lang', 'it', time() + (30 * DAY_IN_SECONDS), '/');
+        $_COOKIE['alm_lang'] = 'it';
     }
 });
 

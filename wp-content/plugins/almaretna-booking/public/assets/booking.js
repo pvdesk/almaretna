@@ -490,10 +490,10 @@
                   'Soggiorno minimo: ' + room.min_stay + ' notti</div>'
                 : '';
 
-            const nightLabel   = state.nights === 1 ? 'notte' : 'notti';
-            const basePrice    = parseFloat(room.base_price || 0);
-            const totalEur     = basePrice * state.nights;
-            const totalPriceHtml = basePrice
+            const nightLabel    = state.nights === 1 ? 'notte' : 'notti';
+            const pricePerNight = parseFloat(room.price_per_night || room.base_price || 0);
+            const totalEur      = parseFloat(room.total_price || 0) || (pricePerNight * state.nights);
+            const totalPriceHtml = pricePerNight
                 ? '<div class="room-result-card__price-total">Totale ' + formatPrice(totalEur) + ' per ' + state.nights + ' ' + nightLabel + '</div>'
                 : '';
 
@@ -514,7 +514,7 @@
                 '<div class="room-result-card__pricing">' +
                 '<div class="room-result-card__price-box">' +
                 '<div class="room-result-card__price-per-night">' +
-                '<span class="room-result-card__price-amount">€ ' + escHtml(basePrice.toFixed(2).replace('.', ',')) + '</span>' +
+                '<span class="room-result-card__price-amount">€ ' + escHtml(pricePerNight.toFixed(2).replace('.', ',')) + '</span>' +
                 '<span class="room-result-card__price-unit"> / notte</span>' +
                 '</div>' +
                 totalPriceHtml +

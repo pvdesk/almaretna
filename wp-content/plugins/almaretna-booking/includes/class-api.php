@@ -426,7 +426,49 @@ class ALM_API {
             ]);
         }
 
-        $confirmed = $booking->confirm($pi_id ?: null);
+        // Verifica pagamento Stripe prima di confermare.
+        // Usa il pi_id dalla richiesta oppure quello già salvato nella prenotazione.
+        $pi_id_to_verify = $pi_id ?: ($booking->payment_ref ?: '');
+
+        if (!$pi_id_to_verify) {
+            return new WP_Error(
+                'payment_required',
+                __('ID pagamento richiesto per la conferma.', 'almaretna-booking'),
+                ['status' => 400]
+            );
+        }
+
+        if (ALM_Stripe::is_configured()) {
+            $intent = ALM_Stripe::get_payment_intent($pi_id_to_verify);
+
+            if (is_wp_error($intent)) {
+                return new WP_Error(
+                    'payment_verify_failed',
+                    __('Impossibile verificare il pagamento con Stripe.', 'almaretna-booking'),
+                    ['status' => 422]
+                );
+            }
+
+            if (($intent['status'] ?? '') !== 'succeeded') {
+                return new WP_Error(
+                    'payment_not_succeeded',
+                    __('Il pagamento non risulta completato.', 'almaretna-booking'),
+                    ['status' => 422]
+                );
+            }
+
+            // Verifica che il PaymentIntent appartenga a questa prenotazione.
+            $ref_in_meta = $intent['metadata']['booking_ref'] ?? '';
+            if ($ref_in_meta && $ref_in_meta !== $booking_ref) {
+                return new WP_Error(
+                    'payment_mismatch',
+                    __('Il pagamento non corrisponde alla prenotazione indicata.', 'almaretna-booking'),
+                    ['status' => 403]
+                );
+            }
+        }
+
+        $confirmed = $booking->confirm($pi_id_to_verify ?: null);
         if (!$confirmed) {
             return new WP_Error('confirm_failed', __('Impossibile confermare la prenotazione.', 'almaretna-booking'), ['status' => 500]);
         }

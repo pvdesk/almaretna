@@ -80,6 +80,9 @@ class ALM_Booking {
     /** @var string|null Note interne. */
     public ?string $notes = null;
 
+    /** @var int|null ID utente WordPress associato. */
+    public ?int $user_id = null;
+
     /** @var string|null Data creazione. */
     public ?string $created_at = null;
 

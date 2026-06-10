@@ -129,9 +129,13 @@ add_action('wp_enqueue_scripts', function (): void {
     wp_localize_script('almaretna-booking-form', 'alm_theme_vars', [
         'ajax_url'               => admin_url('admin-ajax.php'),
         'nonce'                  => wp_create_nonce('alm_theme_nonce'),
-        'stripe_publishable_key' => defined('ALM_STRIPE_PUBLISHABLE_KEY') ? ALM_STRIPE_PUBLISHABLE_KEY : '',
+        'stripe_publishable_key' => class_exists('ALM_Stripe') ? ALM_Stripe::get_publishable_key() : (defined('ALM_STRIPE_PUBLISHABLE_KEY') ? ALM_STRIPE_PUBLISHABLE_KEY : ''),
         'siteurl'                => get_site_url(),
         'rest_url'               => get_rest_url(null, 'scv/v1/'),
+        'confirmation_url'       => (function (): string {
+            $page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
+            return !empty($page) ? (string) get_permalink($page[0]->ID) : home_url('/prenota/');
+        })(),
         'i18n'                   => [
             'calculating'  => alm_t('js.calculating'),
             'dates_unavail'=> alm_t('js.dates_unavail'),
@@ -248,38 +252,15 @@ add_action('wp_footer', function (): void {
 add_action('wp_footer', function (): void {
     ?>
     <script id="alm-reveal">
+    /* Rivela subito gli elementi [data-reveal] già nel viewport al caricamento.
+       L'IntersectionObserver per il resto è gestito da navigation.js. */
     (function(){
-        // Aggiunge is-visible agli elementi già nel viewport (rimuove la traslazione)
-        function revealVisible(){
-            var winH = window.innerHeight;
-            document.querySelectorAll('[data-reveal]').forEach(function(el){
-                var top = el.getBoundingClientRect().top;
-                if(top < winH + 80){ el.classList.add('is-visible'); }
-            });
-        }
-
-        // Esegui subito e ad ogni scroll
-        revealVisible();
-
-        if('IntersectionObserver' in window){
-            var obs = new IntersectionObserver(function(entries){
-                entries.forEach(function(e){
-                    if(e.isIntersecting){
-                        e.target.classList.add('is-visible');
-                        obs.unobserve(e.target);
-                    }
-                });
-            },{threshold:0.08, rootMargin:'0px 0px -20px 0px'});
-
-            document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach(function(el){
-                obs.observe(el);
-            });
-        } else {
-            // Fallback: tutto visibile
-            document.querySelectorAll('[data-reveal]').forEach(function(el){
+        var winH = window.innerHeight;
+        document.querySelectorAll('[data-reveal]').forEach(function(el){
+            if(el.getBoundingClientRect().top < winH + 80){
                 el.classList.add('is-visible');
-            });
-        }
+            }
+        });
     })();
     </script>
     <?php
@@ -592,7 +573,7 @@ add_action('init', function (): void {
         update_option('alm_schema_facebook_url', 'https://www.facebook.com/share/1H8YRGCYaC/');
     }
     if (!get_option('alm_schema_instagram_url')) {
-        update_option('alm_schema_instagram_url', 'https://www.instagram.com/alamretna_sicily/');
+        update_option('alm_schema_instagram_url', 'https://www.instagram.com/almaretna_sicily/');
     }
     $settings = (array) get_option('alm_booking_settings', []);
     $changed  = false;

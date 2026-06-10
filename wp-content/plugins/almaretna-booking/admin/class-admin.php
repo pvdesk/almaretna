@@ -597,6 +597,90 @@ class ALM_Admin {
         include $file;
     }
 
+    // ── AJAX: scrivi chiavi Stripe in wp-config.php ───────────────────────────
+
+    public function ajax_write_stripe_config(): void {
+        check_ajax_referer('alm_write_stripe_config', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Permesso negato.', 'almaretna-booking'), 403);
+        }
+
+        if (ALM_Stripe::keys_source() === 'config') {
+            wp_send_json_error(__('Le chiavi sono già definite in wp-config.php.', 'almaretna-booking'));
+        }
+
+        $pk    = sanitize_text_field(wp_unslash($_POST['pk']    ?? ''));
+        $sk    = sanitize_text_field(wp_unslash($_POST['sk']    ?? ''));
+        $whsec = sanitize_text_field(wp_unslash($_POST['whsec'] ?? ''));
+
+        if (!preg_match('/^pk_(live|test)_/', $pk)) {
+            wp_send_json_error(__('Publishable Key non valida (deve iniziare con pk_live_ o pk_test_).', 'almaretna-booking'));
+        }
+        if (!preg_match('/^sk_(live|test)_/', $sk)) {
+            wp_send_json_error(__('Secret Key non valida (deve iniziare con sk_live_ o sk_test_).', 'almaretna-booking'));
+        }
+        if (!str_starts_with($whsec, 'whsec_')) {
+            wp_send_json_error(__('Webhook Secret non valido (deve iniziare con whsec_).', 'almaretna-booking'));
+        }
+
+        // Individua wp-config.php (root o directory superiore)
+        $config_path = ABSPATH . 'wp-config.php';
+        if (!file_exists($config_path)) {
+            $config_path = dirname(ABSPATH) . '/wp-config.php';
+        }
+
+        if (!file_exists($config_path) || !is_writable($config_path)) {
+            wp_send_json_error(__('wp-config.php non trovato o non scrivibile. Inserisci le costanti manualmente.', 'almaretna-booking'));
+        }
+
+        $content = file_get_contents($config_path);
+        if ($content === false) {
+            wp_send_json_error(__('Impossibile leggere wp-config.php.', 'almaretna-booking'));
+        }
+
+        // Evita duplicati se il blocco è già presente ma non rilevato come costante
+        if (str_contains($content, 'ALM_STRIPE_SECRET_KEY')) {
+            wp_send_json_error(__('Le costanti ALM_STRIPE_* esistono già nel file. Rimuovile e riprova.', 'almaretna-booking'));
+        }
+
+        $block = "// Stripe — Almaretna Booking\n" .
+                 "define( 'ALM_STRIPE_PUBLISHABLE_KEY', '" . addslashes($pk)    . "' );\n" .
+                 "define( 'ALM_STRIPE_SECRET_KEY',      '" . addslashes($sk)    . "' );\n" .
+                 "define( 'ALM_STRIPE_WEBHOOK_SECRET',  '" . addslashes($whsec) . "' );\n";
+
+        // Inserisci prima del marcatore "stop editing" (vari formati)
+        $inserted = false;
+        foreach (["/* That's all, stop editing!", "/* That's all", 'require_once ABSPATH', 'require_once(ABSPATH'] as $marker) {
+            $pos = strpos($content, $marker);
+            if ($pos !== false) {
+                $content  = substr($content, 0, $pos) . $block . "\n" . substr($content, $pos);
+                $inserted = true;
+                break;
+            }
+        }
+
+        if (!$inserted) {
+            $content .= "\n" . $block;
+        }
+
+        // Scrittura atomica tramite file temporaneo
+        $tmp = $config_path . '.alm-tmp';
+        if (file_put_contents($tmp, $content, LOCK_EX) === false) {
+            wp_send_json_error(__('Impossibile scrivere il file temporaneo.', 'almaretna-booking'));
+        }
+
+        if (!rename($tmp, $config_path)) {
+            @unlink($tmp);
+            wp_send_json_error(__('Impossibile aggiornare wp-config.php.', 'almaretna-booking'));
+        }
+
+        wp_send_json_success([
+            'message' => __('Chiavi Stripe salvate in wp-config.php.', 'almaretna-booking'),
+            'reload'  => true,
+        ]);
+    }
+
     // ── AJAX: testa la connessione Beds24 ─────────────────────────────────────
 
     public function ajax_test_beds24(): void {

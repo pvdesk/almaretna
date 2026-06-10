@@ -227,6 +227,184 @@ $s = is_array($settings) ? $settings : [];
         <?php endif; ?>
         </script>
 
+        <!-- Stripe → wp-config.php (scrittura diretta, sola lettura una volta compilata) -->
+        <?php
+        $wpcfg_path     = ABSPATH . 'wp-config.php';
+        if (!file_exists($wpcfg_path)) $wpcfg_path = dirname(ABSPATH) . '/wp-config.php';
+        $wpcfg_writable = file_exists($wpcfg_path) && is_writable($wpcfg_path);
+        $wpcfg_locked   = $stripe_from_cfg;
+        $wpcfg_nonce    = wp_create_nonce('alm_write_stripe_config');
+        ?>
+        <div class="alm-admin-card" id="alm-wpcfg-card" style="max-width:720px;margin-bottom:24px;">
+
+            <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almWpcfgToggle()">
+                <h2 style="display:flex;align-items:center;gap:10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Stripe — scrivi in wp-config.php
+                </h2>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <?php if ($wpcfg_locked) : ?>
+                        <span class="alm-badge alm-badge--success">Attivo ✓</span>
+                    <?php elseif (!$wpcfg_writable) : ?>
+                        <span class="alm-badge alm-badge--warning">Non scrivibile</span>
+                    <?php else : ?>
+                        <span class="alm-badge alm-badge--error">Non configurato</span>
+                    <?php endif; ?>
+                    <span id="alm-wpcfg-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+                </div>
+            </div>
+
+            <div id="alm-wpcfg-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+
+                <?php if ($wpcfg_locked) : ?>
+                <!-- ── Sola lettura: costanti già presenti ── -->
+                <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#2e7d32;">
+                    <strong>Le chiavi sono scritte in wp-config.php — sola lettura.</strong><br>
+                    Per modificarle, rimuovi le righe <code>define('ALM_STRIPE_*', …)</code> dal file e aggiorna la pagina.
+                </div>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th style="width:160px;">Publishable Key</th>
+                        <td><code style="color:#555;"><?php echo esc_html($mask(ALM_Stripe::get_publishable_key())); ?></code></td>
+                    </tr>
+                    <tr>
+                        <th>Secret Key</th>
+                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_SECRET_KEY') ? ALM_STRIPE_SECRET_KEY : '')); ?></code></td>
+                    </tr>
+                    <tr>
+                        <th>Webhook Secret</th>
+                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_WEBHOOK_SECRET') ? ALM_STRIPE_WEBHOOK_SECRET : '')); ?></code></td>
+                    </tr>
+                </table>
+
+                <?php elseif (!$wpcfg_writable) : ?>
+                <!-- ── File non scrivibile: mostra blocco da copiare ── -->
+                <div style="background:#fffbeb;border:1px solid #f0d080;border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#7a6000;">
+                    <strong>wp-config.php non è scrivibile</strong> dal web server (permessi). Aggiungi manualmente le righe seguenti prima di <code>/* That's all, stop editing! */</code>:
+                </div>
+                <pre style="background:#f6f6f6;border:1px solid #ddd;border-radius:4px;padding:14px 16px;font-size:12px;overflow-x:auto;line-height:1.6;">// Stripe — Almaretna Booking
+define( 'ALM_STRIPE_PUBLISHABLE_KEY', 'pk_live_...' );
+define( 'ALM_STRIPE_SECRET_KEY',      'sk_live_...' );
+define( 'ALM_STRIPE_WEBHOOK_SECRET',  'whsec_...' );</pre>
+
+                <?php else : ?>
+                <!-- ── Form: scrivi le chiavi in wp-config.php ── -->
+                <p style="font-size:13px;color:#666;margin:0 0 16px;">
+                    Inserisci le chiavi Stripe: verranno scritte direttamente in <code>wp-config.php</code>.<br>
+                    Una volta salvate, questa card diventa <strong>sola lettura</strong> e le chiavi non saranno mai nel database.
+                </p>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th style="width:160px;"><label for="wpcfg_pk">Publishable Key</label></th>
+                        <td>
+                            <input type="text" id="wpcfg_pk" class="regular-text"
+                                   placeholder="pk_live_… oppure pk_test_…" autocomplete="off" />
+                            <p class="description">Inizia con <code>pk_live_</code> (prod) o <code>pk_test_</code> (test).</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="wpcfg_sk">Secret Key</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="wpcfg_sk" class="regular-text"
+                                       placeholder="sk_live_…" autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('wpcfg_sk');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">Inizia con <code>sk_live_</code> o <code>sk_test_</code>.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="wpcfg_whsec">Webhook Secret</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="wpcfg_whsec" class="regular-text"
+                                       placeholder="whsec_…" autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('wpcfg_whsec');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">Ottenuto in Dashboard Stripe → Sviluppatori → Webhook → Signing secret.</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <div id="alm-wpcfg-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
+
+                <div style="margin-top:20px;display:flex;align-items:center;gap:16px;">
+                    <button type="button" id="alm-wpcfg-save" class="button button-primary"
+                            onclick="almWpcfgSave('<?php echo esc_js($wpcfg_nonce); ?>')">
+                        Salva in wp-config.php
+                    </button>
+                    <span style="font-size:12px;color:#999;">Questa operazione modifica il file wp-config.php del sito.</span>
+                </div>
+                <?php endif; ?>
+
+            </div><!-- /body -->
+        </div><!-- /card -->
+
+        <script>
+        function almWpcfgToggle() {
+            var body    = document.getElementById('alm-wpcfg-body');
+            var chevron = document.getElementById('alm-wpcfg-chevron');
+            if (body.style.display === 'none') {
+                body.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                body.style.display = 'none';
+                chevron.style.transform = '';
+            }
+        }
+        function almWpcfgSave(nonce) {
+            var pk    = (document.getElementById('wpcfg_pk')    || {}).value || '';
+            var sk    = (document.getElementById('wpcfg_sk')    || {}).value || '';
+            var whsec = (document.getElementById('wpcfg_whsec') || {}).value || '';
+            var msgEl = document.getElementById('alm-wpcfg-msg');
+            var btn   = document.getElementById('alm-wpcfg-save');
+
+            function showMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#f0f9f0' : '#fdf0f0';
+                msgEl.style.border     = '1px solid ' + (ok ? '#a8d5a2' : '#f5a5a5');
+                msgEl.style.color      = ok ? '#2e7d32' : '#c62828';
+                msgEl.textContent      = text;
+            }
+
+            pk = pk.trim(); sk = sk.trim(); whsec = whsec.trim();
+            if (!pk || !sk || !whsec) { showMsg('Compila tutti e tre i campi prima di salvare.', false); return; }
+
+            btn.disabled    = true;
+            btn.textContent = 'Salvataggio…';
+
+            var fd = new FormData();
+            fd.append('action', 'alm_write_stripe_config');
+            fd.append('nonce',  nonce);
+            fd.append('pk',    pk);
+            fd.append('sk',    sk);
+            fd.append('whsec', whsec);
+
+            fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        showMsg('✓ ' + (data.data.message || 'Chiavi salvate!'), true);
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showMsg((data.data || 'Si è verificato un errore.'), false);
+                        btn.disabled    = false;
+                        btn.textContent = 'Salva in wp-config.php';
+                    }
+                })
+                .catch(function () {
+                    showMsg('Errore di rete. Riprova.', false);
+                    btn.disabled    = false;
+                    btn.textContent = 'Salva in wp-config.php';
+                });
+        }
+        <?php if (!$wpcfg_locked) : ?>
+        almWpcfgToggle(); // aperta di default se non ancora configurata
+        <?php endif; ?>
+        </script>
+
         <!-- Beds24 -->
         <div class="alm-admin-card" style="max-width:720px;margin-bottom:24px;">
             <div class="alm-admin-card__header">

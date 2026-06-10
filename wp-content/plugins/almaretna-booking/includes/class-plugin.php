@@ -79,9 +79,10 @@ class ALM_Plugin {
         add_action('admin_post_alm_remove_block',  [$admin, 'remove_block']);
         add_action('admin_post_alm_cancel_booking',[$admin, 'cancel_booking']);
         add_action('admin_post_alm_sync_beds24',   [$admin, 'sync_beds24']);
-        add_action('wp_ajax_alm_admin_get_bookings', [$admin, 'ajax_get_bookings']);
-        add_action('wp_ajax_alm_admin_get_calendar', [$admin, 'ajax_get_calendar']);
-        add_action('wp_ajax_alm_test_beds24',        [$admin, 'ajax_test_beds24']);
+        add_action('wp_ajax_alm_admin_get_bookings',    [$admin, 'ajax_get_bookings']);
+        add_action('wp_ajax_alm_admin_get_calendar',  [$admin, 'ajax_get_calendar']);
+        add_action('wp_ajax_alm_test_beds24',         [$admin, 'ajax_test_beds24']);
+        add_action('wp_ajax_alm_write_stripe_config', [$admin, 'ajax_write_stripe_config']);
     }
 
     /**

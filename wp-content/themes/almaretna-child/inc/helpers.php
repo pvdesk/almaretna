@@ -124,10 +124,15 @@ function alm_rooms_query(array $args = []): WP_Query {
         'orderby'        => 'menu_order',
         'order'          => 'ASC',
         'meta_query'     => [
+            'relation' => 'OR',
             [
                 'key'     => '_room_active',
                 'value'   => '1',
                 'compare' => '=',
+            ],
+            [
+                'key'     => '_room_active',
+                'compare' => 'NOT EXISTS',
             ],
         ],
     ];

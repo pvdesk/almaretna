@@ -2,7 +2,7 @@
 /**
  * Almaretna Child — Sistema i18n
  * Lingue: IT | EN | DE | FR | ES
- * Rilevamento: ?lang=xx → cookie alm_lang → Accept-Language → it
+ * Rilevamento: ?lang=xx → cookie alm_lang → default it
  *
  * @package AlmaretnaChild
  */
@@ -1369,14 +1369,20 @@ function alm_url_with_lang(string $url): string {
 }
 
 // Traduce i titoli delle voci di menu basandosi sul template della pagina
-add_filter('nav_menu_item_title', function (string $title, $item, $args, $depth): string {
+add_filter('wp_nav_menu_objects', function (array $items, $args): array {
     $lang = alm_get_lang();
-    if ($lang === 'it' || $item->object !== 'page') return $title;
-    $template = get_page_template_slug((int) $item->object_id);
-    if ($template === 'templates/template-rooms.php')   return alm_t('nav.rooms');
-    if ($template === 'templates/template-booking.php') return alm_t('nav.book_now');
-    return $title;
-}, 10, 4);
+    if ($lang === 'it') return $items;
+    $map = [
+        'templates/template-rooms.php'   => alm_t('nav.rooms'),
+        'templates/template-booking.php' => alm_t('nav.book_now'),
+    ];
+    foreach ($items as $item) {
+        if ($item->object !== 'page') continue;
+        $tpl = get_page_template_slug((int) $item->object_id);
+        if (isset($map[$tpl])) $item->title = $map[$tpl];
+    }
+    return $items;
+}, 10, 2);
 
 // Aggiunge ?lang=XX a tutti i link del menu WordPress
 add_filter('nav_menu_link_attributes', function (array $atts, $item, $args, $depth): array {

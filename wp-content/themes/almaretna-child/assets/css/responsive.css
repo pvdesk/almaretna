@@ -55,7 +55,7 @@ img, video, iframe, embed, object {
     :root { --container-max: 960px; }
 
     /* Rooms grid */
-    .rooms-grid           { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .rooms-grid           { grid-template-columns: 1fr; gap: 1.5rem; }
     .rooms-grid--1col     { grid-template-columns: 1fr; }
 
     /* Room single */
@@ -65,7 +65,7 @@ img, video, iframe, embed, object {
 
     /* Booking form */
     .booking-form-grid    { grid-template-columns: 1fr; }
-    .booking-summary      { position: static; order: -1; }
+    .booking-summary      { position: static; }
     .booking-widget       { flex-direction: column; }
     .booking-widget__field{ width: 100%; }
 
@@ -80,7 +80,9 @@ img, video, iframe, embed, object {
         justify-content: space-between;
         padding: var(--space-md) var(--space-lg);
         min-width: unset;
+        text-align: left;
     }
+    .room-result-card__price-box    { align-items: flex-start; }
 
     /* Numeri e grids */
     .numbers-grid         { grid-template-columns: repeat(2, 1fr); }

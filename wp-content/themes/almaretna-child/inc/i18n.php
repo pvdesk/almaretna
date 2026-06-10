@@ -1261,13 +1261,14 @@ function alm_i18n_pool_dotazioni(): array {
 }
 
 function alm_i18n_numbers(): array {
-    $lang = alm_get_lang();
+    $lang       = alm_get_lang();
+    $room_count = (string) wp_count_posts('almaretna_room')->publish;
     $data = [
-        'it' => [['4','Camere esclusive'],['∞',"Tramonti sull'Etna"],["10'",'Dal mare'],['★ 4.9','Valutazione media']],
-        'en' => [['4','Exclusive rooms'],['∞','Etna sunsets'],["10'",'From the sea'],['★ 4.9','Average rating']],
-        'de' => [['4','Exklusive Zimmer'],['∞','Ätna-Sonnenuntergänge'],["10'",'Vom Meer'],['★ 4.9','Durchschnittsbewertung']],
-        'fr' => [['4','Chambres exclusives'],['∞',"Couchers de soleil sur l'Etna"],["10'",'De la mer'],['★ 4.9','Note moyenne']],
-        'es' => [['4','Habitaciones exclusivas'],['∞','Atardeceres en el Etna'],["10'",'Del mar'],['★ 4.9','Valoración media']],
+        'it' => [[$room_count,'Camere esclusive'],['∞',"Tramonti sull'Etna"],["10'",'Dal mare'],['★ 4.9','Valutazione media']],
+        'en' => [[$room_count,'Exclusive rooms'],['∞','Etna sunsets'],["10'",'From the sea'],['★ 4.9','Average rating']],
+        'de' => [[$room_count,'Exklusive Zimmer'],['∞','Ätna-Sonnenuntergänge'],["10'",'Vom Meer'],['★ 4.9','Durchschnittsbewertung']],
+        'fr' => [[$room_count,'Chambres exclusives'],['∞',"Couchers de soleil sur l'Etna"],["10'",'De la mer'],['★ 4.9','Note moyenne']],
+        'es' => [[$room_count,'Habitaciones exclusivas'],['∞','Atardeceres en el Etna'],["10'",'Del mar'],['★ 4.9','Valoración media']],
     ];
     return $data[$lang] ?? $data['it'];
 }

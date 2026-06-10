@@ -760,4 +760,21 @@ class ALM_Admin {
             __('✓ Connessione Beds24 OK. Token valido.', 'almaretna-booking')
         );
     }
+
+    // ── AJAX: reset OPcache PHP ───────────────────────────────────────────────
+
+    public function ajax_reset_opcache(): void {
+        check_ajax_referer('alm_reset_opcache', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+
+        if (!function_exists('opcache_reset')) {
+            wp_send_json_success('OPcache non attiva su questo server — nessuna azione necessaria.');
+        }
+
+        opcache_reset();
+        wp_send_json_success('✓ OPcache svuotata. Ricarica la pagina.');
+    }
 }

@@ -22,6 +22,45 @@ $s = is_array($settings) ? $settings : [];
         <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Impostazioni salvate.', 'almaretna-booking'); ?></p></div>
     <?php endif; ?>
 
+    <!-- Barra diagnostica: versione file + reset OPcache -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:8px 12px;background:#f6f7f7;border:1px solid #dcdcde;border-radius:4px;font-size:12px;color:#646970;">
+        <span>v<?php echo esc_html(ALM_BOOKING_VERSION); ?></span>
+        <span style="color:#ccc;">|</span>
+        <span>settings.php: <?php echo esc_html(date('d/m/Y H:i', filemtime(__FILE__))); ?></span>
+        <button type="button" id="alm-opcache-btn" class="button button-small"
+                style="margin-left:auto;"
+                onclick="almResetOpcache('<?php echo esc_js(wp_create_nonce('alm_reset_opcache')); ?>')">
+            ↺ Svuota cache PHP
+        </button>
+        <span id="alm-opcache-msg" style="font-size:12px;"></span>
+    </div>
+    <script>
+    function almResetOpcache(nonce) {
+        var btn = document.getElementById('alm-opcache-btn');
+        var msg = document.getElementById('alm-opcache-msg');
+        btn.disabled = true;
+        btn.textContent = '…';
+        var fd = new FormData();
+        fd.append('action', 'alm_reset_opcache');
+        fd.append('nonce', nonce);
+        fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                msg.style.color = d.success ? '#2e7d32' : '#c62828';
+                msg.textContent = d.data || (d.success ? '✓ Fatto' : '✗ Errore');
+                btn.disabled = false;
+                btn.textContent = '↺ Svuota cache PHP';
+                if (d.success) setTimeout(function(){ location.reload(); }, 1500);
+            })
+            .catch(function(){
+                msg.style.color = '#c62828';
+                msg.textContent = 'Errore di rete';
+                btn.disabled = false;
+                btn.textContent = '↺ Svuota cache PHP';
+            });
+    }
+    </script>
+
     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
         <?php wp_nonce_field('alm_save_settings'); ?>
         <input type="hidden" name="action" value="alm_save_settings" />

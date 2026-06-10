@@ -87,6 +87,7 @@ class ALM_Plugin {
         add_action('wp_ajax_alm_unlock_gsc',         [$admin, 'ajax_unlock_gsc']);
         add_action('wp_ajax_alm_save_ga4',           [$admin, 'ajax_save_ga4']);
         add_action('wp_ajax_alm_unlock_ga4',         [$admin, 'ajax_unlock_ga4']);
+        add_action('wp_ajax_alm_reset_opcache',      [$admin, 'ajax_reset_opcache']);
     }
 
     /**

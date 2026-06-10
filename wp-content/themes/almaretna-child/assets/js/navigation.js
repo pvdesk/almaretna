@@ -195,8 +195,8 @@
     var lang = langFromUrl() || langFromCookie();
     if (!lang || lang === 'it' || ALLOWED.indexOf(lang) === -1) return;
 
-    // Rinfreschi il cookie (utile dopo navigazione senza ?lang= in URL)
-    document.cookie = 'alm_lang=' + lang + '; path=/; max-age=' + (86400 * 365) + '; SameSite=Lax';
+    // Cookie di sessione — nessun max-age, scade alla chiusura del browser
+    document.cookie = 'alm_lang=' + lang + '; path=/; SameSite=Lax';
 
     // Propaga ?lang=XX a tutti i link interni
     function propagateLang() {

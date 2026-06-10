@@ -14,13 +14,20 @@ defined('ABSPATH') || exit;
    RILEVAMENTO LINGUA
    ═══════════════════════════════════════════════════════════════ */
 
-// Imposta cookie PRIMA dell'output (via send_headers)
+// Gestione cookie lingua — via send_headers (prima dell'output)
 add_action('send_headers', function (): void {
     $allowed = ['it', 'en', 'de', 'fr', 'es'];
     $lang    = sanitize_key((string) ($_GET['lang'] ?? ''));
     if (in_array($lang, $allowed, true)) {
-        setcookie('alm_lang', $lang, time() + 86400 * 365, '/');
+        // ?lang=XX presente: imposta cookie di SESSIONE (scade alla chiusura del browser)
+        setcookie('alm_lang', $lang, 0, '/');
         $_COOKIE['alm_lang'] = $lang;
+    } else {
+        // Nessun ?lang= nell'URL: cancella il cookie → la pagina mostra sempre italiano
+        if (isset($_COOKIE['alm_lang'])) {
+            setcookie('alm_lang', '', time() - 3600, '/');
+            unset($_COOKIE['alm_lang']);
+        }
     }
 });
 

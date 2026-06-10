@@ -34,7 +34,7 @@ while (have_posts()) :
 <!-- Hero camera — design premium -->
 <?php
 $camere_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-rooms.php', 'number' => 1]);
-$camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/');
+$camere_url  = alm_url_with_lang(!empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/'));
 ?>
 <section style="
     position: relative;
@@ -51,7 +51,7 @@ $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_
 
         <!-- Breadcrumb -->
         <nav style="margin-bottom:1.5rem;">
-            <a href="<?php echo esc_url(home_url('/')); ?>" style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;">Home</a>
+            <a href="<?php echo esc_url(alm_url_with_lang(home_url('/'))); ?>" style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;">Home</a>
             <span style="color:rgba(255,255,255,.3);margin:0 .625rem;">/</span>
             <a href="<?php echo esc_url($camere_url); ?>" style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none;"><?php echo esc_html(alm_t('room.breadcrumb')); ?></a>
             <span style="color:rgba(255,255,255,.3);margin:0 .625rem;">/</span>

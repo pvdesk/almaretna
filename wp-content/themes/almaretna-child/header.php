@@ -40,17 +40,17 @@
             <span class="hamburger__line"></span>
         </button>
 
-        <a href="<?php echo esc_url(home_url('/')); ?>" class="site-header__logo" rel="home">
+        <a href="<?php echo esc_url(alm_url_with_lang(home_url('/'))); ?>" class="site-header__logo" rel="home">
             <img src="<?php echo esc_url(get_stylesheet_directory_uri() . '/assets/img/logo-transparent.png'); ?>" alt="Almaretna Villa Vacanze" class="site-logo" />
         </a>
 
         <nav class="site-nav" id="site-nav" aria-label="<?php esc_attr_e('Menu principale', 'almaretna-child'); ?>">
             <?php
             $camere_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-rooms.php', 'number' => 1]);
-            $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/');
+            $camere_url  = alm_url_with_lang(!empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/'));
 
             $prenota_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
-            $prenota_url  = !empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/');
+            $prenota_url  = alm_url_with_lang(!empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/'));
 
             wp_nav_menu([
                 'theme_location' => 'primary',
@@ -58,7 +58,7 @@
                 'container'      => false,
                 'fallback_cb'    => function () use ($camere_url): void {
                     echo '<ul class="site-nav__list">';
-                    echo '<li><a href="' . esc_url(home_url('/')) . '">Home</a></li>';
+                    echo '<li><a href="' . esc_url(alm_url_with_lang(home_url('/'))) . '">Home</a></li>';
                     echo '<li><a href="' . esc_url($camere_url) . '">Camere</a></li>';
                     echo '</ul>';
                 },
@@ -90,9 +90,9 @@
         'container'      => false,
         'fallback_cb'    => function () use ($camere_url, $prenota_url): void {
             echo '<ul class="mobile-nav__list">';
-            echo '<li><a href="' . esc_url(home_url('/')) . '">Home</a></li>';
+            echo '<li><a href="' . esc_url(alm_url_with_lang(home_url('/'))) . '">Home</a></li>';
             echo '<li><a href="' . esc_url($camere_url) . '">Camere</a></li>';
-            echo '<li><a href="' . esc_url($prenota_url) . '">Prenota</a></li>';
+            echo '<li><a href="' . esc_url($prenota_url) . '">' . esc_html(alm_t('nav.book_now')) . '</a></li>';
             echo '</ul>';
         },
     ]); ?>

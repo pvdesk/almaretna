@@ -20,10 +20,10 @@ $rooms = get_posts([
 ]);
 
 $prenota_pages = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
-$prenota_url   = !empty($prenota_pages) ? get_permalink($prenota_pages[0]->ID) : home_url('/prenota/');
+$prenota_url   = alm_url_with_lang(!empty($prenota_pages) ? get_permalink($prenota_pages[0]->ID) : home_url('/prenota/'));
 
 $camere_pages  = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-rooms.php', 'number' => 1]);
-$camere_url    = !empty($camere_pages) ? get_permalink($camere_pages[0]->ID) : home_url('/camere/');
+$camere_url    = alm_url_with_lang(!empty($camere_pages) ? get_permalink($camere_pages[0]->ID) : home_url('/camere/'));
 
 $settings   = get_option('alm_booking_settings', []);
 $host_phone = sanitize_text_field($settings['host_phone'] ?? '');
@@ -134,6 +134,9 @@ $hero_subtitle = ($lang === 'it')
             </select>
         </div>
 
+        <?php $__lang = alm_get_lang(); if ($__lang !== 'it') : ?>
+        <input type="hidden" name="lang" value="<?php echo esc_attr($__lang); ?>">
+        <?php endif; ?>
         <button type="submit" class="booking-strip__btn" id="hb-submit">
             <?php echo esc_html(alm_t('strip.verify')); ?>
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>

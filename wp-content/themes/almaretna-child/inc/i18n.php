@@ -1354,6 +1354,29 @@ function alm_lang_switcher_html(): string {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   URL HELPER — aggiunge ?lang=XX ai link interni
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_url_with_lang(string $url): string {
+    $lang = alm_get_lang();
+    if ($lang === 'it') return $url;
+    return add_query_arg('lang', $lang, $url);
+}
+
+// Aggiunge ?lang=XX a tutti i link del menu WordPress
+add_filter('nav_menu_link_attributes', function (array $atts, $item, $args, $depth): array {
+    $lang = alm_get_lang();
+    if ($lang === 'it' || empty($atts['href'])) return $atts;
+    $parsed    = parse_url($atts['href']);
+    $home_host = parse_url(home_url(), PHP_URL_HOST);
+    $is_local  = empty($parsed['host']) || $parsed['host'] === $home_host;
+    if ($is_local) {
+        $atts['href'] = add_query_arg('lang', $lang, $atts['href']);
+    }
+    return $atts;
+}, 10, 4);
+
+/* ═══════════════════════════════════════════════════════════════
    CSS SELETTORE — inline in wp_head
    ═══════════════════════════════════════════════════════════════ */
 

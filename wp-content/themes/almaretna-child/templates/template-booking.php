@@ -24,7 +24,7 @@ get_header();
     ">
         <div style="max-width:680px;margin:0 auto;">
             <div class="page-hero__breadcrumb" style="display:flex;align-items:center;justify-content:center;gap:.75rem;text-transform:uppercase;font-weight:700;letter-spacing:.22em;font-size:.7rem;">
-                <a href="<?php echo esc_url(home_url('/')); ?>">Home</a>
+                <a href="<?php echo esc_url(alm_url_with_lang(home_url('/'))); ?>">Home</a>
                 <span style="color:var(--color-border);">/</span>
                 <span style="color:var(--color-secondary);"><?php echo esc_html(alm_t('book.page_title')); ?></span>
             </div>

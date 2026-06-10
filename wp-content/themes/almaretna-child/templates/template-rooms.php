@@ -159,7 +159,7 @@ $hero_photo = $rooms_hero_custom ?: content_url('uploads/2026/06/camera-matrimon
     <!-- CTA finale -->
     <?php
     $prenota_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
-    $prenota_url  = !empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/');
+    $prenota_url  = alm_url_with_lang(!empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/'));
     ?>
     <section class="py-5 bg-white border-top border-light">
         <div class="container py-4">

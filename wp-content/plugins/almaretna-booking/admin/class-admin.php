@@ -731,6 +731,36 @@ class ALM_Admin {
         wp_send_json_success(['message' => 'Card sbloccata.']);
     }
 
+    // ── AJAX: salva chiavi Beds24 in DB ──────────────────────────────────────
+
+    public function ajax_save_beds24(): void {
+        check_ajax_referer('alm_save_beds24', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+
+        if (ALM_Beds24::keys_source() === 'config') {
+            wp_send_json_error('Le chiavi sono definite in wp-config.php e hanno priorità — rimuovile prima di usare il DB.');
+        }
+
+        $existing = get_option('alm_beds24_keys', []);
+
+        $token   = sanitize_text_field(wp_unslash($_POST['api_token']     ?? ''));
+        $propkey = sanitize_text_field(wp_unslash($_POST['prop_key']      ?? ''));
+        $webhook = sanitize_text_field(wp_unslash($_POST['webhook_token'] ?? ''));
+
+        if ($token !== '')   $existing['api_token']     = $token;
+        if ($propkey !== '') $existing['prop_key']       = $propkey;
+        if ($webhook !== '') $existing['webhook_token']  = $webhook;
+
+        if (empty($existing['api_token'])) {
+            wp_send_json_error('API Token obbligatorio.');
+        }
+
+        update_option('alm_beds24_keys', $existing);
+        wp_send_json_success('✓ Chiavi Beds24 salvate.');
+    }
+
     // ── AJAX: testa la connessione Beds24 ─────────────────────────────────────
 
     public function ajax_test_beds24(): void {

@@ -25,15 +25,35 @@ class ALM_Beds24 {
     // ── Configurazione ──────────────────────────────────────────────────────
 
     public static function is_configured(): bool {
-        return defined('ALM_BEDS24_API_TOKEN') && ALM_BEDS24_API_TOKEN !== '';
+        return self::api_token() !== '';
+    }
+
+    public static function keys_source(): string {
+        return (defined('ALM_BEDS24_API_TOKEN') && ALM_BEDS24_API_TOKEN !== '') ? 'config' : 'db';
     }
 
     private static function api_token(): string {
-        return defined('ALM_BEDS24_API_TOKEN') ? ALM_BEDS24_API_TOKEN : '';
+        if (defined('ALM_BEDS24_API_TOKEN') && ALM_BEDS24_API_TOKEN !== '') {
+            return ALM_BEDS24_API_TOKEN;
+        }
+        $db = get_option('alm_beds24_keys', []);
+        return (string) ($db['api_token'] ?? '');
     }
 
     private static function prop_key(): string {
-        return defined('ALM_BEDS24_PROP_KEY') ? ALM_BEDS24_PROP_KEY : '';
+        if (defined('ALM_BEDS24_PROP_KEY') && ALM_BEDS24_PROP_KEY !== '') {
+            return ALM_BEDS24_PROP_KEY;
+        }
+        $db = get_option('alm_beds24_keys', []);
+        return (string) ($db['prop_key'] ?? '');
+    }
+
+    public static function webhook_token(): string {
+        if (defined('ALM_BEDS24_WEBHOOK_TOKEN') && ALM_BEDS24_WEBHOOK_TOKEN !== '') {
+            return ALM_BEDS24_WEBHOOK_TOKEN;
+        }
+        $db = get_option('alm_beds24_keys', []);
+        return (string) ($db['webhook_token'] ?? '');
     }
 
     // ── Sync completo (chiamato dal cron twicedaily) ─────────────────────────

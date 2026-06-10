@@ -450,66 +450,170 @@ define( 'ALM_STRIPE_WEBHOOK_SECRET',  'whsec_...' );</pre>
         </script>
 
         <!-- Beds24 -->
-        <div class="alm-admin-card" style="max-width:720px;margin-bottom:24px;">
-            <div class="alm-admin-card__header">
-                <h2>Beds24</h2>
-                <?php if (ALM_Beds24::is_configured()) : ?>
-                    <span class="alm-badge alm-badge--success"><?php esc_html_e('Configurato', 'almaretna-booking'); ?></span>
-                <?php else : ?>
-                    <span class="alm-badge alm-badge--error"><?php esc_html_e('Non configurato', 'almaretna-booking'); ?></span>
-                <?php endif; ?>
+        <?php
+        $b24_configured  = ALM_Beds24::is_configured();
+        $b24_from_cfg    = ALM_Beds24::keys_source() === 'config';
+        $b24_db_keys     = get_option('alm_beds24_keys', []);
+        $mask_b24 = static function (string $key): string {
+            if ($key === '') return '';
+            return substr($key, 0, 4) . str_repeat('•', max(0, strlen($key) - 8)) . substr($key, -4);
+        };
+        ?>
+        <div class="alm-admin-card" id="alm-beds24-card" style="max-width:720px;margin-bottom:24px;">
+            <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almB24Toggle()">
+                <h2 style="display:flex;align-items:center;gap:10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    Beds24
+                </h2>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <?php if ($b24_configured) : ?>
+                        <span class="alm-badge alm-badge--success">Configurato &#10003;</span>
+                    <?php else : ?>
+                        <span class="alm-badge alm-badge--error">Non configurato</span>
+                    <?php endif; ?>
+                    <?php if ($b24_from_cfg) : ?>
+                        <span class="alm-badge" style="background:#e8f4fd;color:#0077cc;border:1px solid #c2ddf5;">wp-config.php</span>
+                    <?php endif; ?>
+                    <span id="alm-b24-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+                </div>
             </div>
-            <p class="description" style="margin:0 0 16px;">
-                <?php esc_html_e('Configura le credenziali Beds24 in wp-config.php:', 'almaretna-booking'); ?>
-            </p>
-            <pre style="background:#f0f0f0;padding:12px;border-radius:4px;font-size:12px;white-space:pre-wrap;">define('ALM_BEDS24_API_TOKEN',     'token-beds24');
-define('ALM_BEDS24_PROP_KEY',      'prop-key');
-define('ALM_BEDS24_WEBHOOK_TOKEN', 'webhook-secret');</pre>
 
-            <table class="form-table" role="presentation" style="margin-top:16px;">
-                <tr>
-                    <th>
-                        <label for="beds24_enabled"><?php esc_html_e('Sincronizzazione attiva', 'almaretna-booking'); ?></label>
-                    </th>
-                    <td>
-                        <input type="checkbox" id="beds24_enabled" name="beds24_enabled" value="1"
-                               <?php checked(!empty($s['beds24_enabled'])); ?> />
-                        <label for="beds24_enabled"><?php esc_html_e('Abilita sync automatico (twicedaily)', 'almaretna-booking'); ?></label>
-                    </td>
-                </tr>
-                <?php if (ALM_Beds24::is_configured()) : ?>
-                <tr>
-                    <th><?php esc_html_e('Test connessione', 'almaretna-booking'); ?></th>
-                    <td>
-                        <button type="button" id="alm-test-beds24" class="button button-secondary">
-                            <?php esc_html_e('Testa connessione Beds24', 'almaretna-booking'); ?>
-                        </button>
-                        <span id="alm-beds24-test-result" style="margin-left:12px;font-size:13px;"></span>
-                        <script>
-                        document.getElementById('alm-test-beds24').addEventListener('click', function() {
-                            var btn = this;
-                            var res = document.getElementById('alm-beds24-test-result');
-                            btn.disabled = true;
-                            res.textContent = '<?php echo esc_js(__('Test in corso…', 'almaretna-booking')); ?>';
-                            fetch(ajaxurl + '?action=alm_test_beds24&nonce=<?php echo wp_create_nonce('alm_test_beds24'); ?>')
-                                .then(function(r){ return r.json(); })
-                                .then(function(data){
-                                    btn.disabled = false;
-                                    res.style.color = data.success ? '#2e7d32' : '#c62828';
-                                    res.textContent = data.data || (data.success ? '✓ Connessione OK' : '✗ Errore');
-                                })
-                                .catch(function(){
-                                    btn.disabled = false;
-                                    res.style.color = '#c62828';
-                                    res.textContent = '<?php echo esc_js(__('Errore di rete.', 'almaretna-booking')); ?>';
-                                });
-                        });
-                        </script>
-                    </td>
-                </tr>
+            <div id="alm-b24-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+
+                <?php if ($b24_from_cfg) : ?>
+                <div style="background:#e8f4fd;border:1px solid #c2ddf5;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#0077cc;">
+                    <strong>Chiavi definite in wp-config.php</strong> — hanno priorità e non possono essere modificate da qui.<br>
+                    Per usare l'editor rimuovi le costanti <code>ALM_BEDS24_*</code> da wp-config.php.
+                </div>
+                <table class="form-table" role="presentation">
+                    <tr><th>API Token</th><td><code><?php echo esc_html($mask_b24(defined('ALM_BEDS24_API_TOKEN') ? ALM_BEDS24_API_TOKEN : '')); ?></code></td></tr>
+                    <tr><th>Prop Key</th><td><code><?php echo esc_html($mask_b24(defined('ALM_BEDS24_PROP_KEY') ? ALM_BEDS24_PROP_KEY : '')); ?></code></td></tr>
+                    <tr><th>Webhook Token</th><td><code><?php echo esc_html($mask_b24(defined('ALM_BEDS24_WEBHOOK_TOKEN') ? ALM_BEDS24_WEBHOOK_TOKEN : '')); ?></code></td></tr>
+                </table>
+                <?php else : ?>
+                <p style="font-size:13px;color:#666;margin:0 0 16px;">
+                    Inserisci le credenziali del tuo account Beds24. Trovi i valori in
+                    <a href="https://beds24.com/control2.php?pagetype=apiv2tokens" target="_blank" rel="noopener">Beds24 → Account → API v2 Tokens</a>.
+                </p>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th style="width:160px;"><label for="b24-api-token">API Token</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="b24-api-token" class="regular-text"
+                                       value=""
+                                       placeholder="<?php echo !empty($b24_db_keys['api_token']) ? '••••' . substr($b24_db_keys['api_token'], -4) : 'Incolla il token Beds24'; ?>"
+                                       autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('b24-api-token');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">Lascia vuoto per mantenere il valore già salvato.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="b24-prop-key">Prop Key</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="b24-prop-key" class="regular-text"
+                                       value=""
+                                       placeholder="<?php echo !empty($b24_db_keys['prop_key']) ? '••••' . substr($b24_db_keys['prop_key'], -4) : 'Prop Key della proprietà'; ?>"
+                                       autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('b24-prop-key');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">Lascia vuoto per mantenere il valore già salvato.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="b24-webhook">Webhook Token</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="b24-webhook" class="regular-text"
+                                       value=""
+                                       placeholder="<?php echo !empty($b24_db_keys['webhook_token']) ? '••••' . substr($b24_db_keys['webhook_token'], -4) : 'Token segreto webhook'; ?>"
+                                       autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('b24-webhook');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">Usato per autenticare le notifiche in arrivo da Beds24.</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <div id="alm-b24-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
+
+                <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                    <button type="button" class="button button-primary"
+                            onclick="almB24Save('<?php echo esc_js(wp_create_nonce('alm_save_beds24')); ?>')">
+                        Salva chiavi Beds24
+                    </button>
+                    <?php if ($b24_configured) : ?>
+                    <button type="button" id="alm-test-beds24" class="button button-secondary"
+                            onclick="almB24Test('<?php echo esc_js(wp_create_nonce('alm_test_beds24')); ?>')">
+                        Testa connessione
+                    </button>
+                    <?php endif; ?>
+                </div>
                 <?php endif; ?>
-            </table>
+
+                <!-- Checkbox sync (sempre visibile) -->
+                <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+                    <input type="checkbox" name="beds24_enabled" value="1"
+                           <?php checked(!empty($s['beds24_enabled'])); ?> />
+                    <?php esc_html_e('Abilita sincronizzazione automatica (twicedaily)', 'almaretna-booking'); ?>
+                </label>
+
+            </div><!-- /b24-body -->
         </div>
+
+        <script>
+        function almB24Toggle() {
+            var b = document.getElementById('alm-b24-body');
+            var c = document.getElementById('alm-b24-chevron');
+            var open = b.style.display === 'block';
+            b.style.display = open ? 'none' : 'block';
+            c.style.transform = open ? '' : 'rotate(180deg)';
+        }
+        function almB24ShowMsg(text, ok) {
+            var m = document.getElementById('alm-b24-msg');
+            if (!m) return;
+            m.style.display = 'block';
+            m.style.background = ok ? '#f0f9f0' : '#fef2f2';
+            m.style.border = '1px solid ' + (ok ? '#a8d5a2' : '#fca5a5');
+            m.style.color  = ok ? '#2e7d32' : '#c62828';
+            m.textContent  = text;
+        }
+        function almB24Save(nonce) {
+            var token   = document.getElementById('b24-api-token').value.trim();
+            var propkey = document.getElementById('b24-prop-key').value.trim();
+            var webhook = document.getElementById('b24-webhook').value.trim();
+            var fd = new FormData();
+            fd.append('action',        'alm_save_beds24');
+            fd.append('nonce',         nonce);
+            fd.append('api_token',     token);
+            fd.append('prop_key',      propkey);
+            fd.append('webhook_token', webhook);
+            fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    almB24ShowMsg(d.data || (d.success ? '✓ Salvato' : '✗ Errore'), d.success);
+                    if (d.success) setTimeout(function(){ location.reload(); }, 1500);
+                })
+                .catch(function(){ almB24ShowMsg('Errore di rete.', false); });
+        }
+        function almB24Test(nonce) {
+            var res = document.getElementById('alm-beds24-test-result') || { style:{}, textContent:'' };
+            fetch(ajaxurl + '?action=alm_test_beds24&nonce=' + nonce)
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    almB24ShowMsg(d.data || (d.success ? '✓ Connessione OK' : '✗ Errore'), d.success);
+                });
+        }
+        <?php if (!$b24_configured) : ?>
+        almB24Toggle(); // apri di default se non configurato
+        <?php endif; ?>
+        </script>
 
         <?php submit_button(__('Salva impostazioni', 'almaretna-booking')); ?>
 

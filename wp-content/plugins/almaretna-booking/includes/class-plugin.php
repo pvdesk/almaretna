@@ -88,6 +88,7 @@ class ALM_Plugin {
         add_action('wp_ajax_alm_save_ga4',           [$admin, 'ajax_save_ga4']);
         add_action('wp_ajax_alm_unlock_ga4',         [$admin, 'ajax_unlock_ga4']);
         add_action('wp_ajax_alm_reset_opcache',      [$admin, 'ajax_reset_opcache']);
+        add_action('wp_ajax_alm_save_beds24',        [$admin, 'ajax_save_beds24']);
         add_action('wp_ajax_alm_save_google_api',    [$admin, 'ajax_save_google_api']);
         add_action('wp_ajax_alm_test_ga4',           [$admin, 'ajax_test_ga4']);
         add_action('wp_ajax_alm_test_gsc',           [$admin, 'ajax_test_gsc']);

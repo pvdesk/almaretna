@@ -82,25 +82,150 @@ $s = is_array($settings) ? $settings : [];
             </table>
         </div>
 
-        <!-- Stripe -->
-        <div class="alm-admin-card" style="max-width:720px;margin-bottom:24px;">
-            <div class="alm-admin-card__header">
-                <h2>Stripe</h2>
-                <?php if (ALM_Stripe::is_configured()) : ?>
-                    <span class="alm-badge alm-badge--<?php echo ALM_Stripe::is_test_mode() ? 'warning' : 'success'; ?>">
-                        <?php echo ALM_Stripe::is_test_mode() ? 'TEST MODE' : 'LIVE'; ?>
-                    </span>
-                <?php else : ?>
-                    <span class="alm-badge alm-badge--error"><?php esc_html_e('Non configurato', 'almaretna-booking'); ?></span>
-                <?php endif; ?>
+        <!-- Stripe (card collassata) -->
+        <?php
+        $stripe_configured = ALM_Stripe::is_configured();
+        $stripe_from_cfg   = ALM_Stripe::keys_source() === 'config';
+        $stripe_db_keys    = get_option('alm_stripe_keys', []);
+
+        // Helper: mostra solo i primi 8 + asterischi per le chiavi sensibili
+        $mask = static function (string $key): string {
+            if ($key === '') return '';
+            return substr($key, 0, 8) . str_repeat('•', max(0, strlen($key) - 12)) . substr($key, -4);
+        };
+        ?>
+        <div class="alm-admin-card alm-stripe-card" id="alm-stripe-card" style="max-width:720px;margin-bottom:24px;">
+
+            <!-- Header cliccabile -->
+            <div class="alm-admin-card__header alm-stripe-card__toggle"
+                 style="cursor:pointer;user-select:none;"
+                 onclick="almStripeToggle()">
+                <h2 style="display:flex;align-items:center;gap:10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Stripe
+                </h2>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <?php if ($stripe_configured) : ?>
+                        <span class="alm-badge alm-badge--<?php echo ALM_Stripe::is_test_mode() ? 'warning' : 'success'; ?>">
+                            <?php echo ALM_Stripe::is_test_mode() ? 'TEST MODE' : 'LIVE ✓'; ?>
+                        </span>
+                    <?php else : ?>
+                        <span class="alm-badge alm-badge--error">Non configurato</span>
+                    <?php endif; ?>
+                    <?php if ($stripe_from_cfg) : ?>
+                        <span class="alm-badge" style="background:#e8f4fd;color:#0077cc;border:1px solid #c2ddf5;">wp-config.php</span>
+                    <?php endif; ?>
+                    <span id="alm-stripe-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+                </div>
             </div>
-            <p class="description" style="margin:0 0 16px;">
-                <?php esc_html_e('Le chiavi Stripe si impostano in wp-config.php per sicurezza:', 'almaretna-booking'); ?>
-            </p>
-            <pre style="background:#f0f0f0;padding:12px;border-radius:4px;font-size:12px;white-space:pre-wrap;">define('ALM_STRIPE_SECRET_KEY',      'sk_live_...' );
-define('ALM_STRIPE_PUBLISHABLE_KEY', 'pk_live_...' );
-define('ALM_STRIPE_WEBHOOK_SECRET',  'whsec_...'  );</pre>
+
+            <!-- Body (nascosto di default) -->
+            <div id="alm-stripe-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+
+                <?php if ($stripe_from_cfg) : ?>
+                <!-- Chiavi provengono da wp-config.php — sola lettura -->
+                <div style="background:#e8f4fd;border:1px solid #c2ddf5;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#0077cc;">
+                    <strong>Chiavi definite in wp-config.php</strong> — hanno priorità sui campi sottostanti e non possono essere modificate da qui.
+                    Per usare l'editor, rimuovi le costanti <code>ALM_STRIPE_*</code> da wp-config.php.
+                </div>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th>Publishable Key</th>
+                        <td><code style="color:#555;"><?php echo esc_html($mask(ALM_Stripe::get_publishable_key())); ?></code></td>
+                    </tr>
+                    <tr>
+                        <th>Secret Key</th>
+                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_SECRET_KEY') ? ALM_STRIPE_SECRET_KEY : '')); ?></code></td>
+                    </tr>
+                    <tr>
+                        <th>Webhook Secret</th>
+                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_WEBHOOK_SECRET') ? ALM_STRIPE_WEBHOOK_SECRET : '')); ?></code></td>
+                    </tr>
+                </table>
+
+                <?php else : ?>
+                <!-- Chiavi da DB — modificabili -->
+                <p style="font-size:13px;color:#666;margin:0 0 16px;">
+                    Inserisci le chiavi del tuo account Stripe. Trovi i valori nella
+                    <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener">Dashboard Stripe → Sviluppatori → Chiavi API</a>.
+                    Il campo Secret Key è mascherato: lascialo vuoto per non modificarlo.
+                </p>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th><label for="stripe_publishable_key">Publishable Key</label></th>
+                        <td>
+                            <input type="text" id="stripe_publishable_key" name="stripe_publishable_key"
+                                   class="regular-text"
+                                   value="<?php echo esc_attr($stripe_db_keys['publishable_key'] ?? ''); ?>"
+                                   placeholder="pk_live_... oppure pk_test_..."
+                                   autocomplete="off" />
+                            <p class="description">Inizia con <code>pk_live_</code> (produzione) o <code>pk_test_</code> (test).</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="stripe_secret_key">Secret Key</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="stripe_secret_key" name="stripe_secret_key"
+                                       class="regular-text"
+                                       value=""
+                                       placeholder="<?php echo !empty($stripe_db_keys['secret_key']) ? '••••••••' . substr($stripe_db_keys['secret_key'], -4) : 'sk_live_...'; ?>"
+                                       autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('stripe_secret_key');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">
+                                Inizia con <code>sk_live_</code>. Lascia vuoto per mantenere il valore già salvato.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="stripe_webhook_secret">Webhook Secret</label></th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="password" id="stripe_webhook_secret" name="stripe_webhook_secret"
+                                       class="regular-text"
+                                       value=""
+                                       placeholder="<?php echo !empty($stripe_db_keys['webhook_secret']) ? '••••••••' . substr($stripe_db_keys['webhook_secret'], -4) : 'whsec_...'; ?>"
+                                       autocomplete="new-password" />
+                                <button type="button" class="button button-small"
+                                        onclick="var f=document.getElementById('stripe_webhook_secret');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
+                            </div>
+                            <p class="description">
+                                Inizia con <code>whsec_</code>. Ottenuto nella Dashboard Stripe → Sviluppatori → Webhook → Endpoint → Signing secret. Lascia vuoto per mantenere il valore salvato.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="background:#fffbeb;border:1px solid #f0d080;border-radius:4px;padding:12px 16px;margin-top:16px;font-size:12px;color:#7a6000;">
+                    <strong>Alternativa sicura:</strong> definisci le costanti in <code>wp-config.php</code> — avranno priorità assoluta e non verranno mai scritte nel database.
+                    <br><code>define('ALM_STRIPE_SECRET_KEY', 'sk_live_...');</code><br>
+                    <code>define('ALM_STRIPE_PUBLISHABLE_KEY', 'pk_live_...');</code><br>
+                    <code>define('ALM_STRIPE_WEBHOOK_SECRET', 'whsec_...');</code>
+                </div>
+                <?php endif; ?>
+
+            </div><!-- /body -->
         </div>
+
+        <script>
+        function almStripeToggle() {
+            var body    = document.getElementById('alm-stripe-body');
+            var chevron = document.getElementById('alm-stripe-chevron');
+            if (body.style.display === 'none') {
+                body.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                body.style.display = 'none';
+                chevron.style.transform = '';
+            }
+        }
+        // Apri automaticamente se non configurata
+        <?php if (!$stripe_configured) : ?>
+        almStripeToggle();
+        <?php endif; ?>
+        </script>
 
         <!-- Beds24 -->
         <div class="alm-admin-card" style="max-width:720px;margin-bottom:24px;">

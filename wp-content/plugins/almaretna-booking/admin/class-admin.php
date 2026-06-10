@@ -203,6 +203,23 @@ class ALM_Admin {
 
         update_option('alm_booking_settings', $settings);
 
+        // Chiavi Stripe — salva solo se non provengono da costanti wp-config.php
+        if (ALM_Stripe::keys_source() === 'db') {
+            $existing = get_option('alm_stripe_keys', []);
+            $stripe   = [];
+
+            // Preserva il valore esistente se il campo arriva vuoto (campo mascherato non modificato)
+            $pk = sanitize_text_field($_POST['stripe_publishable_key'] ?? '');
+            $sk = sanitize_text_field($_POST['stripe_secret_key']      ?? '');
+            $wh = sanitize_text_field($_POST['stripe_webhook_secret']  ?? '');
+
+            $stripe['publishable_key'] = $pk !== '' ? $pk : ($existing['publishable_key'] ?? '');
+            $stripe['secret_key']      = $sk !== '' ? $sk : ($existing['secret_key']      ?? '');
+            $stripe['webhook_secret']  = $wh !== '' ? $wh : ($existing['webhook_secret']  ?? '');
+
+            update_option('alm_stripe_keys', $stripe);
+        }
+
         wp_redirect(add_query_arg(
             ['page' => 'alm-settings', 'updated' => '1'],
             admin_url('admin.php')

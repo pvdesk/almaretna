@@ -7,7 +7,7 @@ declare(strict_types=1);
  * Wrapper leggero per l'API Stripe v1 senza SDK ufficiale.
  * Usa wp_remote_post/get e verifica i webhook con HMAC-SHA256.
  *
- * Costanti richieste in wp-config.php:
+ * Chiavi: priorità costanti wp-config.php → fallback DB (alm_stripe_keys).
  *   define('ALM_STRIPE_SECRET_KEY',      'sk_live_...' );
  *   define('ALM_STRIPE_PUBLISHABLE_KEY', 'pk_live_...' );
  *   define('ALM_STRIPE_WEBHOOK_SECRET',  'whsec_...'  );
@@ -22,18 +22,36 @@ class ALM_Stripe {
     private const API_BASE      = 'https://api.stripe.com/v1/';
     private const WEBHOOK_TOL   = 300; // secondi di tolleranza timestamp
 
-    // ── Chiavi ─────────────────────────────────────────────────────────────
+    // ── Chiavi (costanti wp-config.php > DB) ───────────────────────────────
 
     public static function get_publishable_key(): string {
-        return defined('ALM_STRIPE_PUBLISHABLE_KEY') ? ALM_STRIPE_PUBLISHABLE_KEY : '';
+        if (defined('ALM_STRIPE_PUBLISHABLE_KEY') && ALM_STRIPE_PUBLISHABLE_KEY !== '') {
+            return ALM_STRIPE_PUBLISHABLE_KEY;
+        }
+        $db = get_option('alm_stripe_keys', []);
+        return (string) ($db['publishable_key'] ?? '');
     }
 
     private static function secret_key(): string {
-        return defined('ALM_STRIPE_SECRET_KEY') ? ALM_STRIPE_SECRET_KEY : '';
+        if (defined('ALM_STRIPE_SECRET_KEY') && ALM_STRIPE_SECRET_KEY !== '') {
+            return ALM_STRIPE_SECRET_KEY;
+        }
+        $db = get_option('alm_stripe_keys', []);
+        return (string) ($db['secret_key'] ?? '');
     }
 
     private static function webhook_secret(): string {
-        return defined('ALM_STRIPE_WEBHOOK_SECRET') ? ALM_STRIPE_WEBHOOK_SECRET : '';
+        if (defined('ALM_STRIPE_WEBHOOK_SECRET') && ALM_STRIPE_WEBHOOK_SECRET !== '') {
+            return ALM_STRIPE_WEBHOOK_SECRET;
+        }
+        $db = get_option('alm_stripe_keys', []);
+        return (string) ($db['webhook_secret'] ?? '');
+    }
+
+    // ── Fonte chiavi (per UI admin) ────────────────────────────────────────
+
+    public static function keys_source(): string {
+        return defined('ALM_STRIPE_SECRET_KEY') && ALM_STRIPE_SECRET_KEY !== '' ? 'config' : 'db';
     }
 
     public static function is_test_mode(): bool {

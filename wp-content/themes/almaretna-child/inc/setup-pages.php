@@ -724,3 +724,23 @@ add_action('init', function (): void {
 
     update_option('alm_legal_pages_v1', '1');
 }, 25);
+
+// ─── Migrazione v3: forza template mancanti su pagine esistenti ──────────────
+// Assegna il template corretto a ogni pagina che ce l'ha vuoto o 'default'.
+// Copre il caso in cui alm_create_pages() era già girato prima che il template
+// venisse aggiunto alla config (es. produzione con DB precedente al codice).
+
+add_action('init', function (): void {
+    if (get_option('alm_template_fix_v1') === '1') return;
+
+    foreach (alm_get_pages_config() as $p) {
+        if (empty($p['template'])) continue;
+        $page = get_page_by_path($p['slug']);
+        if (!$page instanceof WP_Post) continue;
+        $current = get_post_meta($page->ID, '_wp_page_template', true);
+        if ($current === $p['template']) continue;
+        update_post_meta($page->ID, '_wp_page_template', $p['template']);
+    }
+
+    update_option('alm_template_fix_v1', '1');
+}, 30);

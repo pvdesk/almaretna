@@ -502,6 +502,126 @@ add_action('admin_head', function (): void { ?>
     background: rgba(197,180,156,.09) !important;
     border-left: 3px solid #C5B49C !important;
 }
+
+/* ── Foto Sito — slot a posizione ── */
+.ad-slot-section { padding: 8px 14px 4px; }
+.ad-slot-section__title {
+    font-size: .58rem; font-weight: 700; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--ad-muted);
+    margin: 0 0 8px; padding-bottom: 5px;
+    border-bottom: 1px solid var(--ad-border);
+}
+.ad-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 7px;
+    margin-bottom: 10px;
+}
+.ad-slot {
+    display: flex; flex-direction: column;
+    border: 1.5px dashed var(--ad-border);
+    border-radius: 5px; overflow: hidden;
+    transition: border-color .15s;
+}
+.ad-slot.has-photo { border-style: solid; border-color: var(--ad-sand); }
+.ad-slot:hover { border-color: var(--ad-sand); }
+.ad-slot__preview {
+    aspect-ratio: 1; background: var(--ad-warm);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+}
+.ad-slot__preview img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .2s;
+}
+.ad-slot:hover .ad-slot__preview img { transform: scale(1.05); }
+.ad-slot__preview--empty { color: #ccc; font-size: 1.4rem; }
+.ad-slot__overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.52);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; opacity: 0; transition: opacity .15s;
+}
+.ad-slot:hover .ad-slot__overlay { opacity: 1; }
+.ad-slot__overlay-btn {
+    padding: 3px 8px; font-size: .63rem; font-weight: 700;
+    border: none; border-radius: 3px; cursor: pointer;
+    background: rgba(255,255,255,.9); color: var(--ad-dark);
+    transition: background .1s; white-space: nowrap;
+}
+.ad-slot__overlay-btn:hover { background: #fff; }
+.ad-slot__overlay-btn--del { background: rgba(180,40,40,.85); color: #fff; }
+.ad-slot__overlay-btn--del:hover { background: rgba(160,10,10,.9); }
+.ad-slot__label {
+    padding: 4px 5px 1px;
+    font-size: .61rem; font-weight: 700; color: var(--ad-dark);
+    text-align: center; line-height: 1.2;
+}
+.ad-slot__desc {
+    padding: 0 4px 5px;
+    font-size: .56rem; color: var(--ad-muted);
+    text-align: center; line-height: 1.2;
+}
+
+/* ── Foto Camere — galleria multi-foto ── */
+.ad-room-photos-row {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--ad-border);
+}
+.ad-room-photos-row:last-child { border-bottom: none; }
+.ad-room-photos-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+}
+.ad-room-photos-header__name {
+    font-weight: 600; font-size: .83rem; color: var(--ad-dark);
+    text-decoration: none;
+}
+.ad-room-photos-header__name:hover { text-decoration: underline; }
+.ad-room-gallery { display: flex; gap: 6px; flex-wrap: wrap; }
+.ad-room-gallery__item {
+    position: relative; width: 62px; height: 62px;
+    border-radius: 4px; overflow: hidden; flex-shrink: 0;
+    border: 2px solid transparent; transition: border-color .15s;
+}
+.ad-room-gallery__item.is-main { border-color: var(--ad-sand); }
+.ad-room-gallery__item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.ad-room-gallery__actions {
+    position: absolute; inset: 0; background: rgba(0,0,0,.52);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; opacity: 0; transition: opacity .15s;
+}
+.ad-room-gallery__item:hover .ad-room-gallery__actions { opacity: 1; }
+.ad-room-gallery__star {
+    background: rgba(255,255,255,.88); border: none; border-radius: 50%;
+    width: 24px; height: 24px; cursor: pointer; font-size: .85rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .1s; line-height: 1;
+}
+.ad-room-gallery__star:hover { background: #fff; }
+.ad-room-gallery__item.is-main .ad-room-gallery__star { background: var(--ad-sand); color: #fff; }
+.ad-room-gallery__del {
+    background: rgba(190,40,40,.85); border: none; border-radius: 50%;
+    width: 24px; height: 24px; cursor: pointer; font-size: .78rem; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .1s;
+}
+.ad-room-gallery__del:hover { background: rgba(160,10,10,.9); }
+.ad-room-gallery__add {
+    width: 62px; height: 62px; border-radius: 4px;
+    border: 1.5px dashed var(--ad-border); background: var(--ad-warm);
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1px; color: var(--ad-muted); font-size: .6rem; font-weight: 700;
+    transition: border-color .15s, color .15s;
+}
+.ad-room-gallery__add:hover { border-color: var(--ad-sand); color: var(--ad-sand); }
+.ad-room-gallery__add-icon { font-size: 1.1rem; line-height: 1; }
+.ad-room-count-warn { font-size: .62rem; color: #d35400; font-weight: 700; }
+.ad-room-count-ok   { font-size: .62rem; color: var(--ad-green); font-weight: 700; }
 </style>
 <?php });
 
@@ -659,6 +779,153 @@ add_action('wp_ajax_alm_delete_special_price', function (): void {
     $list = array_values(array_filter($list, fn($e) => ($e['id'] ?? '') !== $entry_id));
     update_post_meta($room_id, '_room_special_prices', wp_json_encode($list));
     wp_send_json_success();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   HELPER — slot foto sito
+   ═══════════════════════════════════════════════════════════════ */
+
+function alm_site_photo_slots(): array {
+    return [
+        'homepage' => [
+            'label' => 'Homepage',
+            'slots' => [
+                'hero_bg'      => ['label' => 'Hero — Sfondo',     'desc' => 'Foto fullscreen hero'],
+                'storia_foto'  => ['label' => 'Storia — Foto',     'desc' => 'Sezione storie'],
+                'piscina_foto' => ['label' => 'Piscina — Foto',    'desc' => 'Bar bordo piscina'],
+                'gallery_1'    => ['label' => 'Galleria 1',        'desc' => 'Strip foto 1'],
+                'gallery_2'    => ['label' => 'Galleria 2',        'desc' => 'Strip foto 2'],
+                'gallery_3'    => ['label' => 'Galleria 3',        'desc' => 'Strip foto 3'],
+                'gallery_4'    => ['label' => 'Galleria 4',        'desc' => 'Strip foto 4'],
+                'gallery_5'    => ['label' => 'Galleria 5',        'desc' => 'Strip foto 5'],
+                'gallery_6'    => ['label' => 'Galleria 6',        'desc' => 'Strip foto 6'],
+            ],
+        ],
+        'generale' => [
+            'label' => 'Sito Generale',
+            'slots' => [
+                'og_image' => ['label' => 'OG Image (social)', 'desc' => '1200×630 Facebook/WhatsApp'],
+            ],
+        ],
+    ];
+}
+
+function alm_flat_site_photo_slots(): array {
+    $flat = [];
+    foreach (alm_site_photo_slots() as $section) {
+        foreach ($section['slots'] as $key => $slot) {
+            $flat[$key] = $slot;
+        }
+    }
+    return $flat;
+}
+
+/**
+ * Restituisce l'URL dell'immagine per uno slot sito (o '' se non impostata).
+ */
+function alm_get_site_photo(string $key, string $size = 'full'): string {
+    $id = (int) get_option('alm_site_photo_' . $key, 0);
+    if (!$id) return '';
+    return (string) wp_get_attachment_url($id);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Salva foto sito (slot nominato)
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_save_site_photo', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('upload_files')) wp_send_json_error('Permesso negato');
+
+    $key      = sanitize_key($_POST['key']      ?? '');
+    $media_id = (int)          ($_POST['media_id'] ?? 0);
+
+    if (!$key || !$media_id) wp_send_json_error('Dati mancanti');
+    if (!array_key_exists($key, alm_flat_site_photo_slots())) wp_send_json_error('Slot non valido');
+
+    update_option('alm_site_photo_' . $key, $media_id, false);
+    $thumb = wp_get_attachment_image_src($media_id, 'thumbnail');
+
+    wp_send_json_success(['thumb' => $thumb ? esc_url($thumb[0]) : '']);
+});
+
+add_action('wp_ajax_alm_remove_site_photo', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('upload_files')) wp_send_json_error('Permesso negato');
+
+    $key = sanitize_key($_POST['key'] ?? '');
+    if (!$key) wp_send_json_error('Dati mancanti');
+    if (!array_key_exists($key, alm_flat_site_photo_slots())) wp_send_json_error('Slot non valido');
+
+    delete_option('alm_site_photo_' . $key);
+    wp_send_json_success();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AJAX — Galleria foto camera (multi-foto)
+   ═══════════════════════════════════════════════════════════════ */
+
+add_action('wp_ajax_alm_add_room_gallery_photo', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id  = (int) ($_POST['room_id']  ?? 0);
+    $media_id = (int) ($_POST['media_id'] ?? 0);
+
+    if (!$room_id || !$media_id) wp_send_json_error('Dati mancanti');
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    $raw     = get_post_meta($room_id, '_room_gallery', true);
+    $gallery = $raw ? json_decode($raw, true) : [];
+    if (!is_array($gallery)) $gallery = [];
+    $gallery = array_values(array_map('intval', $gallery));
+
+    if (!in_array($media_id, $gallery, true)) {
+        $gallery[] = $media_id;
+        update_post_meta($room_id, '_room_gallery', wp_json_encode($gallery));
+    }
+
+    // Prima foto = imposta anche come thumbnail principale
+    if (!has_post_thumbnail($room_id)) {
+        set_post_thumbnail($room_id, $media_id);
+    }
+
+    $thumb   = wp_get_attachment_image_src($media_id, 'thumbnail');
+    $is_main = ((int) get_post_thumbnail_id($room_id) === $media_id);
+
+    wp_send_json_success([
+        'media_id' => $media_id,
+        'thumb'    => $thumb ? esc_url($thumb[0]) : '',
+        'is_main'  => $is_main,
+    ]);
+});
+
+add_action('wp_ajax_alm_remove_room_gallery_photo', function (): void {
+    check_ajax_referer(ALM_DASH_NONCE, 'nonce');
+    if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
+
+    $room_id  = (int) ($_POST['room_id']  ?? 0);
+    $media_id = (int) ($_POST['media_id'] ?? 0);
+
+    if (!$room_id || !$media_id) wp_send_json_error('Dati mancanti');
+    if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
+
+    $raw     = get_post_meta($room_id, '_room_gallery', true);
+    $gallery = $raw ? json_decode($raw, true) : [];
+    if (!is_array($gallery)) $gallery = [];
+    $gallery = array_values(array_filter(array_map('intval', $gallery), fn($id) => $id !== $media_id));
+    update_post_meta($room_id, '_room_gallery', wp_json_encode($gallery));
+
+    // Se era la thumbnail principale, imposta la prima rimasta (o rimuovi)
+    if ((int) get_post_thumbnail_id($room_id) === $media_id) {
+        if (!empty($gallery)) {
+            set_post_thumbnail($room_id, $gallery[0]);
+        } else {
+            delete_post_thumbnail($room_id);
+        }
+    }
+
+    wp_send_json_success(['new_main' => (int) get_post_thumbnail_id($room_id)]);
 });
 
 /* ═══════════════════════════════════════════════════════════════
@@ -883,75 +1150,62 @@ function alm_w_media(): void {
         echo '<p class="ad-empty">Permessi insufficienti.</p>'; return;
     }
 
-    $media = get_posts([
-        'post_type'      => 'attachment',
-        'post_mime_type' => 'image',
-        'posts_per_page' => 12,
-        'post_status'    => 'any',
-        'orderby'        => 'date',
-        'order'          => 'DESC',
-    ]);
-
-    $shortcodes = [
-        '[alm_booking_form]'           => 'Form prenotazione (wizard)',
-        '[alm_rooms_grid]'             => 'Griglia camere — tutte',
-        '[alm_rooms_grid columns="2"]' => 'Griglia camere — 2 colonne',
-        '[alm_availability_calendar]'  => 'Calendario disponibilità',
-    ];
-
-    $mu = admin_url('upload.php');
-    $mn = admin_url('media-new.php');
-    $cu = admin_url('customize.php');
+    $sections = alm_site_photo_slots();
+    $nonce    = wp_create_nonce(ALM_DASH_NONCE);
     ?>
     <div class="ad">
         <div class="ad-head">
-            <span class="ad-head__label">Ultime immagini caricate</span>
-            <a href="<?php echo esc_url($mu); ?>" class="ad-head__link">Libreria →</a>
+            <span class="ad-head__label">Foto per posizione nel sito — clicca per caricare</span>
+            <a href="<?php echo esc_url(admin_url('upload.php')); ?>" class="ad-head__link">Libreria →</a>
         </div>
 
-        <?php if (current_user_can('upload_files')) : ?>
+        <?php foreach ($sections as $section_key => $section) : ?>
+        <div class="ad-slot-section">
+            <p class="ad-slot-section__title"><?php echo esc_html($section['label']); ?></p>
+            <div class="ad-slot-grid">
+                <?php foreach ($section['slots'] as $key => $slot) :
+                    $saved_id  = (int) get_option('alm_site_photo_' . $key, 0);
+                    $has_photo = $saved_id > 0;
+                    $thumb_src = $has_photo ? wp_get_attachment_image_src($saved_id, 'thumbnail') : null;
+                    $thumb_url = ($thumb_src && !empty($thumb_src[0])) ? $thumb_src[0] : '';
+                ?>
+                <div class="ad-slot <?php echo $has_photo ? 'has-photo' : ''; ?>"
+                     id="alm-slot-<?php echo esc_attr($key); ?>">
+                    <div class="ad-slot__preview <?php echo !$has_photo ? 'ad-slot__preview--empty' : ''; ?>">
+                        <?php if ($has_photo && $thumb_url) : ?>
+                            <img src="<?php echo esc_url($thumb_url); ?>"
+                                 id="alm-slot-img-<?php echo esc_attr($key); ?>"
+                                 alt="<?php echo esc_attr($slot['label']); ?>" />
+                        <?php else : ?>
+                            <span id="alm-slot-img-<?php echo esc_attr($key); ?>">📷</span>
+                        <?php endif; ?>
+                        <div class="ad-slot__overlay">
+                            <button class="ad-slot__overlay-btn"
+                                    onclick="almPickSitePhoto('<?php echo esc_js($key); ?>','<?php echo esc_js($nonce); ?>')">
+                                <?php echo $has_photo ? 'Cambia' : 'Scegli'; ?>
+                            </button>
+                            <?php if ($has_photo) : ?>
+                            <button class="ad-slot__overlay-btn ad-slot__overlay-btn--del"
+                                    onclick="almRemoveSitePhoto('<?php echo esc_js($key); ?>','<?php echo esc_js($nonce); ?>')">
+                                Rimuovi
+                            </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="ad-slot__label"><?php echo esc_html($slot['label']); ?></div>
+                    <div class="ad-slot__desc"><?php echo esc_html($slot['desc']); ?></div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
+
         <div class="ad-section">
             <div class="ad-actions">
-                <a href="<?php echo esc_url($mn); ?>" class="ad-btn ad-btn--sand">➕ Carica foto</a>
-                <a href="<?php echo esc_url($mu); ?>" class="ad-btn ad-btn--dark">📂 Libreria</a>
-                <a href="<?php echo esc_url($cu); ?>" class="ad-btn ad-btn--ghost">🎨 Foto sito</a>
+                <a href="<?php echo esc_url(admin_url('media-new.php')); ?>" class="ad-btn ad-btn--sand">➕ Carica foto</a>
+                <a href="<?php echo esc_url(admin_url('upload.php')); ?>" class="ad-btn ad-btn--ghost">📂 Libreria</a>
             </div>
         </div>
-        <?php endif; ?>
-
-        <?php if (!empty($media)) : ?>
-        <div class="ad-media-grid">
-            <?php foreach ($media as $img) :
-                $t = wp_get_attachment_image_src($img->ID, 'thumbnail');
-                if (!$t) continue;
-            ?>
-            <a href="<?php echo esc_url(admin_url('upload.php?item=' . $img->ID)); ?>"
-               class="ad-thumb" title="<?php echo esc_attr($img->post_title); ?>">
-                <img src="<?php echo esc_url($t[0]); ?>" alt="<?php echo esc_attr($img->post_title); ?>" loading="lazy" />
-                <span class="ad-thumb__over">✏️</span>
-            </a>
-            <?php endforeach; ?>
-        </div>
-        <?php else : ?>
-            <p class="ad-empty">Nessuna immagine caricata.</p>
-        <?php endif; ?>
-
-        <?php if (current_user_can('edit_posts')) : ?>
-        <div class="ad-section" style="margin-top:4px;">
-            <p class="ad-section__title">⚡ Shortcode — copia e incolla nelle pagine</p>
-        </div>
-        <div class="ad-sc-list">
-            <?php foreach ($shortcodes as $code => $desc) : ?>
-            <div class="ad-sc-row">
-                <div style="flex:1;min-width:0;">
-                    <code><?php echo esc_html($code); ?></code>
-                    <div class="ad-sc-row__desc"><?php echo esc_html($desc); ?></div>
-                </div>
-                <button class="ad-copy-btn" onclick="almCopy(this,'<?php echo esc_js($code); ?>')">Copia</button>
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
     </div>
     <?php
 }
@@ -977,43 +1231,85 @@ function alm_w_room_photos(): void {
     ?>
     <div class="ad">
         <div class="ad-head">
-            <span class="ad-head__label">Immagine principale per camera</span>
+            <span class="ad-head__label">Galleria foto per camera — ★ = principale nella card</span>
             <a href="<?php echo esc_url(admin_url('upload.php')); ?>" class="ad-head__link">Libreria →</a>
         </div>
 
         <?php if (empty($rooms)) : ?>
             <p class="ad-empty">Nessuna camera trovata. <a href="<?php echo esc_url(admin_url('post-new.php?post_type=almaretna_room')); ?>">Crea la prima →</a></p>
         <?php else : ?>
-        <div class="ad-room-grid">
+        <div>
             <?php foreach ($rooms as $room) :
-                $has_thumb = has_post_thumbnail($room->ID);
-                $thumb_url = $has_thumb ? get_the_post_thumbnail_url($room->ID, 'thumbnail') : '';
-                $edit_link = get_edit_post_link($room->ID);
-            ?>
-            <div class="ad-room-row" id="alm-rr-<?php echo (int)$room->ID; ?>">
+                $raw     = get_post_meta($room->ID, '_room_gallery', true);
+                $gallery = $raw ? json_decode($raw, true) : [];
+                if (!is_array($gallery)) $gallery = [];
+                $gallery = array_values(array_unique(array_map('intval', $gallery)));
 
-                <div class="ad-room-row__thumb <?php echo $has_thumb ? '' : 'ad-room-row__thumb--empty'; ?>"
-                     id="alm-thumb-wrap-<?php echo (int)$room->ID; ?>">
-                    <?php if ($has_thumb) : ?>
-                        <img src="<?php echo esc_url($thumb_url); ?>"
-                             alt="<?php echo esc_attr($room->post_title); ?>"
-                             id="alm-thumb-img-<?php echo (int)$room->ID; ?>" />
-                    <?php else : ?>
-                        <span id="alm-thumb-img-<?php echo (int)$room->ID; ?>">🖼️</span>
-                    <?php endif; ?>
+                $main_id = (int) get_post_thumbnail_id($room->ID);
+
+                // Thumb principale non ancora in galleria → aggiungila in testa
+                if ($main_id > 0 && !in_array($main_id, $gallery, true)) {
+                    array_unshift($gallery, $main_id);
+                    update_post_meta($room->ID, '_room_gallery', wp_json_encode($gallery));
+                }
+
+                $count = count($gallery);
+                $missing = max(0, 4 - $count);
+            ?>
+            <div class="ad-room-photos-row" id="alm-rp-<?php echo (int)$room->ID; ?>">
+
+                <div class="ad-room-photos-header">
+                    <a href="<?php echo esc_url((string) get_edit_post_link($room->ID)); ?>"
+                       class="ad-room-photos-header__name">
+                        <?php echo esc_html($room->post_title); ?>
+                    </a>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <?php if ($missing > 0) : ?>
+                        <span class="ad-room-count-warn" id="alm-cnt-<?php echo (int)$room->ID; ?>">
+                            ⚠ <?php echo $missing; ?> foto mancanti
+                        </span>
+                        <?php else : ?>
+                        <span class="ad-room-count-ok" id="alm-cnt-<?php echo (int)$room->ID; ?>">
+                            ✓ <?php echo $count; ?> foto
+                        </span>
+                        <?php endif; ?>
+                        <a href="<?php echo esc_url((string) get_edit_post_link($room->ID)); ?>"
+                           class="ad-btn ad-btn--ghost ad-btn--sm">✏️</a>
+                    </div>
                 </div>
 
-                <span class="ad-room-row__name"><?php echo esc_html($room->post_title); ?></span>
+                <div class="ad-room-gallery" id="alm-gallery-<?php echo (int)$room->ID; ?>">
+                    <?php foreach ($gallery as $photo_id) :
+                        $photo_id  = (int) $photo_id;
+                        if (!$photo_id) continue;
+                        $t_src     = wp_get_attachment_image_src($photo_id, 'thumbnail');
+                        if (!$t_src) continue;
+                        $is_main   = ($photo_id === $main_id);
+                    ?>
+                    <div class="ad-room-gallery__item <?php echo $is_main ? 'is-main' : ''; ?>"
+                         id="alm-gp-<?php echo (int)$room->ID; ?>-<?php echo $photo_id; ?>">
+                        <img src="<?php echo esc_url($t_src[0]); ?>"
+                             alt="<?php echo esc_attr($room->post_title); ?>" />
+                        <div class="ad-room-gallery__actions">
+                            <button class="ad-room-gallery__star"
+                                    title="<?php echo $is_main ? 'Foto principale' : 'Imposta come principale'; ?>"
+                                    onclick="almSetMainRoomPhoto(<?php echo (int)$room->ID; ?>,<?php echo $photo_id; ?>,'<?php echo esc_js($nonce); ?>')">
+                                <?php echo $is_main ? '★' : '☆'; ?>
+                            </button>
+                            <button class="ad-room-gallery__del"
+                                    title="Rimuovi foto"
+                                    onclick="almRemoveRoomPhoto(<?php echo (int)$room->ID; ?>,<?php echo $photo_id; ?>,'<?php echo esc_js($nonce); ?>')">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
 
-                <div class="ad-room-row__actions">
-                    <button class="ad-btn ad-btn--sand ad-btn--sm"
-                            onclick="almPickPhoto(<?php echo (int)$room->ID; ?>, '<?php echo esc_js($nonce); ?>')">
-                        📷 <?php echo $has_thumb ? 'Cambia' : 'Aggiungi'; ?>
+                    <button class="ad-room-gallery__add"
+                            onclick="almAddRoomPhoto(<?php echo (int)$room->ID; ?>,'<?php echo esc_js($nonce); ?>')">
+                        <span class="ad-room-gallery__add-icon">＋</span>
+                        Foto
                     </button>
-                    <a href="<?php echo esc_url($edit_link); ?>"
-                       class="ad-btn ad-btn--ghost ad-btn--sm" title="Modifica camera">
-                        ✏️
-                    </a>
                 </div>
 
             </div>
@@ -1024,12 +1320,8 @@ function alm_w_room_photos(): void {
         <div class="ad-section">
             <p class="ad-section__title">Aggiungi nuova camera</p>
             <div class="ad-actions">
-                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=almaretna_room')); ?>" class="ad-btn ad-btn--ghost">
-                    + Nuova camera
-                </a>
-                <a href="<?php echo esc_url(admin_url('media-new.php')); ?>" class="ad-btn ad-btn--ghost">
-                    ➕ Carica foto
-                </a>
+                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=almaretna_room')); ?>" class="ad-btn ad-btn--ghost">+ Nuova camera</a>
+                <a href="<?php echo esc_url(admin_url('media-new.php')); ?>" class="ad-btn ad-btn--ghost">➕ Carica foto</a>
             </div>
         </div>
     </div>
@@ -1391,6 +1683,229 @@ function alm_dash_inline_js(): void {
                 }
             })
             .catch(function(){ btn.classList.remove('deleting'); });
+    }
+
+    /* ── Foto Sito — slot nominati ── */
+
+    function almPickSitePhoto(key, nonce) {
+        if (typeof wp === 'undefined' || !wp.media) {
+            alert('Media uploader non disponibile. Aggiorna la pagina.');
+            return;
+        }
+        var frame = wp.media({
+            title:    'Scegli foto per: ' + key,
+            button:   { text: 'Usa questa foto' },
+            multiple: false,
+            library:  { type: 'image' }
+        });
+        frame.on('select', function () {
+            var att   = frame.state().get('selection').first().toJSON();
+            var slot  = document.getElementById('alm-slot-' + key);
+            var imgEl = document.getElementById('alm-slot-img-' + key);
+            if (!slot) return;
+
+            var fd = new FormData();
+            fd.append('action',   'alm_save_site_photo');
+            fd.append('nonce',    nonce);
+            fd.append('key',      key);
+            fd.append('media_id', att.id);
+
+            fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.success) return;
+                    slot.classList.add('has-photo');
+                    var preview = slot.querySelector('.ad-slot__preview');
+                    if (preview) preview.classList.remove('ad-slot__preview--empty');
+
+                    if (imgEl && imgEl.tagName !== 'IMG') {
+                        var img = document.createElement('img');
+                        img.id  = imgEl.id; img.alt = '';
+                        imgEl.parentNode.replaceChild(img, imgEl);
+                        imgEl = img;
+                    }
+                    if (imgEl && data.data.thumb) {
+                        imgEl.src = data.data.thumb + '?' + Date.now();
+                    }
+                    // Overlay: mostra Cambia + Rimuovi
+                    var overlay = slot.querySelector('.ad-slot__overlay');
+                    if (overlay) {
+                        overlay.innerHTML =
+                            '<button class="ad-slot__overlay-btn" onclick="almPickSitePhoto(\'' + key + '\',\'' + nonce + '\')">Cambia</button>' +
+                            '<button class="ad-slot__overlay-btn ad-slot__overlay-btn--del" onclick="almRemoveSitePhoto(\'' + key + '\',\'' + nonce + '\')">Rimuovi</button>';
+                    }
+                });
+        });
+        frame.open();
+    }
+
+    function almRemoveSitePhoto(key, nonce) {
+        var slot = document.getElementById('alm-slot-' + key);
+        if (!slot) return;
+
+        var fd = new FormData();
+        fd.append('action', 'alm_remove_site_photo');
+        fd.append('nonce',  nonce);
+        fd.append('key',    key);
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.success) return;
+                slot.classList.remove('has-photo');
+                var preview = slot.querySelector('.ad-slot__preview');
+                if (preview) preview.classList.add('ad-slot__preview--empty');
+                var imgEl = document.getElementById('alm-slot-img-' + key);
+                if (imgEl && imgEl.tagName === 'IMG') {
+                    var span = document.createElement('span');
+                    span.id = imgEl.id; span.textContent = '📷';
+                    imgEl.parentNode.replaceChild(span, imgEl);
+                }
+                var overlay = slot.querySelector('.ad-slot__overlay');
+                if (overlay) {
+                    overlay.innerHTML =
+                        '<button class="ad-slot__overlay-btn" onclick="almPickSitePhoto(\'' + key + '\',\'' + nonce + '\')">Scegli</button>';
+                }
+            });
+    }
+
+    /* ── Foto Camere — galleria multi-foto ── */
+
+    function almAddRoomPhoto(roomId, nonce) {
+        if (typeof wp === 'undefined' || !wp.media) {
+            alert('Media uploader non disponibile. Aggiorna la pagina.');
+            return;
+        }
+        var frame = wp.media({
+            title:    'Aggiungi foto alla camera',
+            button:   { text: 'Aggiungi foto' },
+            multiple: true,
+            library:  { type: 'image' }
+        });
+        frame.on('select', function () {
+            var selection = frame.state().get('selection');
+            selection.each(function (att) {
+                var attData = att.toJSON();
+                var fd = new FormData();
+                fd.append('action',   'alm_add_room_gallery_photo');
+                fd.append('nonce',    nonce);
+                fd.append('room_id',  roomId);
+                fd.append('media_id', attData.id);
+
+                fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data.success) return;
+                        // Evita duplicati nell'UI
+                        if (document.getElementById('alm-gp-' + roomId + '-' + data.data.media_id)) return;
+                        almAppendGalleryItem(roomId, data.data.media_id, data.data.thumb, data.data.is_main, nonce);
+                        almUpdateRoomCount(roomId);
+                    });
+            });
+        });
+        frame.open();
+    }
+
+    function almAppendGalleryItem(roomId, mediaId, thumbUrl, isMain, nonce) {
+        var gallery = document.getElementById('alm-gallery-' + roomId);
+        if (!gallery) return;
+        var addBtn = gallery.querySelector('.ad-room-gallery__add');
+
+        var div = document.createElement('div');
+        div.className = 'ad-room-gallery__item' + (isMain ? ' is-main' : '');
+        div.id = 'alm-gp-' + roomId + '-' + mediaId;
+        div.innerHTML =
+            '<img src="' + thumbUrl + '" alt="" />' +
+            '<div class="ad-room-gallery__actions">' +
+                '<button class="ad-room-gallery__star"' +
+                    ' title="' + (isMain ? 'Foto principale' : 'Imposta come principale') + '"' +
+                    ' onclick="almSetMainRoomPhoto(' + roomId + ',' + mediaId + ',\'' + nonce + '\')">' +
+                    (isMain ? '★' : '☆') +
+                '</button>' +
+                '<button class="ad-room-gallery__del" title="Rimuovi foto"' +
+                    ' onclick="almRemoveRoomPhoto(' + roomId + ',' + mediaId + ',\'' + nonce + '\')">' +
+                    '✕' +
+                '</button>' +
+            '</div>';
+
+        if (addBtn) { gallery.insertBefore(div, addBtn); }
+        else        { gallery.appendChild(div); }
+    }
+
+    function almRemoveRoomPhoto(roomId, mediaId, nonce) {
+        var item = document.getElementById('alm-gp-' + roomId + '-' + mediaId);
+        if (item) item.style.opacity = '.35';
+
+        var fd = new FormData();
+        fd.append('action',   'alm_remove_room_gallery_photo');
+        fd.append('nonce',    nonce);
+        fd.append('room_id',  roomId);
+        fd.append('media_id', mediaId);
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.success) { if (item) item.style.opacity = ''; return; }
+                if (item) item.remove();
+                almUpdateRoomCount(roomId);
+                // Se era la principale, evidenzia la prima rimasta
+                almRefreshMainStar(roomId, data.data.new_main);
+            })
+            .catch(function () { if (item) item.style.opacity = ''; });
+    }
+
+    function almSetMainRoomPhoto(roomId, mediaId, nonce) {
+        var fd = new FormData();
+        fd.append('action',   'alm_set_room_thumb');
+        fd.append('nonce',    nonce);
+        fd.append('room_id',  roomId);
+        fd.append('media_id', mediaId);
+
+        fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.success) return;
+                var gallery = document.getElementById('alm-gallery-' + roomId);
+                if (!gallery) return;
+                gallery.querySelectorAll('.ad-room-gallery__item').forEach(function (it) {
+                    var isThis = it.id === ('alm-gp-' + roomId + '-' + mediaId);
+                    it.classList.toggle('is-main', isThis);
+                    var star = it.querySelector('.ad-room-gallery__star');
+                    if (star) {
+                        star.textContent = isThis ? '★' : '☆';
+                        star.title       = isThis ? 'Foto principale' : 'Imposta come principale';
+                    }
+                });
+            });
+    }
+
+    function almUpdateRoomCount(roomId) {
+        var gallery = document.getElementById('alm-gallery-' + roomId);
+        var badge   = document.getElementById('alm-cnt-' + roomId);
+        if (!gallery || !badge) return;
+        var count   = gallery.querySelectorAll('.ad-room-gallery__item').length;
+        var missing = Math.max(0, 4 - count);
+        if (missing > 0) {
+            badge.className     = 'ad-room-count-warn';
+            badge.textContent   = '⚠ ' + missing + ' foto mancanti';
+        } else {
+            badge.className     = 'ad-room-count-ok';
+            badge.textContent   = '✓ ' + count + ' foto';
+        }
+    }
+
+    function almRefreshMainStar(roomId, newMainId) {
+        var gallery = document.getElementById('alm-gallery-' + roomId);
+        if (!gallery) return;
+        gallery.querySelectorAll('.ad-room-gallery__item').forEach(function (it) {
+            var isMain = newMainId && it.id === ('alm-gp-' + roomId + '-' + newMainId);
+            it.classList.toggle('is-main', isMain);
+            var star = it.querySelector('.ad-room-gallery__star');
+            if (star) {
+                star.textContent = isMain ? '★' : '☆';
+                star.title       = isMain ? 'Foto principale' : 'Imposta come principale';
+            }
+        });
     }
     </script>
     <?php

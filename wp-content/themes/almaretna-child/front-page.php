@@ -338,7 +338,7 @@ $hero_subtitle = ($lang === 'it')
                         $price        = (float) ($meta['base_price'] ?? 0);
                         $adults       = (int) ($meta['capacity_adults'] ?? 2);
                         $size_m2      = (int) ($meta['size_m2'] ?? 0);
-                        $room_url     = get_permalink($room->ID);
+                        $room_url     = alm_url_with_lang((string) get_permalink($room->ID));
                         $room_prenota = add_query_arg(['room' => $room->ID], $prenota_url);
                     ?>
                     <article class="rooms-carousel__slide room-card-premium">

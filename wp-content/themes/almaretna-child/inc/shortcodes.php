@@ -73,7 +73,7 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
     ob_start();
     // URL prenotazione
     $prenota_pages = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
-    $prenota_base  = !empty($prenota_pages) ? get_permalink($prenota_pages[0]->ID) : home_url('/prenota/');
+    $prenota_base  = alm_url_with_lang(!empty($prenota_pages) ? (string) get_permalink($prenota_pages[0]->ID) : home_url('/prenota/'));
     ?>
     <div class="<?php echo esc_attr($grid_class); ?>">
         <?php while ($rooms_query->have_posts()) : $rooms_query->the_post(); ?>
@@ -93,7 +93,7 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
 
                 <div class="room-card-premium__image-wrap">
                     <?php if ($thumb_url) : ?>
-                        <a href="<?php the_permalink(); ?>">
+                        <a href="<?php echo esc_url(alm_url_with_lang((string) get_permalink())); ?>">
                             <img class="room-card-premium__image"
                                  src="<?php echo esc_url($thumb_url); ?>"
                                  alt="<?php echo esc_attr(alm_get_room_translated($post_id, 'title')); ?>"
@@ -133,7 +133,7 @@ add_shortcode('alm_rooms_grid', function (array|string $atts = []): string {
                     </div>
 
                     <h3 class="room-card-premium__title">
-                        <a href="<?php the_permalink(); ?>"><?php echo esc_html(alm_get_room_translated($post_id, 'title')); ?></a>
+                        <a href="<?php echo esc_url(alm_url_with_lang((string) get_permalink())); ?>"><?php echo esc_html(alm_get_room_translated($post_id, 'title')); ?></a>
                     </h3>
 
                     <p class="room-card-premium__excerpt">
@@ -231,7 +231,7 @@ add_shortcode('alm_room_price', function (array|string $atts = []): string {
 
     $meta     = alm_get_room_meta($room_id);
     $prenota_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
-    $book_url  = !empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/');
+    $book_url  = alm_url_with_lang(!empty($prenota_page) ? (string) get_permalink($prenota_page[0]->ID) : home_url('/prenota/'));
 
     ob_start();
     ?>

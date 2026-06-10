@@ -328,7 +328,7 @@ if ($related_query->have_posts()) : ?>
                             </div>
                             <div class="card-body p-4 d-flex flex-column">
                                 <h3 class="fs-5 fw-bold font-heading mb-3 text-primary">
-                                    <a href="<?php the_permalink(); ?>" class="text-decoration-none text-primary hover-text-secondary"><?php echo esc_html(alm_get_room_translated($rel_id, 'title')); ?></a>
+                                    <a href="<?php echo esc_url(alm_url_with_lang((string) get_permalink())); ?>" class="text-decoration-none text-primary hover-text-secondary"><?php echo esc_html(alm_get_room_translated($rel_id, 'title')); ?></a>
                                 </h3>
                                 <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;"><?php echo esc_html(wp_trim_words(alm_get_room_translated($rel_id, 'excerpt'), 18, '…')); ?></p>
                                 <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light">
@@ -338,7 +338,7 @@ if ($related_query->have_posts()) : ?>
                                         </span>
                                         <span class="text-muted small"><?php echo esc_html(alm_t('room.per_night')); ?></span>
                                     </div>
-                                    <a href="<?php the_permalink(); ?>" class="btn btn-outline-primary px-3 py-2 rounded-3 fw-semibold border-1" style="color: var(--color-primary); border-color: var(--color-primary); font-size: 0.85rem;">
+                                    <a href="<?php echo esc_url(alm_url_with_lang((string) get_permalink())); ?>" class="btn btn-outline-primary px-3 py-2 rounded-3 fw-semibold border-1" style="color: var(--color-primary); border-color: var(--color-primary); font-size: 0.85rem;">
                                         <?php echo esc_html(alm_t('room.discover')); ?>
                                     </a>
                                 </div>

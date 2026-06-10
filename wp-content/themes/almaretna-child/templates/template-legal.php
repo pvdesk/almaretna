@@ -109,8 +109,8 @@ get_header();
                         © <?php echo esc_html(date('Y')); ?> Almaretna &mdash;
                         Via Scorciavacca Montarsi, 48 &mdash; Nunziata di Mascali (CT)
                     </p>
-                    <a href="<?php echo esc_url(home_url('/')); ?>" style="font-size:.85rem;color:var(--color-secondary);text-decoration:none;">
-                        &larr; <?php esc_html_e('Torna alla home', 'almaretna-child'); ?>
+                    <a href="<?php echo esc_url(alm_url_with_lang(home_url('/'))); ?>" style="font-size:.85rem;color:var(--color-secondary);text-decoration:none;">
+                        &larr; <?php echo esc_html(alm_t('foot.back_home')); ?>
                     </a>
                 </footer>
 

@@ -402,6 +402,128 @@ add_action('after_switch_theme', function (): void {
     update_option('alm_flush_rewrite_needed', '1');
 });
 
+// ─── Metabox: Dettagli Camera ────────────────────────────────────────────────
+
+add_action('add_meta_boxes', function (): void {
+    add_meta_box(
+        'alm_room_details',
+        __('Dettagli Camera', 'almaretna-child'),
+        'alm_room_details_callback',
+        'almaretna_room',
+        'normal',
+        'high'
+    );
+});
+
+function alm_room_details_callback(WP_Post $post): void {
+    wp_nonce_field('alm_room_details_save', 'alm_room_details_nonce');
+    $m = [
+        'id'               => get_post_meta($post->ID, '_room_id', true),
+        'capacity_adults'  => get_post_meta($post->ID, '_room_capacity_adults', true) ?: 1,
+        'capacity_children'=> get_post_meta($post->ID, '_room_capacity_children', true) ?: 0,
+        'base_price'       => get_post_meta($post->ID, '_room_base_price', true) ?: '',
+        'bathroom_type'    => get_post_meta($post->ID, '_room_bathroom_type', true) ?: 'private',
+        'shared_with'      => get_post_meta($post->ID, '_room_shared_with', true),
+        'beds24_id'        => get_post_meta($post->ID, '_room_beds24_id', true),
+        'min_stay'         => get_post_meta($post->ID, '_room_min_stay', true) ?: 1,
+        'active'           => get_post_meta($post->ID, '_room_active', true),
+        'size_m2'          => get_post_meta($post->ID, '_room_size_m2', true) ?: '',
+    ];
+    $active = ($m['active'] === '' || $m['active'] === '1' || $m['active'] === true);
+    ?>
+    <style>
+    .alm-mb { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; padding:4px 0 16px; }
+    .alm-mb label { display:block; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:#3c434a; margin-bottom:4px; }
+    .alm-mb input[type=text],.alm-mb input[type=number],.alm-mb select { width:100%; padding:6px 8px; border:1px solid #8c8f94; border-radius:4px; font-size:13px; }
+    .alm-mb-full { grid-column:1/-1; }
+    .alm-mb-active { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#f0f9f0; border:1px solid #a8d5a2; border-radius:6px; grid-column:1/-1; }
+    .alm-mb-active input { width:auto !important; transform:scale(1.3); cursor:pointer; }
+    .alm-mb-active strong { font-size:13px; color:#2e7d32; }
+    </style>
+    <div class="alm-mb">
+        <div>
+            <label><?php _e('ID Camera (es. P1-M01)', 'almaretna-child'); ?></label>
+            <input type="text" name="_room_id" value="<?php echo esc_attr($m['id']); ?>" placeholder="P1-M01" />
+        </div>
+        <div>
+            <label><?php _e('Prezzo base / notte (€)', 'almaretna-child'); ?></label>
+            <input type="number" name="_room_base_price" value="<?php echo esc_attr((string)$m['base_price']); ?>" min="0" step="0.01" placeholder="80.00" />
+        </div>
+        <div>
+            <label><?php _e('Dimensione (m²)', 'almaretna-child'); ?></label>
+            <input type="number" name="_room_size_m2" value="<?php echo esc_attr((string)$m['size_m2']); ?>" min="0" step="1" placeholder="20" />
+        </div>
+        <div>
+            <label><?php _e('Capacità adulti', 'almaretna-child'); ?></label>
+            <input type="number" name="_room_capacity_adults" value="<?php echo esc_attr((string)$m['capacity_adults']); ?>" min="1" max="10" />
+        </div>
+        <div>
+            <label><?php _e('Capacità bambini', 'almaretna-child'); ?></label>
+            <input type="number" name="_room_capacity_children" value="<?php echo esc_attr((string)$m['capacity_children']); ?>" min="0" max="10" />
+        </div>
+        <div>
+            <label><?php _e('Soggiorno minimo (notti)', 'almaretna-child'); ?></label>
+            <input type="number" name="_room_min_stay" value="<?php echo esc_attr((string)$m['min_stay']); ?>" min="1" max="30" />
+        </div>
+        <div>
+            <label><?php _e('Tipo bagno', 'almaretna-child'); ?></label>
+            <select name="_room_bathroom_type">
+                <option value="private"  <?php selected($m['bathroom_type'], 'private'); ?>><?php _e('Privato', 'almaretna-child'); ?></option>
+                <option value="shared"   <?php selected($m['bathroom_type'], 'shared'); ?>><?php _e('Condiviso', 'almaretna-child'); ?></option>
+            </select>
+        </div>
+        <div>
+            <label><?php _e('Condiviso con (ID camera)', 'almaretna-child'); ?></label>
+            <input type="text" name="_room_shared_with" value="<?php echo esc_attr($m['shared_with']); ?>" placeholder="P1-M02" />
+        </div>
+        <div>
+            <label><?php _e('Beds24 Room ID', 'almaretna-child'); ?></label>
+            <input type="text" name="_room_beds24_id" value="<?php echo esc_attr($m['beds24_id']); ?>" placeholder="" />
+        </div>
+        <div class="alm-mb-active">
+            <input type="checkbox" name="_room_active" id="_room_active" value="1" <?php checked($active); ?> />
+            <label for="_room_active" style="margin:0;font-weight:700;text-transform:none;letter-spacing:0;font-size:13px;">
+                <strong><?php _e('Camera attiva e visibile sul sito', 'almaretna-child'); ?></strong>
+                <span style="font-weight:400;color:#555;"> — <?php _e('deseleziona per nasconderla senza eliminarla', 'almaretna-child'); ?></span>
+            </label>
+        </div>
+    </div>
+    <?php
+}
+
+add_action('save_post_almaretna_room', function (int $post_id): void {
+    if (!isset($_POST['alm_room_details_nonce']) ||
+        !wp_verify_nonce($_POST['alm_room_details_nonce'], 'alm_room_details_save') ||
+        (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
+        !current_user_can('edit_post', $post_id)
+    ) {
+        return;
+    }
+
+    $text_fields = ['_room_id', '_room_shared_with', '_room_beds24_id'];
+    foreach ($text_fields as $key) {
+        if (isset($_POST[$key])) {
+            update_post_meta($post_id, $key, sanitize_text_field($_POST[$key]));
+        }
+    }
+
+    $int_fields = ['_room_capacity_adults', '_room_capacity_children', '_room_min_stay', '_room_size_m2'];
+    foreach ($int_fields as $key) {
+        if (isset($_POST[$key])) {
+            update_post_meta($post_id, $key, absint($_POST[$key]));
+        }
+    }
+
+    if (isset($_POST['_room_base_price'])) {
+        update_post_meta($post_id, '_room_base_price', (float) $_POST['_room_base_price']);
+    }
+
+    $bath = sanitize_text_field($_POST['_room_bathroom_type'] ?? 'private');
+    update_post_meta($post_id, '_room_bathroom_type', in_array($bath, ['private', 'shared'], true) ? $bath : 'private');
+
+    update_post_meta($post_id, '_room_active', isset($_POST['_room_active']) ? '1' : '0');
+});
+
 // ─── Metabox: Traduzioni Camera ──────────────────────────────────────────────
 
 add_action('add_meta_boxes', function (): void {

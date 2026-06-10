@@ -91,7 +91,7 @@
         'fallback_cb'    => function () use ($camere_url, $prenota_url): void {
             echo '<ul class="mobile-nav__list">';
             echo '<li><a href="' . esc_url(alm_url_with_lang(home_url('/'))) . '">Home</a></li>';
-            echo '<li><a href="' . esc_url($camere_url) . '">Camere</a></li>';
+            echo '<li><a href="' . esc_url($camere_url) . '">' . esc_html(alm_t('nav.rooms')) . '</a></li>';
             echo '<li><a href="' . esc_url($prenota_url) . '">' . esc_html(alm_t('nav.book_now')) . '</a></li>';
             echo '</ul>';
         },

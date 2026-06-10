@@ -629,6 +629,16 @@ define('ALM_BEDS24_WEBHOOK_TOKEN', 'webhook-secret');</pre>
     </div><!-- /ga4-card -->
 
     <script>
+    /* ── Shared msg helper ── */
+    function almShowMsg(msgId, text, ok) {
+        var el = document.getElementById(msgId);
+        if (!el) return;
+        el.style.display = 'block';
+        if (ok) { el.style.background = '#f0f9f0'; el.style.border = '1px solid #a8d5a2'; el.style.color = '#2e7d32'; }
+        else     { el.style.background = '#fdf0f0'; el.style.border = '1px solid #f5a5a5'; el.style.color = '#c62828'; }
+        el.textContent = text;
+    }
+
     /* ── GSC ── */
     function almGscToggle() {
         var b = document.getElementById('alm-gsc-body');
@@ -640,7 +650,7 @@ define('ALM_BEDS24_WEBHOOK_TOKEN', 'webhook-secret');</pre>
     function almGscSave(nonce) {
         var code = (document.getElementById('alm-gsc-code') || {}).value || '';
         code = code.trim();
-        if (!code) { almGscMsg('Inserisci il codice di verifica.', false); return; }
+        if (!code) { almShowMsg('alm-gsc-msg', 'Inserisci il codice di verifica.', false); return; }
         var btn = document.getElementById('alm-gsc-save');
         btn.disabled = true; btn.textContent = 'Salvataggio…';
         almAjax('alm_save_gsc', nonce, { code: code }, 'alm-gsc-msg', btn, 'Salva e congela');
@@ -661,7 +671,7 @@ define('ALM_BEDS24_WEBHOOK_TOKEN', 'webhook-secret');</pre>
     function almGa4Save(nonce) {
         var id = (document.getElementById('alm-ga4-id') || {}).value || '';
         id = id.trim();
-        if (!id) { almGa4Msg('Inserisci il Measurement ID.', false); return; }
+        if (!id) { almShowMsg('alm-ga4-msg', 'Inserisci il Measurement ID.', false); return; }
         var btn = document.getElementById('alm-ga4-save');
         btn.disabled = true; btn.textContent = 'Salvataggio…';
         almAjax('alm_save_ga4', nonce, { id: id }, 'alm-ga4-msg', btn, 'Salva e congela');

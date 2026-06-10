@@ -819,6 +819,151 @@ define('ALM_BEDS24_WEBHOOK_TOKEN', 'webhook-secret');</pre>
         </p>
     </div>
 
+    <!-- ── Google API — Service Account (per Dashboard Analytics) ──────────── -->
+    <?php
+    $gapi_configured = class_exists('ALM_Google_API') && ALM_Google_API::is_configured();
+    $gapi_prop       = get_option('alm_ga4_property_id', '');
+    $gapi_site       = get_option('alm_gsc_site_url', home_url('/'));
+    ?>
+    <div class="alm-admin-card" id="alm-google-card" style="max-width:720px;margin-top:32px;margin-bottom:24px;">
+
+        <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almGoogleToggle()">
+            <h2 style="display:flex;align-items:center;gap:10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                Google API — Dashboard Analytics
+            </h2>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <?php if ($gapi_configured && $gapi_prop !== '') : ?>
+                    <span class="alm-badge alm-badge--success">Configurato &#10003;</span>
+                <?php elseif ($gapi_configured) : ?>
+                    <span class="alm-badge alm-badge--warning">SA OK — manca Property ID</span>
+                <?php else : ?>
+                    <span class="alm-badge alm-badge--error">Non configurato</span>
+                <?php endif; ?>
+                <span id="alm-google-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+            </div>
+        </div>
+
+        <div id="alm-google-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+
+            <div style="background:#e8f4fd;border:1px solid #c2ddf5;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#0077cc;line-height:1.6;">
+                <strong>Come configurare:</strong><br>
+                1. <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" rel="noopener">Google Cloud Console</a> → IAM → Service Account → Crea → scarica il JSON<br>
+                2. In <strong>GA4</strong>: Amministrazione → Gestione accessi proprietà → Aggiungi utente (email del SA) con ruolo <em>Spettatore</em><br>
+                3. In <strong>Search Console</strong>: Impostazioni → Utenti e autorizzazioni → Aggiungi utente (email del SA)<br>
+                4. Incolla il JSON qui sotto e salva
+            </div>
+
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th style="width:160px;"><label for="alm-gapi-sa">Service Account JSON</label></th>
+                    <td>
+                        <?php if ($gapi_configured) : ?>
+                        <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#2e7d32;">
+                            &#10003; Service Account configurato —
+                            <code><?php echo esc_html(json_decode(get_option('alm_google_sa_json','{}'), true)['client_email'] ?? ''); ?></code>
+                        </div>
+                        <?php endif; ?>
+                        <textarea id="alm-gapi-sa" rows="5" class="large-text code"
+                                  placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"...@....iam.gserviceaccount.com",...}'
+                                  style="font-size:11px;font-family:monospace;"></textarea>
+                        <p class="description">Incolla il contenuto del file JSON scaricato da Google Cloud Console. Non verrà mostrato dopo il salvataggio.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="alm-gapi-prop">GA4 Property ID</label></th>
+                    <td>
+                        <input type="text" id="alm-gapi-prop" class="regular-text"
+                               value="<?php echo esc_attr($gapi_prop); ?>"
+                               placeholder="properties/123456789" />
+                        <p class="description">
+                            Trovi l'ID in GA4 → Amministrazione → Dettagli proprietà. Formato: <code>properties/XXXXXXXXX</code>
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="alm-gapi-site">GSC Site URL</label></th>
+                    <td>
+                        <input type="url" id="alm-gapi-site" class="regular-text"
+                               value="<?php echo esc_attr($gapi_site); ?>"
+                               placeholder="https://www.almaretna.it/" />
+                        <p class="description">URL del sito così come è verificato in Search Console (con o senza www).</p>
+                    </td>
+                </tr>
+            </table>
+
+            <div id="alm-gapi-msg" style="display:none;margin:12px 0;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+                <button type="button" class="button button-primary"
+                        onclick="almGapiSave('<?php echo esc_js(wp_create_nonce('alm_save_google_api')); ?>')">
+                    Salva configurazione
+                </button>
+                <?php if ($gapi_configured) : ?>
+                <button type="button" class="button button-secondary"
+                        onclick="almTestGa4('<?php echo esc_js(wp_create_nonce('alm_test_ga4')); ?>')">
+                    Testa GA4
+                </button>
+                <button type="button" class="button button-secondary"
+                        onclick="almTestGsc('<?php echo esc_js(wp_create_nonce('alm_test_gsc')); ?>')">
+                    Testa Search Console
+                </button>
+                <?php endif; ?>
+            </div>
+
+        </div><!-- /google-body -->
+    </div><!-- /google-card -->
+
+    <script>
+    function almGoogleToggle() {
+        var b = document.getElementById('alm-google-body');
+        var c = document.getElementById('alm-google-chevron');
+        var open = b.style.display === 'block';
+        b.style.display = open ? 'none' : 'block';
+        c.style.transform = open ? '' : 'rotate(180deg)';
+    }
+    function almShowGapiMsg(text, ok) {
+        var m = document.getElementById('alm-gapi-msg');
+        m.style.display = 'block';
+        m.style.background = ok ? '#f0f9f0' : '#fef2f2';
+        m.style.border = '1px solid ' + (ok ? '#a8d5a2' : '#fca5a5');
+        m.style.color  = ok ? '#2e7d32' : '#c62828';
+        m.innerHTML = text;
+    }
+    function almGapiSave(nonce) {
+        var sa   = document.getElementById('alm-gapi-sa').value.trim();
+        var prop = document.getElementById('alm-gapi-prop').value.trim();
+        var site = document.getElementById('alm-gapi-site').value.trim();
+        if (!sa && !prop && !site) { almShowGapiMsg('Compila almeno un campo.', false); return; }
+        if (sa) {
+            try { JSON.parse(sa); } catch(e) { almShowGapiMsg('JSON non valido: ' + e.message, false); return; }
+        }
+        var fd = new FormData();
+        fd.append('action', 'alm_save_google_api');
+        fd.append('nonce', nonce);
+        fd.append('sa_json', sa);
+        fd.append('property_id', prop);
+        fd.append('site_url', site);
+        fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(d){ almShowGapiMsg(d.data || (d.success ? '✓' : '✗'), d.success); if (d.success) setTimeout(function(){ location.reload(); }, 1500); })
+            .catch(function(){ almShowGapiMsg('Errore di rete.', false); });
+    }
+    function almTestGa4(nonce) {
+        almShowGapiMsg('Test GA4 in corso…', true);
+        var fd = new FormData(); fd.append('action','alm_test_ga4'); fd.append('nonce',nonce);
+        fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(d){almShowGapiMsg(d.data||(d.success?'OK':'Errore'),d.success);});
+    }
+    function almTestGsc(nonce) {
+        almShowGapiMsg('Test GSC in corso…', true);
+        var fd = new FormData(); fd.append('action','alm_test_gsc'); fd.append('nonce',nonce);
+        fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(d){almShowGapiMsg(d.data||(d.success?'OK':'Errore'),d.success);});
+    }
+    <?php if (!$gapi_configured) : ?>
+    almGoogleToggle(); // apri di default se non ancora configurato
+    <?php endif; ?>
+    </script>
+
 </div>
 <?php
 

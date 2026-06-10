@@ -761,6 +761,309 @@ class ALM_Admin {
         );
     }
 
+    // ── Dashboard widgets: GA4 + GSC ─────────────────────────────────────────
+
+    public function register_dashboard_widgets(): void {
+        wp_add_dashboard_widget(
+            'alm_ga4_widget',
+            '&#128202; Analytics 4 — Ultimi 28 giorni',
+            [$this, 'render_ga4_widget']
+        );
+        wp_add_dashboard_widget(
+            'alm_gsc_widget',
+            '&#128269; Search Console — Ultimi 28 giorni',
+            [$this, 'render_gsc_widget']
+        );
+    }
+
+    public function render_ga4_widget(): void {
+        if (!class_exists('ALM_Google_API') || !ALM_Google_API::is_configured() || ALM_Google_API::ga4_property_id() === '') {
+            echo '<p style="color:#888;font-size:13px;margin:0;">Configura il <a href="'
+                . esc_url(admin_url('admin.php?page=alm-settings')) . '#alm-google-card">Service Account e il GA4 Property ID</a>.</p>';
+            return;
+        }
+        $data = ALM_Google_API::fetch_ga4_data();
+        if (is_wp_error($data)) {
+            echo '<p style="color:#c62828;font-size:13px;margin:0;">&#10007; ' . esc_html($data->get_error_message()) . '</p>';
+            return;
+        }
+        $this->print_ga4_widget($data);
+    }
+
+    public function render_gsc_widget(): void {
+        if (!class_exists('ALM_Google_API') || !ALM_Google_API::is_configured()) {
+            echo '<p style="color:#888;font-size:13px;margin:0;">Configura il <a href="'
+                . esc_url(admin_url('admin.php?page=alm-settings')) . '#alm-google-card">Service Account Google</a>.</p>';
+            return;
+        }
+        $data = ALM_Google_API::fetch_gsc_data();
+        if (is_wp_error($data)) {
+            echo '<p style="color:#c62828;font-size:13px;margin:0;">&#10007; ' . esc_html($data->get_error_message()) . '</p>';
+            return;
+        }
+        $this->print_gsc_widget($data);
+    }
+
+    private function print_ga4_widget(array $data): void {
+        $pages_report = $data['pages'] ?? [];
+        $totals_row   = $pages_report['totals'][0]['metricValues'] ?? [];
+        $rows         = $pages_report['rows'] ?? [];
+        $country_rows = ($data['countries']['rows']) ?? [];
+
+        $sessions   = number_format((float) ($totals_row[0]['value'] ?? 0));
+        $users      = number_format((float) ($totals_row[1]['value'] ?? 0));
+        $pageviews  = number_format((float) ($totals_row[2]['value'] ?? 0));
+        $bounce_raw = (float) ($totals_row[3]['value'] ?? 0);
+        $bounce     = number_format($bounce_raw * 100, 1) . '%';
+        $dur_raw    = (int) ($totals_row[4]['value'] ?? 0);
+        $dur        = ($dur_raw >= 60 ? floor($dur_raw / 60) . 'm ' : '') . ($dur_raw % 60) . 's';
+
+        $max_pv = !empty($rows) ? max(1, (int) ($rows[0]['metricValues'][2]['value'] ?? 1)) : 1;
+        $max_s  = !empty($country_rows) ? max(1, (int) ($country_rows[0]['metricValues'][0]['value'] ?? 1)) : 1;
+        ?>
+        <style>
+        .alm-wdg{font-size:13px;color:#1d2327;}.alm-wdg-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 10px;}.alm-wdg-kpi{background:#f6f7f7;border-radius:4px;padding:8px 6px;text-align:center;}.alm-wdg-kpi b{display:block;font-size:17px;color:#1d2327;font-weight:700;line-height:1.2;}.alm-wdg-kpi span{font-size:10px;color:#646970;text-transform:uppercase;letter-spacing:.04em;}.alm-wdg-bar-wrap{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:12px;}.alm-wdg-bar-label{flex:0 0 130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#444;}.alm-wdg-bar-track{flex:1;background:#e5e7eb;border-radius:2px;height:6px;}.alm-wdg-bar-fill{height:6px;border-radius:2px;background:#2271b1;}.alm-wdg-bar-val{flex:0 0 40px;text-align:right;color:#646970;font-size:11px;}.alm-wdg-sep{border:none;border-top:1px solid #f0f0f0;margin:8px 0;}.alm-wdg-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:#999;}
+        </style>
+        <div class="alm-wdg">
+            <div class="alm-wdg-kpis">
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($sessions); ?></b><span>Sessioni</span></div>
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($users); ?></b><span>Utenti</span></div>
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($pageviews); ?></b><span>Pag.viste</span></div>
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($bounce); ?></b><span>Rimbalzo</span></div>
+            </div>
+            <p style="font-size:11px;color:#646970;margin:0 0 8px;">Durata media sessione: <strong><?php echo esc_html($dur); ?></strong></p>
+
+            <?php if (!empty($rows)) : ?>
+            <hr class="alm-wdg-sep">
+            <p style="font-size:11px;font-weight:600;color:#444;margin:0 0 4px;">Pagine più visitate</p>
+            <?php foreach (array_slice($rows, 0, 6) as $row) :
+                $path = $row['dimensionValues'][0]['value'] ?? '—';
+                $pv   = (int) ($row['metricValues'][2]['value'] ?? 0);
+                $pct  = $max_pv > 0 ? round($pv / $max_pv * 100) : 0;
+            ?>
+            <div class="alm-wdg-bar-wrap">
+                <span class="alm-wdg-bar-label" title="<?php echo esc_attr($path); ?>"><?php echo esc_html($path); ?></span>
+                <div class="alm-wdg-bar-track"><div class="alm-wdg-bar-fill" style="width:<?php echo (int) $pct; ?>%;"></div></div>
+                <span class="alm-wdg-bar-val"><?php echo number_format($pv); ?></span>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+
+            <?php if (!empty($country_rows)) : ?>
+            <hr class="alm-wdg-sep">
+            <p style="font-size:11px;font-weight:600;color:#444;margin:0 0 4px;">Paesi</p>
+            <?php foreach (array_slice($country_rows, 0, 5) as $row) :
+                $country = $row['dimensionValues'][0]['value'] ?? '—';
+                $s       = (int) ($row['metricValues'][0]['value'] ?? 0);
+                $pct     = $max_s > 0 ? round($s / $max_s * 100) : 0;
+            ?>
+            <div class="alm-wdg-bar-wrap">
+                <span class="alm-wdg-bar-label"><?php echo esc_html($country); ?></span>
+                <div class="alm-wdg-bar-track"><div class="alm-wdg-bar-fill" style="width:<?php echo (int) $pct; ?>;background:#0ea5e9;"></div></div>
+                <span class="alm-wdg-bar-val"><?php echo number_format($s); ?></span>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+
+            <div class="alm-wdg-foot">
+                <span><?php echo esc_html($data['fetched'] ?? ''); ?> &nbsp;·&nbsp; <?php echo esc_html($data['range'] ?? ''); ?></span>
+                <button type="button" class="button button-small"
+                        onclick="almRefreshWidget('ga4','<?php echo esc_js(wp_create_nonce('alm_refresh_ga4')); ?>')">
+                    &#8635; Aggiorna
+                </button>
+            </div>
+        </div>
+        <?php
+        $this->print_widget_refresh_script();
+    }
+
+    private function print_gsc_widget(array $data): void {
+        $totals  = $data['totals']  ?? [];
+        $queries = ($data['queries']['rows']) ?? [];
+        $pages   = ($data['pages']['rows'])   ?? [];
+
+        $impressions = number_format((float) ($totals['impressions'] ?? 0));
+        $clicks      = number_format((float) ($totals['clicks']      ?? 0));
+        $ctr_raw     = (float) ($totals['ctr']      ?? 0);
+        $pos_raw     = (float) ($totals['position'] ?? 0);
+        $ctr         = number_format($ctr_raw * 100, 1) . '%';
+        $pos         = number_format($pos_raw, 1);
+
+        $max_q = !empty($queries) ? max(1, (int) ($queries[0]['clicks'] ?? 1)) : 1;
+        $max_p = !empty($pages)   ? max(1, (int) ($pages[0]['clicks']   ?? 1)) : 1;
+        ?>
+        <div class="alm-wdg">
+            <div class="alm-wdg-kpis">
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($impressions); ?></b><span>Impres.</span></div>
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($clicks); ?></b><span>Click</span></div>
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($ctr); ?></b><span>CTR</span></div>
+                <div class="alm-wdg-kpi"><b><?php echo esc_html($pos); ?></b><span>Posiz.</span></div>
+            </div>
+
+            <?php if (!empty($queries)) : ?>
+            <hr class="alm-wdg-sep">
+            <p style="font-size:11px;font-weight:600;color:#444;margin:0 0 4px;">Query più cercate</p>
+            <?php foreach (array_slice($queries, 0, 6) as $row) :
+                $q   = $row['keys'][0] ?? '—';
+                $c   = (int) ($row['clicks'] ?? 0);
+                $imp = (int) ($row['impressions'] ?? 0);
+                $pct = $max_q > 0 ? round($c / $max_q * 100) : 0;
+            ?>
+            <div class="alm-wdg-bar-wrap">
+                <span class="alm-wdg-bar-label" title="<?php echo esc_attr($q); ?>"><?php echo esc_html($q); ?></span>
+                <div class="alm-wdg-bar-track"><div class="alm-wdg-bar-fill" style="width:<?php echo (int) $pct; ?>%;background:#059669;"></div></div>
+                <span class="alm-wdg-bar-val"><?php echo $c; ?> / <?php echo $imp; ?></span>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+
+            <?php if (!empty($pages)) : ?>
+            <hr class="alm-wdg-sep">
+            <p style="font-size:11px;font-weight:600;color:#444;margin:0 0 4px;">Pagine più cliccate</p>
+            <?php foreach (array_slice($pages, 0, 5) as $row) :
+                $pg  = parse_url($row['keys'][0] ?? '', PHP_URL_PATH) ?: ($row['keys'][0] ?? '—');
+                $c   = (int) ($row['clicks'] ?? 0);
+                $pct = $max_p > 0 ? round($c / $max_p * 100) : 0;
+            ?>
+            <div class="alm-wdg-bar-wrap">
+                <span class="alm-wdg-bar-label" title="<?php echo esc_attr($row['keys'][0] ?? ''); ?>"><?php echo esc_html($pg); ?></span>
+                <div class="alm-wdg-bar-track"><div class="alm-wdg-bar-fill" style="width:<?php echo (int) $pct; ?>%;background:#059669;"></div></div>
+                <span class="alm-wdg-bar-val"><?php echo $c; ?></span>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+
+            <div class="alm-wdg-foot">
+                <span><?php echo esc_html($data['fetched'] ?? ''); ?> &nbsp;·&nbsp; <?php echo esc_html($data['range'] ?? ''); ?></span>
+                <button type="button" class="button button-small"
+                        onclick="almRefreshWidget('gsc','<?php echo esc_js(wp_create_nonce('alm_refresh_gsc')); ?>')">
+                    &#8635; Aggiorna
+                </button>
+            </div>
+        </div>
+        <?php
+    }
+
+    private static bool $widget_script_printed = false;
+
+    private function print_widget_refresh_script(): void {
+        if (self::$widget_script_printed) return;
+        self::$widget_script_printed = true;
+        ?>
+        <script>
+        function almRefreshWidget(type, nonce) {
+            var fd = new FormData();
+            fd.append('action', 'alm_refresh_' + type);
+            fd.append('nonce', nonce);
+            fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(d){ if (d.success) location.reload(); });
+        }
+        </script>
+        <?php
+    }
+
+    // ── AJAX: refresh widget data ─────────────────────────────────────────────
+
+    public function ajax_refresh_ga4(): void {
+        check_ajax_referer('alm_refresh_ga4', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Permesso negato.', 403);
+        delete_transient('alm_ga4_widget_v1');
+        ALM_Google_API::fetch_ga4_data(true);
+        wp_send_json_success('ok');
+    }
+
+    public function ajax_refresh_gsc(): void {
+        check_ajax_referer('alm_refresh_gsc', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Permesso negato.', 403);
+        delete_transient('alm_gsc_widget_v1');
+        ALM_Google_API::fetch_gsc_data(true);
+        wp_send_json_success('ok');
+    }
+
+    // ── AJAX: salva configurazione Google API ─────────────────────────────────
+
+    public function ajax_save_google_api(): void {
+        check_ajax_referer('alm_save_google_api', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Permesso negato.', 403);
+
+        $json_raw    = wp_unslash($_POST['sa_json']      ?? '');
+        $property_id = sanitize_text_field(wp_unslash($_POST['property_id'] ?? ''));
+        $site_url    = esc_url_raw(wp_unslash($_POST['site_url'] ?? ''));
+
+        if ($json_raw !== '') {
+            $sa = json_decode($json_raw, true);
+            if (!is_array($sa) || ($sa['type'] ?? '') !== 'service_account' || empty($sa['private_key'])) {
+                wp_send_json_error('JSON non valido: deve essere un Service Account Google scaricato da Cloud Console.');
+            }
+            update_option('alm_google_sa_json', $json_raw);
+        }
+
+        if ($property_id !== '') {
+            if (!preg_match('/^properties\/\d+$/', $property_id)) {
+                wp_send_json_error('Property ID non valido — formato atteso: properties/123456789');
+            }
+            update_option('alm_ga4_property_id', $property_id);
+        }
+
+        if ($site_url !== '') {
+            update_option('alm_gsc_site_url', $site_url);
+        }
+
+        delete_transient('alm_ga4_widget_v1');
+        delete_transient('alm_gsc_widget_v1');
+
+        wp_send_json_success('✓ Configurazione salvata.');
+    }
+
+    // ── AJAX: test connessione GA4 / GSC ─────────────────────────────────────
+
+    public function ajax_test_ga4(): void {
+        check_ajax_referer('alm_test_ga4', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Permesso negato.', 403);
+
+        if (!class_exists('ALM_Google_API') || !ALM_Google_API::is_configured()) {
+            wp_send_json_error('Service Account non configurato.');
+        }
+        if (ALM_Google_API::ga4_property_id() === '') {
+            wp_send_json_error('Property ID GA4 non configurato.');
+        }
+
+        $result = ALM_Google_API::ga4_run_report([
+            'dateRanges' => [['startDate' => '7daysAgo', 'endDate' => 'yesterday']],
+            'metrics'    => [['name' => 'sessions']],
+            'limit'      => 1,
+        ]);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error('&#10007; ' . $result->get_error_message());
+        }
+
+        $sessions = $result['rows'][0]['metricValues'][0]['value'] ?? '0';
+        wp_send_json_success('&#10003; Connessione OK — ' . number_format((float) $sessions) . ' sessioni negli ultimi 7 giorni.');
+    }
+
+    public function ajax_test_gsc(): void {
+        check_ajax_referer('alm_test_gsc', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error('Permesso negato.', 403);
+
+        if (!class_exists('ALM_Google_API') || !ALM_Google_API::is_configured()) {
+            wp_send_json_error('Service Account non configurato.');
+        }
+
+        $result = ALM_Google_API::gsc_query([
+            'startDate' => gmdate('Y-m-d', strtotime('-10 days')),
+            'endDate'   => gmdate('Y-m-d', strtotime('-3 days')),
+        ]);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error('&#10007; ' . $result->get_error_message());
+        }
+
+        $clicks = number_format((float) ($result['clicks'] ?? 0));
+        wp_send_json_success('&#10003; Connessione OK — ' . $clicks . ' click negli ultimi 7 giorni.');
+    }
+
     // ── AJAX: reset OPcache PHP ───────────────────────────────────────────────
 
     public function ajax_reset_opcache(): void {

@@ -47,6 +47,7 @@ function alm_get_strings(): array {
 'it' => [
     // Nav
     'nav.book_now'    => 'Prenota ora',
+    'nav.rooms'       => 'Camere',
     'nav.open_menu'   => 'Apri menu',
     'nav.close_menu'  => 'Chiudi menu',
     'nav.main_menu'   => 'Menu principale',
@@ -277,6 +278,7 @@ function alm_get_strings(): array {
 /* ─── ENGLISH ──────────────────────────────────────────────── */
 'en' => [
     'nav.book_now'    => 'Book now',
+    'nav.rooms'       => 'Rooms',
     'nav.open_menu'   => 'Open menu',
     'nav.close_menu'  => 'Close menu',
     'nav.main_menu'   => 'Main menu',
@@ -490,6 +492,7 @@ function alm_get_strings(): array {
 /* ─── DEUTSCH ──────────────────────────────────────────────── */
 'de' => [
     'nav.book_now'    => 'Jetzt buchen',
+    'nav.rooms'       => 'Zimmer',
     'nav.open_menu'   => 'Menü öffnen',
     'nav.close_menu'  => 'Menü schließen',
     'nav.main_menu'   => 'Hauptmenü',
@@ -703,6 +706,7 @@ function alm_get_strings(): array {
 /* ─── FRANÇAIS ─────────────────────────────────────────────── */
 'fr' => [
     'nav.book_now'    => 'Réserver',
+    'nav.rooms'       => 'Chambres',
     'nav.open_menu'   => 'Ouvrir le menu',
     'nav.close_menu'  => 'Fermer le menu',
     'nav.main_menu'   => 'Menu principal',
@@ -916,6 +920,7 @@ function alm_get_strings(): array {
 /* ─── ESPAÑOL ──────────────────────────────────────────────── */
 'es' => [
     'nav.book_now'    => 'Reservar ahora',
+    'nav.rooms'       => 'Habitaciones',
     'nav.open_menu'   => 'Abrir menú',
     'nav.close_menu'  => 'Cerrar menú',
     'nav.main_menu'   => 'Menú principal',
@@ -1362,6 +1367,16 @@ function alm_url_with_lang(string $url): string {
     if ($lang === 'it') return $url;
     return add_query_arg('lang', $lang, $url);
 }
+
+// Traduce i titoli delle voci di menu basandosi sul template della pagina
+add_filter('nav_menu_item_title', function (string $title, $item, $args, $depth): string {
+    $lang = alm_get_lang();
+    if ($lang === 'it' || $item->object !== 'page') return $title;
+    $template = get_page_template_slug((int) $item->object_id);
+    if ($template === 'templates/template-rooms.php')   return alm_t('nav.rooms');
+    if ($template === 'templates/template-booking.php') return alm_t('nav.book_now');
+    return $title;
+}, 10, 4);
 
 // Aggiunge ?lang=XX a tutti i link del menu WordPress
 add_filter('nav_menu_link_attributes', function (array $atts, $item, $args, $depth): array {

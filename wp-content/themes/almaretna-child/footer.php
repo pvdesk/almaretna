@@ -14,7 +14,7 @@
 
             <!-- Brand col -->
             <div class="site-footer__col site-footer__col--brand">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="site-footer__logo" style="display:block;margin-bottom:var(--space-md);">
+                <a href="<?php echo esc_url(alm_url_with_lang(home_url('/'))); ?>" class="site-footer__logo" style="display:block;margin-bottom:var(--space-md);">
                     <img src="<?php echo esc_url(get_stylesheet_directory_uri() . '/assets/img/logo-white-transparent.png'); ?>" alt="Almaretna Villa Vacanze" class="site-logo-footer" style="max-height: 91px; width: auto; height: auto; display: block;" />
                 </a>
                 <p class="site-footer__tagline">
@@ -41,10 +41,10 @@
                 <h4 class="site-footer__heading"><?php echo esc_html(alm_t('foot.explore')); ?></h4>
                 <?php
                 $camere_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-rooms.php', 'number' => 1]);
-                $camere_url  = !empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/');
+                $camere_url  = alm_url_with_lang(!empty($camere_page) ? get_permalink($camere_page[0]->ID) : home_url('/camere/'));
 
                 $prenota_page = get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'templates/template-booking.php', 'number' => 1]);
-                $prenota_url  = !empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/');
+                $prenota_url  = alm_url_with_lang(!empty($prenota_page) ? get_permalink($prenota_page[0]->ID) : home_url('/prenota/'));
 
                 wp_nav_menu([
                     'theme_location' => 'footer',
@@ -53,7 +53,7 @@
                     'depth'          => 1,
                     'fallback_cb'    => function () use ($camere_url, $prenota_url): void {
                         echo '<ul class="site-footer__menu">';
-                        echo '<li><a href="' . esc_url(home_url('/')) . '">Home</a></li>';
+                        echo '<li><a href="' . esc_url(alm_url_with_lang(home_url('/'))) . '">Home</a></li>';
                         echo '<li><a href="' . esc_url($camere_url) . '">' . esc_html(alm_t('foot.our_rooms')) . '</a></li>';
                         echo '<li><a href="' . esc_url($prenota_url) . '">' . esc_html(alm_t('foot.book')) . '</a></li>';
                         echo '</ul>';
@@ -123,7 +123,7 @@
 
     <div class="site-footer__bottom">
         <div class="site-footer__container">
-            <p>&copy; <?php echo esc_html(date('Y')); ?> Almaretna. <?php echo esc_html(alm_t('foot.rights')); ?></p>
+            <p>&copy; <?php echo esc_html(date('Y')); ?> Almaretna. <?php echo esc_html(alm_t('foot.rights')); ?> &mdash; P.IVA 06095880075</p>
             <p style="display:inline-flex;align-items:center;gap:.5rem;">
                 <span><?php echo esc_html(alm_t('foot.payments')); ?></span>
                 <svg width="44" height="20" viewBox="0 0 44 20" fill="none" style="flex-shrink:0;opacity:.85;display:block;" xmlns="http://www.w3.org/2000/svg">

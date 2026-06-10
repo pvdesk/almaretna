@@ -849,12 +849,38 @@
                 }
 
                 if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-                    // Notifica il backend (non bloccante — il webhook Stripe gestisce il caso nominale)
-                    apiPost('booking/confirm', {
-                        ref:                state.bookingRef,
-                        payment_intent_id:  result.paymentIntent.id,
-                    }).catch(function () {});
+                    // Conferma bloccante: aspetta DB + email prima di mostrare la schermata
+                    let confirmNetworkError = false;
+                    try {
+                        const confirmRes = await apiPost('booking/confirm', {
+                            ref:               state.bookingRef,
+                            payment_intent_id: result.paymentIntent.id,
+                        });
+                        if (!confirmRes || confirmRes.code) {
+                            // Backend ha risposto con errore — pagamento ok ma booking non confermato
+                            if (paymentError) {
+                                paymentError.textContent =
+                                    'Pagamento ricevuto — errore nella conferma. ' +
+                                    'Contatta la struttura con riferimento: ' + (state.bookingRef || '');
+                            }
+                            this.disabled    = false;
+                            this.textContent = origLabel;
+                            return;
+                        }
+                    } catch {
+                        // Errore di rete — il pagamento è andato a buon fine, il webhook Stripe
+                        // confermerà la prenotazione; avvisiamo l'utente nella schermata di conferma
+                        confirmNetworkError = true;
+                    }
                     showConfirmation();
+                    if (confirmNetworkError && confirmDetails) {
+                        confirmDetails.insertAdjacentHTML('afterend',
+                            '<p style="color:var(--color-warning,#f57c00);margin-top:var(--space-md);' +
+                            'font-size:var(--fs-sm);">Se non ricevi email di conferma entro pochi minuti, ' +
+                            'contatta la struttura indicando il riferimento: ' +
+                            escHtml(state.bookingRef || '') + '</p>'
+                        );
+                    }
                 }
 
             } catch {
@@ -910,6 +936,13 @@
 
             if (redirectStatus === 'succeeded') {
                 state.bookingRef = bookingRef;
+                const paymentIntentId = params.get('payment_intent') || '';
+
+                // Chiama booking/confirm per garantire DB + email anche se il webhook è in ritardo
+                apiPost('booking/confirm', {
+                    ref:               bookingRef,
+                    payment_intent_id: paymentIntentId,
+                }).catch(function () {});
 
                 apiGet('booking/status', { ref: bookingRef })
                     .then(function (data) {

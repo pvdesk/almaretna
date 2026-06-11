@@ -40,7 +40,7 @@ body.front-page .site-content {
     --header-bg-home: transparent;
     --header-shadow: 0 2px 16px rgba(0,0,0,0.08);
     --nav-link-color: #2C2C2C;
-    --nav-link-home: rgba(255,255,255,0.92);
+    --nav-link-home: var(--color-text);
 }
 
 /* ─── HEADER ─────────────────────────────────────────────────── */

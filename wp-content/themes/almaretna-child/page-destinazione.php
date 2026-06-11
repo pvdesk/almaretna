@@ -110,7 +110,7 @@ get_header();
 ?>
 <style>
 .dest-page{color:#3D3530;font-family:inherit}
-.dest-hero{position:relative;background:linear-gradient(135deg,#1a4e6b 0%,#2d6a4f 60%,#1a3d2b 100%);color:#fff;padding:96px 24px 72px;text-align:center;overflow:hidden}
+.dest-hero{position:relative;background:linear-gradient(135deg,#4A3E36 0%,#3D3530 60%,#2A211D 100%);color:#fff;padding:96px 24px 72px;text-align:center;overflow:hidden}
 .dest-hero::before{content:'';position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="60" fill="rgba(255,255,255,.04)"/><circle cx="80" cy="80" r="40" fill="rgba(255,255,255,.03)"/></svg>') center/cover;pointer-events:none}
 .dest-hero__back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);font-size:.85rem;text-decoration:none;margin-bottom:32px;letter-spacing:.5px;transition:color .2s}
 .dest-hero__back:hover{color:#fff}
@@ -132,7 +132,7 @@ get_header();
 .dest-season__label{font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C5B49C;margin-bottom:10px}
 .dest-season__icon{font-size:1.8rem;margin-bottom:8px;display:block}
 .dest-season p{font-size:.93rem;line-height:1.75;color:#6B6058;margin:0}
-.dest-distance{background:#1a4e6b;color:#fff;border-radius:12px;padding:24px 28px;margin-bottom:56px;display:flex;align-items:flex-start;gap:16px}
+.dest-distance{background:#3D3530;color:#fff;border-radius:12px;padding:24px 28px;margin-bottom:56px;display:flex;align-items:flex-start;gap:16px}
 .dest-distance__icon{font-size:2rem;flex-shrink:0}
 .dest-distance__label{font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:6px}
 .dest-distance__val{font-size:1.6rem;font-weight:300;margin-bottom:4px}
@@ -140,14 +140,14 @@ get_header();
 .dest-cta{text-align:center;padding:48px;background:linear-gradient(135deg,#fdf9f5,#f5ede3);border-radius:16px;border:1px solid #e8ddd3}
 .dest-cta h2{font-size:1.5rem;font-weight:300;color:#3D3530;margin:0 0 8px}
 .dest-cta p{color:#8a7a72;margin:0 0 28px;font-size:.95rem}
-.dest-cta__btn{display:inline-block;background:#1a4e6b;color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-size:.95rem;font-weight:600;letter-spacing:.5px;transition:background .2s,transform .15s}
-.dest-cta__btn:hover{background:#133b52;transform:translateY(-1px)}
+.dest-cta__btn{display:inline-block;background:#A6957E;color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-size:.95rem;font-weight:600;letter-spacing:.5px;transition:background .2s,transform .15s}
+.dest-cta__btn:hover{background:#8C7D6C;transform:translateY(-1px)}
 .dest-nav{margin-top:64px;padding-top:40px;border-top:1px solid #e8e2dc}
 .dest-nav__title{font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#C5B49C;margin-bottom:20px;text-align:center}
 .dest-nav__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .dest-nav__card{background:#f8f5f2;border:1px solid #ede8e3;border-radius:10px;padding:14px;text-align:center;text-decoration:none;color:#3D3530;transition:border-color .2s,transform .15s;display:flex;flex-direction:column;align-items:center;gap:6px}
 .dest-nav__card:hover{border-color:#C5B49C;transform:translateY(-2px)}
-.dest-nav__card--current{border-color:#1a4e6b;background:#eef4f8;pointer-events:none}
+.dest-nav__card--current{border-color:#C5B49C;background:#fdf9f5;pointer-events:none}
 .dest-nav__icon{font-size:1.6rem}
 .dest-nav__name{font-size:.85rem;font-weight:600}
 .dest-nav__dist{font-size:.75rem;color:#a09090}
@@ -178,7 +178,7 @@ get_header();
     <?php
     $hero_style = '';
     if ($hero_url) {
-        $hero_style = ' style="background-image:linear-gradient(rgba(10,30,50,.55),rgba(10,30,60,.65)),url('.esc_url($hero_url).');background-size:cover;background-position:center 35%;"';
+        $hero_style = ' style="background-image:linear-gradient(rgba(42,33,29,.50),rgba(42,33,29,.65)),url('.esc_url($hero_url).');background-size:cover;background-position:center 35%;"';
     }
     ?>
     <div class="dest-hero"<?php echo $hero_style; ?>>

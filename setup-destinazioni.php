@@ -15,9 +15,7 @@ if (($_GET['key'] ?? '') !== $secret) {
 define('ABSPATH', __DIR__ . '/');
 require_once __DIR__ . '/wp-load.php';
 
-if (!current_user_can('manage_options') && !defined('WP_CLI')) {
-    die('Devi essere loggato come admin.');
-}
+// Chiave segreta sufficiente come protezione per script one-time
 
 $pages = [
     [

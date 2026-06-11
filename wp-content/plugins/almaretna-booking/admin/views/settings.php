@@ -271,12 +271,13 @@ $s = is_array($settings) ? $settings : [];
         <?php endif; ?>
         </script>
 
-        <!-- Stripe → wp-config.php (scrittura diretta, sola lettura una volta compilata) -->
+        <!-- Stripe → wp-config.php (nascosta se le costanti sono già in wp-config: la card Stripe sopra mostra già tutto) -->
+        <?php if (!$stripe_from_cfg) : ?>
         <?php
         $wpcfg_path     = ABSPATH . 'wp-config.php';
         if (!file_exists($wpcfg_path)) $wpcfg_path = dirname(ABSPATH) . '/wp-config.php';
         $wpcfg_writable = file_exists($wpcfg_path) && is_writable($wpcfg_path);
-        $wpcfg_locked   = $stripe_from_cfg;
+        $wpcfg_locked   = false;
         $wpcfg_nonce    = wp_create_nonce('alm_write_stripe_config');
         ?>
         <div class="alm-admin-card" id="alm-wpcfg-card" style="max-width:720px;margin-bottom:24px;">
@@ -448,6 +449,7 @@ define( 'ALM_STRIPE_WEBHOOK_SECRET',  'whsec_...' );</pre>
         almWpcfgToggle(); // aperta di default se non ancora configurata
         <?php endif; ?>
         </script>
+        <?php endif; /* !$stripe_from_cfg */ ?>
 
         <!-- Beds24 -->
         <?php

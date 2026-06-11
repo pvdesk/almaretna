@@ -340,6 +340,18 @@ img, video, iframe, embed, object {
     .date-fields            { grid-template-columns: 1fr; }
     .form-row               { grid-template-columns: 1fr; }
 
+    /* Room result card: pricing sezione → colonna verticale + btn full-width */
+    .room-result-card__pricing {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-sm);
+        text-align: left;
+        padding: var(--space-md) var(--space-lg);
+    }
+    .room-result-card__price-box   { align-items: flex-start; }
+    .room-result-card__price-amount{ font-size: 1.25rem; }
+    .room-result-card__pricing .btn{ width: 100%; justify-content: center; }
+
     /* ── Singola camera ──────────────────────────────────────── */
     .room-amenities         { grid-template-columns: repeat(2, 1fr); }
     .room-price-box         { position: static; }
@@ -473,6 +485,10 @@ img, video, iframe, embed, object {
     .booking-form-nav .btn  { width: 100%; justify-content: center; }
     .booking-widget__submit .btn,
     .room-price-box .btn    { width: 100%; justify-content: center; }
+
+    /* Riepilogo prenotazione: righe label/valore → più spazio e allineamento top */
+    .booking-summary__row   { align-items: flex-start; padding-block: var(--space-sm); }
+    .booking-summary__row--total { align-items: center; }
 
     /* ── Pagina Camere ───────────────────────────────────────── */
     .rooms-grid             { max-width: 100%; }

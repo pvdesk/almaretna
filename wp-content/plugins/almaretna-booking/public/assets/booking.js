@@ -899,9 +899,42 @@
             return base + '?booking_ref=' + encodeURIComponent(state.bookingRef || '');
         }
 
+        // ── Persistenza stato (cambio lingua) ────────────────────────────
+
+        function saveStateToSession() {
+            if (!state.checkinDate) return;
+            try {
+                sessionStorage.setItem('alm_booking_state', JSON.stringify({
+                    ts:            Date.now(),
+                    checkinDate:   state.checkinDate,
+                    checkoutDate:  state.checkoutDate,
+                    nights:        state.nights,
+                    adults:        state.adults,
+                    children:      state.children,
+                    step:          Math.min(state.step, 3),
+                    selectedRoom:  state.selectedRoom,
+                    priceData:     state.priceData,
+                    selectedExtras:state.selectedExtras,
+                    firstName:     firstNameInput  ? firstNameInput.value.trim()  : '',
+                    lastName:      lastNameInput   ? lastNameInput.value.trim()   : '',
+                    email:         emailInput      ? emailInput.value.trim()      : '',
+                    phone:         phoneInput      ? phoneInput.value.trim()      : '',
+                }));
+            } catch (e) {}
+        }
+
+        function clearSessionState() {
+            try { sessionStorage.removeItem('alm_booking_state'); } catch (e) {}
+        }
+
+        window.addEventListener('beforeunload', function () {
+            if (state.step > 1 || state.checkinDate) saveStateToSession();
+        });
+
         // ── Conferma ──────────────────────────────────────────────────────
 
         function showConfirmation() {
+            clearSessionState();
             allSteps.forEach(function (s) { s.classList.remove('is-active'); });
 
             if (stepConfirm) {
@@ -966,7 +999,7 @@
             }
         })();
 
-        // ── Prefill URL params (link da room-price-box) ───────────────────
+        // ── Prefill URL params + ripristino sessione (cambio lingua) ─────
 
         (function prefillFromUrl() {
             const params   = new URLSearchParams(window.location.search);
@@ -976,25 +1009,86 @@
             const adults   = params.get('adults');
             const children = params.get('children');
 
-            if (checkin  && fpCheckin)  { fpCheckin.setDate(new Date(checkin),   true); state.checkinDate = checkin; }
-            if (checkout && fpCheckout) { fpCheckout.setDate(new Date(checkout), true); state.checkoutDate = checkout; }
-            if (adults   && adultsSelect)   adultsSelect.value   = adults;
-            if (children && childrenSelect) childrenSelect.value = children;
-            if (checkin && checkout) state.nights = getNights(checkin, checkout);
+            if (checkin || checkout || roomId) {
+                // URL params presenti: prefill diretto (link da room-price-box)
+                if (checkin  && fpCheckin)  { fpCheckin.setDate(new Date(checkin),   true); state.checkinDate = checkin; }
+                if (checkout && fpCheckout) { fpCheckout.setDate(new Date(checkout), true); state.checkoutDate = checkout; }
+                if (adults   && adultsSelect)   adultsSelect.value   = adults;
+                if (children && childrenSelect) childrenSelect.value = children;
+                if (checkin && checkout) state.nights = getNights(checkin, checkout);
 
-            if (roomId && checkin && checkout) {
-                state.adults   = parseInt(adults,   10) || 1;
-                state.children = parseInt(children, 10) || 0;
-                // Auto-avvia la ricerca dopo che Flatpickr è pronto
+                if (roomId && checkin && checkout) {
+                    state.adults   = parseInt(adults,   10) || 1;
+                    state.children = parseInt(children, 10) || 0;
+                    setTimeout(function () {
+                        goToStep(2);
+                        loadRooms().then(function () {
+                            const selBtn = roomsList &&
+                                roomsList.querySelector('[data-select-room="' + roomId + '"]');
+                            if (selBtn) selBtn.click();
+                        });
+                    }, 200);
+                }
+                return;
+            }
+
+            // Nessun URL param — prova a ripristinare lo stato salvato (es. dopo cambio lingua)
+            try {
+                const raw = sessionStorage.getItem('alm_booking_state');
+                if (!raw) return;
+                const saved = JSON.parse(raw);
+                if (!saved || !saved.ts || !saved.checkinDate || Date.now() - saved.ts > 1800000) {
+                    clearSessionState();
+                    return;
+                }
+
+                // Ripristina stato
+                state.checkinDate    = saved.checkinDate;
+                state.checkoutDate   = saved.checkoutDate  || null;
+                state.nights         = saved.nights        || 0;
+                state.adults         = saved.adults        || 1;
+                state.children       = saved.children      || 0;
+                state.selectedExtras = saved.selectedExtras || {};
+
+                // Ripristina UI step 1
+                if (fpCheckin  && saved.checkinDate)  fpCheckin.setDate(new Date(saved.checkinDate),  true);
+                if (fpCheckout && saved.checkoutDate) fpCheckout.setDate(new Date(saved.checkoutDate), true);
+                if (adultsSelect   && saved.adults   > 0)  adultsSelect.value   = String(saved.adults);
+                if (childrenSelect && saved.children >= 0) childrenSelect.value = String(saved.children);
+
+                // Ripristina dati ospite (step 3)
+                if (firstNameInput && saved.firstName) firstNameInput.value = saved.firstName;
+                if (lastNameInput  && saved.lastName)  lastNameInput.value  = saved.lastName;
+                if (emailInput     && saved.email)     emailInput.value     = saved.email;
+                if (phoneInput     && saved.phone)     phoneInput.value     = saved.phone;
+
+                if (saved.step < 2 || !saved.checkoutDate) return;
+
+                // Ripristina step 2 e camere
                 setTimeout(function () {
                     goToStep(2);
                     loadRooms().then(function () {
-                        const selBtn = roomsList &&
-                            roomsList.querySelector('[data-select-room="' + roomId + '"]');
-                        if (selBtn) selBtn.click();
+                        if (saved.step < 3 || !saved.selectedRoom) return;
+
+                        // Ripristina camera selezionata e vai a step 3
+                        state.selectedRoom = saved.selectedRoom;
+                        state.priceData    = saved.priceData;
+                        updateSummary();
+
+                        if (roomsList) {
+                            const selBtn = roomsList.querySelector('[data-select-room="' + saved.selectedRoom.id + '"]');
+                            if (selBtn) {
+                                const card = selBtn.closest('.room-result-card');
+                                if (card) card.classList.add('is-selected');
+                                selBtn.className   = 'btn btn-success';
+                                selBtn.textContent = 'Selezionata';
+                            }
+                        }
+
+                        if (saved.priceData) goToStep(3);
                     });
                 }, 200);
-            }
+            } catch (e) {}
         })();
 
     } // end initWizard()

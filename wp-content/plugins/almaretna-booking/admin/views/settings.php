@@ -600,103 +600,102 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                 <div class="alm-settings-card__head">
                     <div>
                         <h2>Configurazione SMTP</h2>
-                        <p class="alm-card-desc">Usa il tuo server email per inviare prenotazioni, ricevute e notifiche. Compatibile con Gmail, Aruba, SiteGround Mail, qualsiasi SMTP.</p>
+                        <p class="alm-card-desc">Usa il tuo server email per inviare prenotazioni, ricevute e notifiche.</p>
                     </div>
-                    <?php if ($smtp_configured) : ?>
-                    <span class="alm-badge alm-badge--ok">Configurato</span>
-                    <?php else : ?>
-                    <span class="alm-badge alm-badge--warn">Non configurato</span>
-                    <?php endif; ?>
+                    <span class="alm-badge <?php echo $smtp_configured ? 'alm-badge--ok' : 'alm-badge--warn'; ?>">
+                        <?php echo $smtp_configured ? 'Configurato' : 'Non configurato'; ?>
+                    </span>
                 </div>
                 <div class="alm-settings-card__body">
+                    <div class="alm-field-list">
 
-                    <div class="alm-field-row">
-                        <label for="smtp-host">Server SMTP</label>
-                        <input type="text" id="smtp-host" name="smtp_host"
-                               value="<?php echo esc_attr($smtp_cfg['host'] ?? ''); ?>"
-                               placeholder="smtp.gmail.com"
-                               <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
-                        <p class="alm-hint">Es. <code>smtp.gmail.com</code>, <code>smtps.aruba.it</code>, <code>mail.siteground.com</code></p>
-                    </div>
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                        <div class="alm-field-row">
-                            <label for="smtp-port">Porta</label>
-                            <input type="number" id="smtp-port" name="smtp_port"
-                                   value="<?php echo esc_attr((string)($smtp_cfg['port'] ?? 587)); ?>"
-                                   min="1" max="65535"
+                        <div class="alm-field">
+                            <label for="smtp-host">Server SMTP</label>
+                            <input type="text" id="smtp-host"
+                                   value="<?php echo esc_attr($smtp_cfg['host'] ?? ''); ?>"
+                                   placeholder="smtp.gmail.com"
                                    <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+                            <span class="alm-hint">Es. <code>smtp.gmail.com</code> · <code>smtps.aruba.it</code> · <code>mail.siteground.com</code></span>
                         </div>
-                        <div class="alm-field-row">
-                            <label for="smtp-enc">Cifratura</label>
-                            <select id="smtp-enc" name="smtp_encryption"
-                                    <?php echo $smtp_from_cfg ? 'disabled' : ''; ?>>
-                                <option value="tls"  <?php selected($smtp_cfg['encryption'] ?? 'tls', 'tls'); ?>>TLS (STARTTLS) — porta 587</option>
-                                <option value="ssl"  <?php selected($smtp_cfg['encryption'] ?? '', 'ssl'); ?>>SSL/TLS — porta 465</option>
-                                <option value=""     <?php selected($smtp_cfg['encryption'] ?? '', ''); ?>>Nessuna — porta 25</option>
-                            </select>
+
+                        <div class="alm-field-grid">
+                            <div class="alm-field">
+                                <label for="smtp-port">Porta</label>
+                                <input type="number" id="smtp-port"
+                                       value="<?php echo esc_attr((string)($smtp_cfg['port'] ?? 587)); ?>"
+                                       min="1" max="65535"
+                                       <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+                            </div>
+                            <div class="alm-field">
+                                <label for="smtp-enc">Cifratura</label>
+                                <select id="smtp-enc" <?php echo $smtp_from_cfg ? 'disabled' : ''; ?>>
+                                    <option value="tls" <?php selected($smtp_cfg['encryption'] ?? 'tls', 'tls'); ?>>TLS (porta 587)</option>
+                                    <option value="ssl" <?php selected($smtp_cfg['encryption'] ?? '', 'ssl'); ?>>SSL (porta 465)</option>
+                                    <option value=""    <?php selected($smtp_cfg['encryption'] ?? '', ''); ?>>Nessuna (porta 25)</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="alm-section-divider"></div>
+                        <hr class="alm-section-divider">
 
-                    <div class="alm-field-row">
-                        <label for="smtp-user">Username SMTP</label>
-                        <input type="email" id="smtp-user" name="smtp_username"
-                               value="<?php echo esc_attr($smtp_cfg['username'] ?? ''); ?>"
-                               placeholder="noreply@almaretna.it"
-                               <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
-                        <p class="alm-hint">Di solito coincide con l'indirizzo email del mittente.</p>
-                    </div>
-
-                    <div class="alm-field-row">
-                        <label for="smtp-pass">Password SMTP</label>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <input type="password" id="smtp-pass" name="smtp_password"
-                                   value="<?php echo $smtp_from_cfg ? '••••••••' : (($smtp_cfg['password'] ?? '') !== '' ? '••••••••' : ''); ?>"
-                                   placeholder="<?php echo esc_attr($smtp_from_cfg ? 'Definita in wp-config.php' : 'Inserisci password (lascia vuoto per non modificare)'); ?>"
-                                   autocomplete="new-password"
-                                   <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
-                            <?php if (!$smtp_from_cfg) : ?>
-                            <button type="button" class="button button-small alm-reveal" data-for="smtp-pass">Mostra</button>
-                            <?php endif; ?>
-                        </div>
-                        <?php if (!$smtp_from_cfg) : ?>
-                        <p class="alm-hint">Per Gmail: usa una <strong>App Password</strong> (non la password dell'account).</p>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="alm-section-divider"></div>
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                        <div class="alm-field-row">
-                            <label for="smtp-from-email">Email mittente</label>
-                            <input type="email" id="smtp-from-email" name="smtp_from_email"
-                                   value="<?php echo esc_attr($smtp_cfg['from_email'] ?? ''); ?>"
+                        <div class="alm-field">
+                            <label for="smtp-user">Username SMTP</label>
+                            <input type="email" id="smtp-user"
+                                   value="<?php echo esc_attr($smtp_cfg['username'] ?? ''); ?>"
                                    placeholder="noreply@almaretna.it"
                                    <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+                            <span class="alm-hint">Di solito coincide con l'indirizzo email del mittente.</span>
                         </div>
-                        <div class="alm-field-row">
-                            <label for="smtp-from-name">Nome mittente</label>
-                            <input type="text" id="smtp-from-name" name="smtp_from_name"
-                                   value="<?php echo esc_attr($smtp_cfg['from_name'] ?? ''); ?>"
-                                   placeholder="Almaretna"
-                                   <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+
+                        <div class="alm-field">
+                            <label for="smtp-pass">Password SMTP</label>
+                            <div class="alm-input-row">
+                                <input type="password" id="smtp-pass"
+                                       value="<?php echo ($smtp_cfg['password'] ?? '') !== '' ? '••••••••' : ''; ?>"
+                                       placeholder="<?php echo esc_attr($smtp_from_cfg ? 'Definita in wp-config.php' : 'Lascia vuoto per non modificare'); ?>"
+                                       autocomplete="new-password"
+                                       <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+                                <?php if (!$smtp_from_cfg) : ?>
+                                <button type="button" class="button button-small alm-reveal" data-for="smtp-pass">Mostra</button>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!$smtp_from_cfg) : ?>
+                            <span class="alm-hint">Per Gmail usa un'<strong>App Password</strong>, non la password dell'account.</span>
+                            <?php endif; ?>
                         </div>
-                    </div>
+
+                        <hr class="alm-section-divider">
+
+                        <div class="alm-field-grid">
+                            <div class="alm-field">
+                                <label for="smtp-from-email">Email mittente</label>
+                                <input type="email" id="smtp-from-email"
+                                       value="<?php echo esc_attr($smtp_cfg['from_email'] ?? ''); ?>"
+                                       placeholder="noreply@almaretna.it"
+                                       <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+                            </div>
+                            <div class="alm-field">
+                                <label for="smtp-from-name">Nome mittente</label>
+                                <input type="text" id="smtp-from-name"
+                                       value="<?php echo esc_attr($smtp_cfg['from_name'] ?? ''); ?>"
+                                       placeholder="Almaretna"
+                                       <?php echo $smtp_from_cfg ? 'readonly' : ''; ?> />
+                            </div>
+                        </div>
+
+                    </div><!-- /.alm-field-list -->
 
                     <?php if (!$smtp_from_cfg) : ?>
-                    <div id="alm-smtp-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center;">
+                    <div id="alm-smtp-msg" class="alm-msg" style="display:none;margin-top:16px;"></div>
+                    <div style="margin-top:16px;">
                         <button type="button" class="button button-primary"
                                 onclick="almSaveSmtp('<?php echo esc_js(wp_create_nonce('alm_save_smtp')); ?>')">
                             Salva configurazione
                         </button>
                     </div>
                     <?php else : ?>
-                    <p class="alm-hint" style="margin-top:12px;">Per modificare le credenziali, aggiorna le costanti in <code>wp-config.php</code>.</p>
+                    <p class="alm-hint" style="margin-top:16px;">Per modificare, aggiorna le costanti in <code>wp-config.php</code>.</p>
                     <?php endif; ?>
-
                 </div>
             </div>
 
@@ -705,77 +704,54 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                 <div class="alm-settings-card__head">
                     <div>
                         <h2>Test invio email</h2>
-                        <p class="alm-card-desc">Verifica che le impostazioni SMTP funzionino correttamente.</p>
+                        <p class="alm-card-desc">Verifica che la configurazione SMTP funzioni prima di andare live.</p>
                     </div>
                 </div>
                 <div class="alm-settings-card__body">
-                    <?php if (!$smtp_configured) : ?>
-                    <p style="color:#888;font-size:13px;">Configura prima le credenziali SMTP.</p>
-                    <?php else : ?>
-                    <div class="alm-field-row">
-                        <label for="smtp-test-to">Destinatario</label>
-                        <input type="email" id="smtp-test-to"
-                               value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>"
-                               placeholder="tua@email.it" />
+                    <div class="alm-field-list">
+                        <div class="alm-field">
+                            <label for="smtp-test-to">Destinatario test</label>
+                            <input type="email" id="smtp-test-to"
+                                   value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>"
+                                   placeholder="tua@email.it"
+                                   <?php echo !$smtp_configured ? 'disabled' : ''; ?> />
+                        </div>
                     </div>
-                    <div id="alm-smtp-test-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
+                    <div id="alm-smtp-test-msg" class="alm-msg" style="display:none;margin-top:16px;"></div>
                     <div style="margin-top:16px;">
-                        <button type="button" class="button"
+                        <button type="button" class="button" id="alm-smtp-test-btn"
+                                <?php echo !$smtp_configured ? 'disabled' : ''; ?>
                                 onclick="almTestSmtp('<?php echo esc_js(wp_create_nonce('alm_test_smtp')); ?>')">
                             ✉ Invia email di test
                         </button>
+                        <?php if (!$smtp_configured) : ?>
+                        <span class="alm-hint" style="margin-left:10px;">Salva prima la configurazione SMTP.</span>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
                 </div>
             </div>
 
             <!-- Guida provider -->
             <div class="alm-settings-card" style="margin-top:16px;">
                 <div class="alm-settings-card__head">
-                    <div>
-                        <h2>Impostazioni per provider comuni</h2>
-                    </div>
+                    <div><h2>Impostazioni per provider comuni</h2></div>
                 </div>
-                <div class="alm-settings-card__body">
-                    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                <div class="alm-settings-card__body" style="padding:0;">
+                    <table class="widefat striped" style="border:none;box-shadow:none;">
                         <thead>
-                            <tr style="border-bottom:1px solid #ddd;">
-                                <th style="text-align:left;padding:6px 8px;">Provider</th>
-                                <th style="text-align:left;padding:6px 8px;">Server</th>
-                                <th style="text-align:center;padding:6px 8px;">Porta</th>
-                                <th style="text-align:left;padding:6px 8px;">Cifratura</th>
-                                <th style="text-align:left;padding:6px 8px;">Note</th>
+                            <tr>
+                                <th>Provider</th>
+                                <th>Server</th>
+                                <th style="text-align:center;">Porta</th>
+                                <th>Cifratura</th>
+                                <th>Note</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="border-bottom:1px solid #f0f0f0;">
-                                <td style="padding:6px 8px;"><strong>Gmail</strong></td>
-                                <td style="padding:6px 8px;font-family:monospace;">smtp.gmail.com</td>
-                                <td style="padding:6px 8px;text-align:center;">587</td>
-                                <td style="padding:6px 8px;">TLS</td>
-                                <td style="padding:6px 8px;">Richiede App Password con 2FA attiva</td>
-                            </tr>
-                            <tr style="border-bottom:1px solid #f0f0f0;">
-                                <td style="padding:6px 8px;"><strong>Aruba</strong></td>
-                                <td style="padding:6px 8px;font-family:monospace;">smtps.aruba.it</td>
-                                <td style="padding:6px 8px;text-align:center;">465</td>
-                                <td style="padding:6px 8px;">SSL</td>
-                                <td style="padding:6px 8px;">Username = indirizzo email completo</td>
-                            </tr>
-                            <tr style="border-bottom:1px solid #f0f0f0;">
-                                <td style="padding:6px 8px;"><strong>SiteGround</strong></td>
-                                <td style="padding:6px 8px;font-family:monospace;">mail.siteground.com</td>
-                                <td style="padding:6px 8px;text-align:center;">587</td>
-                                <td style="padding:6px 8px;">TLS</td>
-                                <td style="padding:6px 8px;">O usa il server del dominio ospitato</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:6px 8px;"><strong>Outlook / 365</strong></td>
-                                <td style="padding:6px 8px;font-family:monospace;">smtp.office365.com</td>
-                                <td style="padding:6px 8px;text-align:center;">587</td>
-                                <td style="padding:6px 8px;">TLS</td>
-                                <td style="padding:6px 8px;">Username = indirizzo Microsoft 365</td>
-                            </tr>
+                            <tr><td><strong>Gmail</strong></td><td><code>smtp.gmail.com</code></td><td style="text-align:center;">587</td><td>TLS</td><td>App Password + 2FA</td></tr>
+                            <tr><td><strong>Aruba</strong></td><td><code>smtps.aruba.it</code></td><td style="text-align:center;">465</td><td>SSL</td><td>Username = email completa</td></tr>
+                            <tr><td><strong>SiteGround</strong></td><td><code>mail.siteground.com</code></td><td style="text-align:center;">587</td><td>TLS</td><td>O server del dominio</td></tr>
+                            <tr><td><strong>Outlook / 365</strong></td><td><code>smtp.office365.com</code></td><td style="text-align:center;">587</td><td>TLS</td><td>Username = indirizzo M365</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -917,6 +893,7 @@ function almCopy(id, btn) {
 function almMsg(id, text, ok) {
     var el = document.getElementById(id);
     if (!el) return;
+    if (!text) { el.style.display = 'none'; return; }
     el.style.display = 'block';
     el.className = 'alm-msg ' + (ok ? 'alm-msg--ok' : 'alm-msg--err');
     el.textContent = text;
@@ -1050,18 +1027,20 @@ function almSaveSmtp(nonce) {
 }
 function almTestSmtp(nonce) {
     var to  = (document.getElementById('smtp-test-to')||{value:''}).value.trim();
-    if (!to) { almMsg('alm-smtp-test-msg','Inserisci un indirizzo email.',false); return; }
-    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='Invio…';
+    if (!to) { almMsg('alm-smtp-test-msg','Inserisci un indirizzo email destinatario.',false); return; }
+    var btn = document.getElementById('alm-smtp-test-btn');
+    if (btn) { btn.disabled=true; btn.textContent='Invio in corso…'; }
+    almMsg('alm-smtp-test-msg','','');  // nasconde il messaggio precedente
     var fd = new FormData();
     fd.append('action','alm_test_smtp'); fd.append('nonce',nonce); fd.append('to',to);
     fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
         .then(function(r){ return r.json(); })
         .then(function(d){
-            almMsg('alm-smtp-test-msg', d.data||(d.success?'✓ Inviata':'✗ Errore'), d.success);
-            btn.disabled=false; btn.textContent=orig;
+            almMsg('alm-smtp-test-msg', d.data||(d.success?'✓ Email inviata':'✗ Errore'), d.success);
+            if (btn) { btn.disabled=false; btn.textContent='✉ Invia email di test'; }
         }).catch(function(){
-            almMsg('alm-smtp-test-msg','Errore di rete.',false);
-            btn.disabled=false; btn.textContent=orig;
+            almMsg('alm-smtp-test-msg','Errore di rete — controlla la connessione.',false);
+            if (btn) { btn.disabled=false; btn.textContent='✉ Invia email di test'; }
         });
 }
 

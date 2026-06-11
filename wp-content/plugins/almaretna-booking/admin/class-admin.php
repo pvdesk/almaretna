@@ -1186,22 +1186,30 @@ class ALM_Admin {
             wp_send_json_error('Indirizzo email destinatario non valido.');
         }
 
-        $cfg     = ALM_SMTP::get_config();
-        $subject = '[Almaretna] Email di test SMTP — ' . gmdate('d/m/Y H:i');
-        $message = '<p>Questa è un\'email di test inviata dal plugin Almaretna Booking.</p>'
-                 . '<p>Server: <strong>' . esc_html($cfg['host']) . ':' . $cfg['port'] . '</strong><br>'
-                 . 'Mittente: <strong>' . esc_html($cfg['from_email'] ?: $cfg['username']) . '</strong></p>'
-                 . '<p style="color:#666;font-size:12px;">Inviata: ' . gmdate('d/m/Y H:i:s') . ' UTC</p>';
+        // Cattura errori wp_mail tramite action (metodo ufficiale WP)
+        $mail_error = '';
+        $error_listener = static function (WP_Error $err) use (&$mail_error): void {
+            $mail_error = $err->get_error_message();
+        };
+        add_action('wp_mail_failed', $error_listener);
 
-        $headers = ['Content-Type: text/html; charset=UTF-8'];
-        $sent    = wp_mail($to, $subject, $message, $headers);
+        $cfg     = ALM_SMTP::get_config();
+        $subject = '[Almaretna] Email di test — ' . gmdate('d/m/Y H:i');
+        $message = '<p>Test SMTP dal plugin Almaretna Booking.</p>'
+                 . '<p>Server: <strong>' . esc_html($cfg['host']) . ':' . $cfg['port'] . '</strong><br>'
+                 . 'Cifratura: <strong>' . esc_html($cfg['encryption'] ?: 'nessuna') . '</strong><br>'
+                 . 'Mittente: <strong>' . esc_html($cfg['from_email'] ?: $cfg['username']) . '</strong></p>'
+                 . '<p style="color:#888;font-size:12px;">Inviata il ' . gmdate('d/m/Y \a\l\l\e H:i:s') . ' UTC</p>';
+
+        $sent = wp_mail($to, $subject, $message, ['Content-Type: text/html; charset=UTF-8']);
+
+        remove_action('wp_mail_failed', $error_listener);
 
         if ($sent) {
-            wp_send_json_success('✓ Email inviata a ' . $to . ' — controlla la casella di posta.');
+            wp_send_json_success('✓ Email inviata a ' . esc_html($to) . ' — controlla la casella di posta.');
         } else {
-            global $phpmailer;
-            $err = isset($phpmailer) ? $phpmailer->ErrorInfo : 'Errore sconosciuto.';
-            wp_send_json_error('✗ Invio fallito: ' . $err);
+            $detail = $mail_error ?: 'Errore sconosciuto. Verifica server, porta e credenziali.';
+            wp_send_json_error('✗ Invio fallito: ' . $detail);
         }
     }
 

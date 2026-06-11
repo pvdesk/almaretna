@@ -72,6 +72,131 @@
 
 }());
 
+/* ─── Mega Menu ─────────────────────────────────────────────────────────── */
+(function () {
+    'use strict';
+
+    var li       = document.getElementById('nav-scopri-li');
+    var btn      = document.getElementById('nav-scopri-btn');
+    var panel    = document.getElementById('nav-mega-scopri');
+    var backdrop = document.getElementById('nav-mega-backdrop');
+
+    if (!li || !btn || !panel) return;
+
+    var loaded     = false;
+    var hoverTimer = null;
+    var closeTimer = null;
+    var isTouch    = window.matchMedia('(hover: none)').matches;
+
+    function openMega() {
+        clearTimeout(closeTimer);
+        li.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+        panel.classList.add('is-open');
+        panel.setAttribute('aria-hidden', 'false');
+        if (backdrop) backdrop.classList.add('is-visible');
+        if (!loaded) { loaded = true; fetchImages(); }
+    }
+
+    function closeMega() {
+        li.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+        panel.classList.remove('is-open');
+        panel.setAttribute('aria-hidden', 'true');
+        if (backdrop) backdrop.classList.remove('is-visible');
+    }
+
+    /* Hover (pointer device only) */
+    if (!isTouch) {
+        li.addEventListener('mouseenter', function () {
+            clearTimeout(closeTimer);
+            hoverTimer = setTimeout(openMega, 80);
+        });
+        li.addEventListener('mouseleave', function () {
+            clearTimeout(hoverTimer);
+            closeTimer = setTimeout(closeMega, 180);
+        });
+        panel.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        panel.addEventListener('mouseleave', function () {
+            closeTimer = setTimeout(closeMega, 180);
+        });
+    }
+
+    /* Click (all devices) */
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (li.classList.contains('is-open')) { closeMega(); } else { openMega(); }
+    });
+
+    if (backdrop) backdrop.addEventListener('click', closeMega);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && li.classList.contains('is-open')) {
+            closeMega();
+            btn.focus();
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!li.contains(e.target) && !panel.contains(e.target)) {
+            closeMega();
+        }
+    });
+
+    /* ── AJAX: carica hero images al primo apertura ── */
+    function fetchImages() {
+        if (!window.almNav || !window.almNav.ajaxUrl) {
+            revealCards();
+            return;
+        }
+        var grid = document.getElementById('nav-mega-grid');
+        if (!grid) return;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', window.almNav.ajaxUrl);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onload = function () {
+            try {
+                var res = JSON.parse(xhr.responseText);
+                if (res.success && res.data) {
+                    grid.querySelectorAll('.mega-card').forEach(function (card) {
+                        var slug = card.getAttribute('data-slug');
+                        if (slug && res.data[slug]) {
+                            var img = card.querySelector('.mega-card__img');
+                            if (img) img.style.backgroundImage = 'url(' + res.data[slug] + ')';
+                        }
+                    });
+                }
+            } catch (err) {}
+            revealCards();
+        };
+        xhr.onerror = revealCards;
+        xhr.send('action=alm_nav_destinations');
+    }
+
+    function revealCards() {
+        var cards = panel.querySelectorAll('.mega-card');
+        cards.forEach(function (card, i) {
+            card.classList.remove('mega-card--skeleton');
+            setTimeout(function () { card.classList.add('is-visible'); }, i * 55);
+        });
+    }
+
+    /* ── Mobile accordion ── */
+    var mobileItem   = document.querySelector('.mobile-nav__item--has-sub');
+    var mobileToggle = mobileItem ? mobileItem.querySelector('.mobile-nav__sub-toggle') : null;
+
+    if (mobileItem && mobileToggle) {
+        mobileToggle.addEventListener('click', function () {
+            var open = mobileItem.classList.toggle('is-open');
+            mobileToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    }
+
+}());
+
 /* ─── Scroll Reveal (Intersection Observer) ────────────────── */
 (function () {
     'use strict';

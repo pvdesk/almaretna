@@ -54,12 +54,16 @@ function alm_get_strings(): array {
 /* ─── ITALIANO ─────────────────────────────────────────────── */
 'it' => [
     // Nav
-    'nav.book_now'    => 'Prenota ora',
-    'nav.rooms'       => 'Camere',
-    'nav.open_menu'   => 'Apri menu',
-    'nav.close_menu'  => 'Chiudi menu',
-    'nav.main_menu'   => 'Menu principale',
-    'nav.mobile_menu' => 'Menu mobile',
+    'nav.book_now'         => 'Prenota ora',
+    'nav.home'             => 'Home',
+    'nav.rooms'            => 'Camere',
+    'nav.discover'         => 'Scopri la Sicilia',
+    'nav.discover_eyebrow' => 'Destinazioni',
+    'nav.all_destinations' => 'Tutte le destinazioni',
+    'nav.open_menu'        => 'Apri menu',
+    'nav.close_menu'       => 'Chiudi menu',
+    'nav.main_menu'        => 'Menu principale',
+    'nav.mobile_menu'      => 'Menu mobile',
     // CTA
     'cta.book'        => 'Prenota il tuo soggiorno',
     'cta.rooms'       => 'Scopri le camere',
@@ -286,10 +290,14 @@ function alm_get_strings(): array {
 
 /* ─── ENGLISH ──────────────────────────────────────────────── */
 'en' => [
-    'nav.book_now'    => 'Book now',
-    'nav.rooms'       => 'Rooms',
-    'nav.open_menu'   => 'Open menu',
-    'nav.close_menu'  => 'Close menu',
+    'nav.book_now'         => 'Book now',
+    'nav.home'             => 'Home',
+    'nav.rooms'            => 'Rooms',
+    'nav.discover'         => 'Discover Sicily',
+    'nav.discover_eyebrow' => 'Destinations',
+    'nav.all_destinations' => 'All destinations',
+    'nav.open_menu'        => 'Open menu',
+    'nav.close_menu'       => 'Close menu',
     'nav.main_menu'   => 'Main menu',
     'nav.mobile_menu' => 'Mobile menu',
     'cta.book'        => 'Book your stay',
@@ -501,11 +509,15 @@ function alm_get_strings(): array {
 
 /* ─── DEUTSCH ──────────────────────────────────────────────── */
 'de' => [
-    'nav.book_now'    => 'Jetzt buchen',
-    'nav.rooms'       => 'Zimmer',
-    'nav.open_menu'   => 'Menü öffnen',
-    'nav.close_menu'  => 'Menü schließen',
-    'nav.main_menu'   => 'Hauptmenü',
+    'nav.book_now'         => 'Jetzt buchen',
+    'nav.home'             => 'Startseite',
+    'nav.rooms'            => 'Zimmer',
+    'nav.discover'         => 'Sizilien entdecken',
+    'nav.discover_eyebrow' => 'Reiseziele',
+    'nav.all_destinations' => 'Alle Reiseziele',
+    'nav.open_menu'        => 'Menü öffnen',
+    'nav.close_menu'       => 'Menü schließen',
+    'nav.main_menu'        => 'Hauptmenü',
     'nav.mobile_menu' => 'Mobiles Menü',
     'cta.book'        => 'Jetzt buchen',
     'cta.rooms'       => 'Zimmer entdecken',
@@ -716,11 +728,15 @@ function alm_get_strings(): array {
 
 /* ─── FRANÇAIS ─────────────────────────────────────────────── */
 'fr' => [
-    'nav.book_now'    => 'Réserver',
-    'nav.rooms'       => 'Chambres',
-    'nav.open_menu'   => 'Ouvrir le menu',
-    'nav.close_menu'  => 'Fermer le menu',
-    'nav.main_menu'   => 'Menu principal',
+    'nav.book_now'         => 'Réserver',
+    'nav.home'             => 'Accueil',
+    'nav.rooms'            => 'Chambres',
+    'nav.discover'         => 'Découvrir la Sicile',
+    'nav.discover_eyebrow' => 'Destinations',
+    'nav.all_destinations' => 'Toutes les destinations',
+    'nav.open_menu'        => 'Ouvrir le menu',
+    'nav.close_menu'       => 'Fermer le menu',
+    'nav.main_menu'        => 'Menu principal',
     'nav.mobile_menu' => 'Menu mobile',
     'cta.book'        => 'Réservez votre séjour',
     'cta.rooms'       => 'Découvrir les chambres',
@@ -931,11 +947,15 @@ function alm_get_strings(): array {
 
 /* ─── ESPAÑOL ──────────────────────────────────────────────── */
 'es' => [
-    'nav.book_now'    => 'Reservar ahora',
-    'nav.rooms'       => 'Habitaciones',
-    'nav.open_menu'   => 'Abrir menú',
-    'nav.close_menu'  => 'Cerrar menú',
-    'nav.main_menu'   => 'Menú principal',
+    'nav.book_now'         => 'Reservar ahora',
+    'nav.home'             => 'Inicio',
+    'nav.rooms'            => 'Habitaciones',
+    'nav.discover'         => 'Descubrir Sicilia',
+    'nav.discover_eyebrow' => 'Destinos',
+    'nav.all_destinations' => 'Todos los destinos',
+    'nav.open_menu'        => 'Abrir menú',
+    'nav.close_menu'       => 'Cerrar menú',
+    'nav.main_menu'        => 'Menú principal',
     'nav.mobile_menu' => 'Menú móvil',
     'cta.book'        => 'Reserva tu estancia',
     'cta.rooms'       => 'Descubre las habitaciones',

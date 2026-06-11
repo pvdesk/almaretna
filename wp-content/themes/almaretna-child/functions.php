@@ -110,6 +110,10 @@ add_action('wp_enqueue_scripts', function (): void {
         true
     );
 
+    wp_localize_script('almaretna-nav', 'almNav', [
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+    ]);
+
     wp_enqueue_script(
         'almaretna-calendar',
         $theme_uri . '/assets/js/calendar.js',
@@ -302,6 +306,7 @@ $alm_includes = [
     'inc/i18n.php',              // Sistema multilingua (deve essere il primo)
     'inc/destinazioni.php',      // Contenuti pagine destinazione Sicilia
     'inc/dest-admin.php',        // Metabox foto destinazione
+    'inc/nav-ajax.php',          // AJAX mega-menu destinazioni
     'inc/custom-post-types.php',
     'inc/helpers.php',
     'inc/shortcodes.php',

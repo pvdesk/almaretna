@@ -178,7 +178,8 @@ class ALM_Plugin {
             $timeout  = (int) get_option('alm_pending_timeout_minutes', 30);
             $canceled = ALM_Booking::expire_pending($timeout);
             if ($canceled > 0) {
-                error_log("[ALM] expire_pending: {$canceled} prenotazion{$canceled === 1 ? 'e' : 'i'} non pagate cancellate (timeout {$timeout} min).");
+                $suffix = $canceled === 1 ? 'e' : 'i';
+                error_log("[ALM] expire_pending: {$canceled} prenotazion{$suffix} non pagate cancellate (timeout {$timeout} min).");
             }
         });
 

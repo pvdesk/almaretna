@@ -746,7 +746,7 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
                 <?php endif; ?>
             </div>
 <div class="pool-section__badge">
-                <span class="pool-section__badge-num">12<small>m</small></span>
+                <span class="pool-section__badge-num">15<small>m</small></span>
                 <span class="pool-section__badge-label"><?php echo esc_html(alm_t('pool.badge')); ?></span>
             </div>
 <?php if ($pool_img2) : ?>
@@ -770,7 +770,7 @@ $pool_img2 = get_theme_mod('almaretna_pool_img2', '') ?: $_fb . 'piscina-panoram
                 <div class="pool-spec">
                     <svg width="20" height="20" fill="none" stroke="#C5B49C" stroke-width="1.8" viewBox="0 0 24 24"><path d="M2 12h20M2 17c1.5 0 3-1 3-2s1.5-2 3-2 3 1 3 2 1.5 2 3 2 3-1 3-2"/><circle cx="7" cy="7" r="2"/><path d="M7 9v3"/></svg>
                     <div>
-                        <span class="pool-spec__val">12 × 5 m</span>
+                        <span class="pool-spec__val">15 × 6 m</span>
                         <span class="pool-spec__label"><?php echo esc_html(alm_t('pool.spec1')); ?></span>
                     </div>
                 </div>

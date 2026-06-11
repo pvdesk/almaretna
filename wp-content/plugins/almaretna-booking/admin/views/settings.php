@@ -771,6 +771,55 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                 </ul>
             </div>
 
+            <!-- Pending timeout -->
+            <?php
+            $pending_timeout = (int) get_option('alm_pending_timeout_minutes', 30);
+            $pending_count   = (int) $GLOBALS['wpdb']->get_var(
+                "SELECT COUNT(*) FROM {$GLOBALS['wpdb']->prefix}alm_bookings
+                 WHERE status = 'pending' AND payment_status = 'unpaid'"
+            );
+            $next_expire     = wp_next_scheduled('alm_expire_pending_bookings');
+            ?>
+            <div class="alm-settings-card">
+                <div class="alm-settings-card__head">
+                    <div>
+                        <h2>⏱ Prenotazioni non pagate — timeout</h2>
+                        <p class="alm-card-desc">Le prenotazioni abbandonate (pending + non pagate) vengono annullate automaticamente dopo questo tempo, liberando la disponibilità.</p>
+                    </div>
+                    <span class="alm-badge <?php echo $pending_count > 0 ? 'alm-badge--warn' : 'alm-badge--ok'; ?>">
+                        <?php echo $pending_count; ?> in attesa
+                    </span>
+                </div>
+                <div class="alm-settings-card__body">
+                    <div class="alm-field-grid">
+                        <div class="alm-field">
+                            <label for="alm-pending-timeout">Timeout (minuti)</label>
+                            <input type="number" id="alm-pending-timeout" min="5" max="1440"
+                                   value="<?php echo esc_attr((string) $pending_timeout); ?>"
+                                   style="width:120px;" />
+                            <span class="alm-hint">Consigliato: 30 min. Minimo 5, massimo 1440 (24h).</span>
+                        </div>
+                        <div class="alm-field">
+                            <label>Prossima esecuzione automatica</label>
+                            <p style="margin:6px 0 0;font-size:13px;color:#374151;">
+                                <?php echo $next_expire ? esc_html(date_i18n('d/m/Y H:i', $next_expire)) : '<span style="color:#dc2626">Non schedulata</span>'; ?>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="alm-pending-msg" class="alm-msg"></div>
+                    <div class="alm-form-actions">
+                        <button type="button" class="button button-primary"
+                                onclick="almSavePendingTimeout('<?php echo esc_js(wp_create_nonce('alm_save_pending_timeout')); ?>')">
+                            Salva timeout
+                        </button>
+                        <button type="button" class="button" style="margin-left:8px;"
+                                onclick="almExpirePendingNow('<?php echo esc_js(wp_create_nonce('alm_expire_pending_now')); ?>')">
+                            🗑 Pulisci ora (<?php echo $pending_count; ?> in attesa)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Diagnostica -->
             <div class="alm-settings-card">
                 <div class="alm-settings-card__head">
@@ -1049,6 +1098,40 @@ function almTestSmtp(nonce) {
         }).catch(function(){
             almMsg('alm-smtp-test-msg','Errore di rete — controlla la connessione.',false);
             if (btn) { btn.disabled=false; btn.textContent='✉ Invia email di test'; }
+        });
+}
+
+/* ─── Pending timeout ─── */
+function almSavePendingTimeout(nonce) {
+    var val = parseInt((document.getElementById('alm-pending-timeout')||{value:'30'}).value, 10);
+    if (isNaN(val) || val < 5) { almMsg('alm-pending-msg','Valore minimo: 5 minuti.',false); return; }
+    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='…';
+    var fd = new FormData();
+    fd.append('action','alm_save_pending_timeout'); fd.append('nonce',nonce); fd.append('minutes',val);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-pending-msg', d.data||(d.success?'✓ Salvato':'✗ Errore'), d.success);
+            btn.disabled=false; btn.textContent=orig;
+        }).catch(function(){
+            almMsg('alm-pending-msg','Errore di rete.',false);
+            btn.disabled=false; btn.textContent=orig;
+        });
+}
+function almExpirePendingNow(nonce) {
+    if (!confirm('Cancellare subito tutte le prenotazioni pending non pagate?')) return;
+    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='…';
+    var fd = new FormData();
+    fd.append('action','alm_expire_pending_now'); fd.append('nonce',nonce);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-pending-msg', d.data||(d.success?'✓ Fatto':'✗ Errore'), d.success);
+            btn.disabled=false; btn.textContent=orig;
+            if (d.success) setTimeout(function(){ location.reload(); },1500);
+        }).catch(function(){
+            almMsg('alm-pending-msg','Errore di rete.',false);
+            btn.disabled=false; btn.textContent=orig;
         });
 }
 

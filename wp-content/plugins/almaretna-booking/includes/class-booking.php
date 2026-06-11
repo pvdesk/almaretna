@@ -400,6 +400,51 @@ class ALM_Booking {
         return $result !== false;
     }
 
+    // ─── Gestione pending scadute ────────────────────────────────────────────
+
+    /**
+     * Cancella le prenotazioni pending+unpaid più vecchie di $minutes minuti.
+     *
+     * Chiamato dal cron job `alm_expire_pending_bookings`.
+     * Restituisce il numero di prenotazioni cancellate.
+     *
+     * @param int $minutes  Timeout in minuti (default: 30).
+     * @return int
+     */
+    public static function expire_pending(int $minutes = 30): int {
+        global $wpdb;
+
+        $cutoff = gmdate('Y-m-d H:i:s', time() - ($minutes * 60));
+        $table  = $wpdb->prefix . 'alm_bookings';
+
+        // Recupera gli ID da cancellare (solo pending+unpaid più vecchie del timeout)
+        $ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT id FROM `{$table}`
+             WHERE status = 'pending'
+               AND payment_status = 'unpaid'
+               AND created_at < %s",
+            $cutoff
+        ));
+
+        if (empty($ids)) {
+            return 0;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $note         = '[Auto-cancellazione ' . current_time('Y-m-d H:i') . ']: pagamento non completato entro ' . $minutes . ' minuti.';
+
+        $updated = $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE `{$table}`
+                 SET status = 'cancelled', notes = CONCAT(IFNULL(notes,''), %s), updated_at = NOW()
+                 WHERE id IN ($placeholders)",
+                ...array_merge([$note], $ids)
+            )
+        );
+
+        return (int) $updated;
+    }
+
     // ─── Calcoli ─────────────────────────────────────────────────────────────
 
     /**

@@ -108,7 +108,9 @@ class ALM_Plugin {
         add_action('wp_dashboard_setup',             [$admin, 'register_dashboard_widgets']);
         add_action('wp_ajax_alm_save_smtp',          [$admin, 'ajax_save_smtp']);
         add_action('wp_ajax_alm_test_smtp',          [$admin, 'ajax_test_smtp']);
-        add_action('wp_ajax_alm_save_struttura',     [$admin, 'ajax_save_struttura']);
+        add_action('wp_ajax_alm_save_struttura',          [$admin, 'ajax_save_struttura']);
+        add_action('wp_ajax_alm_save_pending_timeout',    [$admin, 'ajax_save_pending_timeout']);
+        add_action('wp_ajax_alm_expire_pending_now',      [$admin, 'ajax_expire_pending_now']);
     }
 
     /**
@@ -171,12 +173,25 @@ class ALM_Plugin {
         // Reminder pre-arrivo
         add_action('alm_send_checkin_reminder', [ALM_Notifications::class, 'process_reminder_queue']);
 
+        // Scadenza prenotazioni pending non pagate
+        add_action('alm_expire_pending_bookings', function (): void {
+            $timeout  = (int) get_option('alm_pending_timeout_minutes', 30);
+            $canceled = ALM_Booking::expire_pending($timeout);
+            if ($canceled > 0) {
+                error_log("[ALM] expire_pending: {$canceled} prenotazion{$canceled === 1 ? 'e' : 'i'} non pagate cancellate (timeout {$timeout} min).");
+            }
+        });
+
         // Frequenza custom — display senza __() perché cron_schedules può sparare
         // prima di init e causerebbe il notice "textdomain triggered too early"
         add_filter('cron_schedules', function (array $schedules): array {
             $schedules['five_times_daily'] = [
                 'interval' => 17280,
                 'display'  => 'Cinque volte al giorno',
+            ];
+            $schedules['every_30_minutes'] = [
+                'interval' => 1800,
+                'display'  => 'Ogni 30 minuti',
             ];
             return $schedules;
         });
@@ -191,12 +206,18 @@ class ALM_Plugin {
         // Scheduling su init: wp_schedule_event chiama wp_get_schedules() che spara
         // cron_schedules → se fosse qui (plugins_loaded) triggererebbe __() troppo presto
         add_action('init', function (): void {
+            // Beds24 sync
             $current_schedule = wp_get_schedule('alm_sync_beds24');
             if ($current_schedule && $current_schedule !== 'five_times_daily') {
                 wp_clear_scheduled_hook('alm_sync_beds24');
             }
             if (!wp_next_scheduled('alm_sync_beds24')) {
                 wp_schedule_event(time(), 'five_times_daily', 'alm_sync_beds24');
+            }
+
+            // Scadenza pending — ogni 30 minuti
+            if (!wp_next_scheduled('alm_expire_pending_bookings')) {
+                wp_schedule_event(time(), 'every_30_minutes', 'alm_expire_pending_bookings');
             }
         }, 1);
     }

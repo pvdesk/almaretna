@@ -1255,4 +1255,24 @@ class ALM_Admin {
         opcache_reset();
         wp_send_json_success('✓ OPcache svuotata. Ricarica la pagina.');
     }
+
+    public function ajax_save_pending_timeout(): void {
+        check_ajax_referer('alm_save_pending_timeout', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        $minutes = max(5, min(1440, (int) ($_POST['minutes'] ?? 30)));
+        update_option('alm_pending_timeout_minutes', $minutes);
+        wp_send_json_success("✓ Timeout impostato a {$minutes} minuti.");
+    }
+
+    public function ajax_expire_pending_now(): void {
+        check_ajax_referer('alm_expire_pending_now', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        $canceled = ALM_Booking::expire_pending(0);
+        $word = $canceled === 1 ? 'e cancellata' : 'i cancellate';
+        wp_send_json_success("✓ {$canceled} prenotazion{$word}.");
+    }
 }

@@ -82,6 +82,7 @@ class ALM_Plugin {
         add_action('wp_ajax_alm_admin_get_bookings',    [$admin, 'ajax_get_bookings']);
         add_action('wp_ajax_alm_admin_get_calendar',  [$admin, 'ajax_get_calendar']);
         add_action('wp_ajax_alm_test_beds24',         [$admin, 'ajax_test_beds24']);
+        add_action('wp_ajax_alm_save_stripe_db',      [$admin, 'ajax_save_stripe_db']);
         add_action('wp_ajax_alm_write_stripe_config', [$admin, 'ajax_write_stripe_config']);
         add_action('wp_ajax_alm_save_gsc',           [$admin, 'ajax_save_gsc']);
         add_action('wp_ajax_alm_unlock_gsc',         [$admin, 'ajax_unlock_gsc']);

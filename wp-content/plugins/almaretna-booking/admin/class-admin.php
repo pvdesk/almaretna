@@ -597,6 +597,49 @@ class ALM_Admin {
         include $file;
     }
 
+    // ── AJAX: salva chiavi Stripe nel DB ─────────────────────────────────────
+
+    public function ajax_save_stripe_db(): void {
+        check_ajax_referer('alm_save_stripe_db', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        if (ALM_Stripe::keys_source() === 'config') {
+            wp_send_json_error('Le chiavi sono definite in wp-config.php — rimuovile prima di usare il salvataggio su DB.');
+        }
+
+        $existing = get_option('alm_stripe_keys', []);
+        $pk = sanitize_text_field(wp_unslash($_POST['pk']    ?? ''));
+        $sk = sanitize_text_field(wp_unslash($_POST['sk']    ?? ''));
+        $wh = sanitize_text_field(wp_unslash($_POST['whsec'] ?? ''));
+
+        if ($pk !== '') {
+            if (!preg_match('/^pk_(live|test)_/', $pk)) {
+                wp_send_json_error('Publishable Key non valida (deve iniziare con pk_live_ o pk_test_).');
+            }
+            $existing['publishable_key'] = $pk;
+        }
+        if ($sk !== '') {
+            if (!preg_match('/^sk_(live|test)_/', $sk)) {
+                wp_send_json_error('Secret Key non valida (deve iniziare con sk_live_ o sk_test_).');
+            }
+            $existing['secret_key'] = $sk;
+        }
+        if ($wh !== '') {
+            if (!str_starts_with($wh, 'whsec_')) {
+                wp_send_json_error('Webhook Secret non valido (deve iniziare con whsec_).');
+            }
+            $existing['webhook_secret'] = $wh;
+        }
+
+        if (empty($existing['publishable_key']) || empty($existing['secret_key'])) {
+            wp_send_json_error('Publishable Key e Secret Key sono obbligatorie.');
+        }
+
+        update_option('alm_stripe_keys', $existing);
+        wp_send_json_success(['message' => '✓ Chiavi Stripe salvate.']);
+    }
+
     // ── AJAX: scrivi chiavi Stripe in wp-config.php ───────────────────────────
 
     public function ajax_write_stripe_config(): void {

@@ -2,1145 +2,853 @@
 /**
  * Admin view — Impostazioni plugin
  *
- * Variabile: $settings (array)
- *
  * @package AlmaretnaBooking
  */
-
 defined('ABSPATH') || exit;
 
 $s = is_array($settings) ? $settings : [];
-?>
 
+// Helper mascheramento chiavi sensibili
+$mask = static function (string $key): string {
+    if ($key === '') return '—';
+    return substr($key, 0, 8) . str_repeat('•', max(0, strlen($key) - 12)) . substr($key, -4);
+};
+$mask4 = static function (string $key): string {
+    if ($key === '') return '—';
+    return substr($key, 0, 4) . str_repeat('•', max(0, strlen($key) - 8)) . substr($key, -4);
+};
+
+// Stato servizi
+$stripe_configured = ALM_Stripe::is_configured();
+$stripe_from_cfg   = ALM_Stripe::keys_source() === 'config';
+$stripe_db_keys    = get_option('alm_stripe_keys', []);
+$b24_configured    = ALM_Beds24::is_configured();
+$b24_from_cfg      = ALM_Beds24::keys_source() === 'config';
+$b24_db_keys       = get_option('alm_beds24_keys', []);
+$ga4_id            = get_option('alm_ga4_measurement_id', '');
+$ga4_locked        = (bool) get_option('alm_ga4_locked', false);
+$gsc_code          = get_option('alm_gsc_verification', '');
+$gsc_locked        = (bool) get_option('alm_gsc_locked', false);
+$gapi_configured   = class_exists('ALM_Google_API') && ALM_Google_API::is_configured();
+$gapi_prop         = get_option('alm_ga4_property_id', '');
+$gapi_site         = get_option('alm_gsc_site_url', home_url('/'));
+
+// Tab attivo
+$valid_tabs = ['struttura', 'pagamenti', 'canali', 'analytics', 'sistema'];
+$active_tab = in_array($_GET['alm_tab'] ?? '', $valid_tabs, true) ? $_GET['alm_tab'] : 'struttura';
+if (!empty($_GET['updated'])) $active_tab = 'struttura';
+?>
 <div class="wrap alm-admin-wrap">
-    <h1>
-        <span class="dashicons dashicons-admin-settings"></span>
-        <?php esc_html_e('Impostazioni Almaretna Booking', 'almaretna-booking'); ?>
-    </h1>
+
+    <!-- Intestazione -->
+    <div class="alm-page-header">
+        <h1><span class="dashicons dashicons-admin-settings"></span> Impostazioni</h1>
+        <div class="alm-page-header__actions">
+            <span class="alm-version-chip">v<?php echo esc_html(ALM_BOOKING_VERSION); ?></span>
+            <button type="button" class="button button-small" id="alm-opcache-btn"
+                    onclick="almResetOpcache('<?php echo esc_js(wp_create_nonce('alm_reset_opcache')); ?>')">
+                ↺ Svuota cache PHP
+            </button>
+            <span id="alm-opcache-msg"></span>
+        </div>
+    </div>
 
     <?php if (!empty($_GET['updated'])) : ?>
-        <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Impostazioni salvate.', 'almaretna-booking'); ?></p></div>
+    <div class="notice notice-success is-dismissible"><p>✓ Impostazioni salvate correttamente.</p></div>
     <?php endif; ?>
 
-    <!-- Barra diagnostica: versione file + reset OPcache -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:8px 12px;background:#f6f7f7;border:1px solid #dcdcde;border-radius:4px;font-size:12px;color:#646970;">
-        <span>v<?php echo esc_html(ALM_BOOKING_VERSION); ?></span>
-        <span style="color:#ccc;">|</span>
-        <span>settings.php: <?php echo esc_html(date('d/m/Y H:i', filemtime(__FILE__))); ?></span>
-        <button type="button" id="alm-opcache-btn" class="button button-small"
-                style="margin-left:auto;"
-                onclick="almResetOpcache('<?php echo esc_js(wp_create_nonce('alm_reset_opcache')); ?>')">
-            ↺ Svuota cache PHP
+    <!-- Barra di stato rapida -->
+    <div class="alm-status-bar">
+        <button type="button" class="alm-status-chip <?php echo $stripe_configured ? ($stripe_from_cfg || !empty($stripe_db_keys['secret_key']) ? 'is-ok' : 'is-warn') : 'is-miss'; ?>"
+                onclick="almSwitchTab('pagamenti')">
+            <span class="dashicons <?php echo $stripe_configured ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+            Stripe<?php if ($stripe_configured): ?> <small><?php echo ALM_Stripe::is_test_mode() ? 'TEST' : 'LIVE'; ?></small><?php endif; ?>
         </button>
-        <span id="alm-opcache-msg" style="font-size:12px;"></span>
+        <button type="button" class="alm-status-chip <?php echo $b24_configured ? 'is-ok' : 'is-miss'; ?>"
+                onclick="almSwitchTab('canali')">
+            <span class="dashicons <?php echo $b24_configured ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+            Beds24
+        </button>
+        <button type="button" class="alm-status-chip <?php echo $ga4_locked ? 'is-ok' : ($ga4_id ? 'is-warn' : 'is-miss'); ?>"
+                onclick="almSwitchTab('analytics')">
+            <span class="dashicons <?php echo $ga4_locked ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+            Analytics
+        </button>
+        <button type="button" class="alm-status-chip <?php echo $gsc_locked ? 'is-ok' : ($gsc_code ? 'is-warn' : 'is-miss'); ?>"
+                onclick="almSwitchTab('analytics')">
+            <span class="dashicons <?php echo $gsc_locked ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+            Search Console
+        </button>
+        <?php
+        $done = (int)$stripe_configured + (int)$b24_configured + (int)$ga4_locked + (int)$gsc_locked;
+        ?>
+        <span class="alm-status-bar__summary"><?php echo esc_html($done); ?>/4 servizi configurati</span>
     </div>
-    <script>
-    function almResetOpcache(nonce) {
-        var btn = document.getElementById('alm-opcache-btn');
-        var msg = document.getElementById('alm-opcache-msg');
-        btn.disabled = true;
-        btn.textContent = '…';
-        var fd = new FormData();
-        fd.append('action', 'alm_reset_opcache');
-        fd.append('nonce', nonce);
-        fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
-            .then(function(r){ return r.json(); })
-            .then(function(d){
-                msg.style.color = d.success ? '#2e7d32' : '#c62828';
-                msg.textContent = d.data || (d.success ? '✓ Fatto' : '✗ Errore');
-                btn.disabled = false;
-                btn.textContent = '↺ Svuota cache PHP';
-                if (d.success) setTimeout(function(){ location.reload(); }, 1500);
-            })
-            .catch(function(){
-                msg.style.color = '#c62828';
-                msg.textContent = 'Errore di rete';
-                btn.disabled = false;
-                btn.textContent = '↺ Svuota cache PHP';
-            });
-    }
-    </script>
 
-    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-        <?php wp_nonce_field('alm_save_settings'); ?>
-        <input type="hidden" name="action" value="alm_save_settings" />
+    <!-- Navigazione tab -->
+    <nav class="alm-tab-nav" role="tablist">
+        <?php
+        $tabs = [
+            'struttura' => ['dashicons-building',   'Struttura', false],
+            'pagamenti' => ['dashicons-money-alt',   'Pagamenti', !$stripe_configured],
+            'canali'    => ['dashicons-admin-links',  'Canali',    !$b24_configured],
+            'analytics' => ['dashicons-chart-bar',    'Analytics', !$ga4_locked || !$gsc_locked],
+            'sistema'   => ['dashicons-admin-tools',  'Sistema',   false],
+        ];
+        foreach ($tabs as $slug => [$icon, $label, $has_alert]) :
+        ?>
+        <button type="button" class="alm-tab-btn <?php echo $active_tab === $slug ? 'is-active' : ''; ?>"
+                data-tab="<?php echo esc_attr($slug); ?>" role="tab">
+            <span class="dashicons <?php echo esc_attr($icon); ?>"></span>
+            <?php echo esc_html($label); ?>
+            <?php if ($has_alert) : ?><span class="alm-tab-dot"></span><?php endif; ?>
+        </button>
+        <?php endforeach; ?>
+    </nav>
 
-        <!-- Struttura -->
-        <div class="alm-admin-card" style="max-width:720px;margin-bottom:24px;">
-            <div class="alm-admin-card__header">
-                <h2><?php esc_html_e('Struttura', 'almaretna-booking'); ?></h2>
+    <!-- ══════════════════════════════════════════════════
+         TAB: STRUTTURA
+    ══════════════════════════════════════════════════ -->
+    <div id="alm-tab-struttura" class="alm-tab-pane <?php echo $active_tab === 'struttura' ? 'is-active' : ''; ?>">
+
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <?php wp_nonce_field('alm_save_settings'); ?>
+            <input type="hidden" name="action" value="alm_save_settings" />
+
+            <div class="alm-settings-card" style="max-width:700px;">
+                <div class="alm-settings-card__head">
+                    <div>
+                        <h2>Informazioni struttura</h2>
+                        <p class="alm-card-desc">Questi dati compaiono nelle email agli ospiti e nel sito.</p>
+                    </div>
+                </div>
+                <div class="alm-settings-card__body">
+                    <div class="alm-field-grid">
+                        <div class="alm-field alm-field--full">
+                            <label for="host_name">Nome struttura</label>
+                            <input type="text" id="host_name" name="host_name" class="regular-text"
+                                   value="<?php echo esc_attr($s['host_name'] ?? 'Almaretna'); ?>" />
+                        </div>
+                        <div class="alm-field">
+                            <label for="host_email">Email <span class="alm-hint">mittente e destinatario email prenotazioni</span></label>
+                            <input type="email" id="host_email" name="host_email" class="regular-text"
+                                   value="<?php echo esc_attr($s['host_email'] ?? get_option('admin_email')); ?>" />
+                        </div>
+                        <div class="alm-field">
+                            <label for="host_phone">Telefono</label>
+                            <input type="tel" id="host_phone" name="host_phone" class="regular-text"
+                                   value="<?php echo esc_attr($s['host_phone'] ?? ''); ?>"
+                                   placeholder="+39 095 000 0000" />
+                        </div>
+                        <div class="alm-field">
+                            <label for="checkin_time">Check-in</label>
+                            <input type="time" id="checkin_time" name="checkin_time"
+                                   value="<?php echo esc_attr($s['checkin_time'] ?? '15:00'); ?>" />
+                        </div>
+                        <div class="alm-field">
+                            <label for="checkout_time">Check-out</label>
+                            <input type="time" id="checkout_time" name="checkout_time"
+                                   value="<?php echo esc_attr($s['checkout_time'] ?? '11:00'); ?>" />
+                        </div>
+                        <div class="alm-field">
+                            <label for="min_stay_global">Soggiorno minimo <span class="alm-hint">notti · override per camera</span></label>
+                            <input type="number" id="min_stay_global" name="min_stay_global"
+                                   class="small-text" min="1"
+                                   value="<?php echo esc_attr((string) ($s['min_stay_global'] ?? 1)); ?>" />
+                        </div>
+                    </div>
+
+                    <div class="alm-section-divider"></div>
+
+                    <label class="alm-toggle-label">
+                        <input type="checkbox" name="beds24_enabled" value="1"
+                               <?php checked(!empty($s['beds24_enabled'])); ?> />
+                        <span class="alm-toggle-text">
+                            Sincronizzazione Beds24 attiva
+                            <span class="alm-hint" style="display:block;margin-top:2px;">Aggiorna disponibilità e prezzi da Beds24 automaticamente (2× al giorno)</span>
+                        </span>
+                    </label>
+                </div>
             </div>
 
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th><label for="host_name"><?php esc_html_e('Nome struttura', 'almaretna-booking'); ?></label></th>
-                    <td>
-                        <input type="text" id="host_name" name="host_name" class="regular-text"
-                               value="<?php echo esc_attr($s['host_name'] ?? 'Almaretna'); ?>" />
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="host_email"><?php esc_html_e('Email struttura', 'almaretna-booking'); ?></label></th>
-                    <td>
-                        <input type="email" id="host_email" name="host_email" class="regular-text"
-                               value="<?php echo esc_attr($s['host_email'] ?? get_option('admin_email')); ?>" />
-                        <p class="description"><?php esc_html_e('Mittente e destinatario delle email transazionali.', 'almaretna-booking'); ?></p>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="host_phone"><?php esc_html_e('Telefono struttura', 'almaretna-booking'); ?></label></th>
-                    <td>
-                        <input type="tel" id="host_phone" name="host_phone" class="regular-text"
-                               value="<?php echo esc_attr($s['host_phone'] ?? ''); ?>"
-                               placeholder="+39 095 000 0000" />
-                        <p class="description"><?php esc_html_e('Mostrato nel footer e nelle email agli ospiti.', 'almaretna-booking'); ?></p>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="checkin_time"><?php esc_html_e('Orario check-in', 'almaretna-booking'); ?></label></th>
-                    <td>
-                        <input type="time" id="checkin_time" name="checkin_time"
-                               value="<?php echo esc_attr($s['checkin_time'] ?? '15:00'); ?>" />
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="checkout_time"><?php esc_html_e('Orario check-out', 'almaretna-booking'); ?></label></th>
-                    <td>
-                        <input type="time" id="checkout_time" name="checkout_time"
-                               value="<?php echo esc_attr($s['checkout_time'] ?? '11:00'); ?>" />
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="min_stay_global"><?php esc_html_e('Soggiorno minimo globale (notti)', 'almaretna-booking'); ?></label></th>
-                    <td>
-                        <input type="number" id="min_stay_global" name="min_stay_global" class="small-text"
-                               min="1" value="<?php echo esc_attr((string) ($s['min_stay_global'] ?? 1)); ?>" />
-                        <p class="description"><?php esc_html_e('Può essere sovrascritto per singola camera o tariffa.', 'almaretna-booking'); ?></p>
-                    </td>
-                </tr>
-            </table>
+            <div style="margin-top:16px;">
+                <button type="submit" class="button button-primary button-large">Salva impostazioni</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         TAB: PAGAMENTI
+    ══════════════════════════════════════════════════ -->
+    <div id="alm-tab-pagamenti" class="alm-tab-pane <?php echo $active_tab === 'pagamenti' ? 'is-active' : ''; ?>">
+
+        <?php if (!$stripe_configured) : ?>
+        <div class="alm-banner alm-banner--info" style="max-width:700px;margin-bottom:20px;">
+            <span class="dashicons dashicons-info-outline"></span>
+            <div>
+                <strong>Come attivare i pagamenti online</strong>
+                <p>Stripe è il sistema usato per accettare pagamenti con carta di credito. È gratuito da usare — paghi solo quando ricevi un pagamento.</p>
+                <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener" class="button button-small" style="margin-top:6px;">Crea account Stripe gratuito →</a>
+            </div>
         </div>
+        <?php endif; ?>
 
-        <!-- ── Stripe ──────────────────────────────────────────────────────────────
-             Due card collassate:
-             1. "Stripe — chiavi (database)"  → chiavi via DB o mostra sola lettura se da wp-config
-             2. "Stripe — scrivi in wp-config" → scrive define() nel file wp-config.php
-             Clicca l'intestazione per espandere.
-        ─────────────────────────────────────────────────────────────────────── -->
-        <?php
-        $stripe_configured = ALM_Stripe::is_configured();
-        $stripe_from_cfg   = ALM_Stripe::keys_source() === 'config';
-        $stripe_db_keys    = get_option('alm_stripe_keys', []);
-
-        // Helper: mostra solo i primi 8 + asterischi per le chiavi sensibili
-        $mask = static function (string $key): string {
-            if ($key === '') return '';
-            return substr($key, 0, 8) . str_repeat('•', max(0, strlen($key) - 12)) . substr($key, -4);
-        };
-        ?>
-        <div class="alm-admin-card alm-stripe-card" id="alm-stripe-card" style="max-width:720px;margin-bottom:24px;">
-
-            <!-- Header cliccabile -->
-            <div class="alm-admin-card__header alm-stripe-card__toggle"
-                 style="cursor:pointer;user-select:none;"
-                 onclick="almStripeToggle()">
-                <h2 style="display:flex;align-items:center;gap:10px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    Stripe
-                </h2>
-                <div style="display:flex;align-items:center;gap:10px;">
+        <!-- Card Stripe chiavi -->
+        <div class="alm-settings-card" id="alm-stripe-card" style="max-width:700px;margin-bottom:20px;">
+            <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('stripe')">
+                <div>
+                    <h2>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        Stripe — Chiavi API
+                    </h2>
+                    <p class="alm-card-desc">Collegano il sito al tuo account Stripe per gestire i pagamenti.</p>
+                </div>
+                <div class="alm-settings-card__badges">
                     <?php if ($stripe_configured) : ?>
-                        <span class="alm-badge alm-badge--<?php echo ALM_Stripe::is_test_mode() ? 'warning' : 'success'; ?>">
-                            <?php echo ALM_Stripe::is_test_mode() ? 'TEST MODE' : 'LIVE ✓'; ?>
+                        <span class="alm-badge alm-badge--<?php echo ALM_Stripe::is_test_mode() ? 'warn' : 'ok'; ?>">
+                            <?php echo ALM_Stripe::is_test_mode() ? '⚠ TEST MODE' : '✓ LIVE'; ?>
                         </span>
                     <?php else : ?>
-                        <span class="alm-badge alm-badge--error">Non configurato</span>
+                        <span class="alm-badge alm-badge--miss">Non configurato</span>
                     <?php endif; ?>
                     <?php if ($stripe_from_cfg) : ?>
-                        <span class="alm-badge" style="background:#e8f4fd;color:#0077cc;border:1px solid #c2ddf5;">wp-config.php</span>
+                        <span class="alm-badge alm-badge--blue">wp-config.php</span>
                     <?php endif; ?>
-                    <span id="alm-stripe-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+                    <span class="alm-chevron" id="alm-stripe-chev">▾</span>
                 </div>
             </div>
 
-            <!-- Body (nascosto di default) -->
-            <div id="alm-stripe-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
-
+            <div id="alm-stripe-body" class="alm-settings-card__body" style="display:none;">
                 <?php if ($stripe_from_cfg) : ?>
-                <!-- Chiavi provengono da wp-config.php — sola lettura -->
-                <div style="background:#e8f4fd;border:1px solid #c2ddf5;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#0077cc;">
-                    <strong>Chiavi definite in wp-config.php</strong> — hanno priorità sui campi sottostanti e non possono essere modificate da qui.
-                    Per usare l'editor, rimuovi le costanti <code>ALM_STRIPE_*</code> da wp-config.php.
+                <div class="alm-infobox alm-infobox--blue">
+                    <span class="dashicons dashicons-lock"></span>
+                    <div>Chiavi definite in <strong>wp-config.php</strong> — per modificarle usa FTP/SSH e aggiorna le righe <code>ALM_STRIPE_*</code>.</div>
                 </div>
-                <table class="form-table" role="presentation">
-                    <tr>
-                        <th>Publishable Key</th>
-                        <td><code style="color:#555;"><?php echo esc_html($mask(ALM_Stripe::get_publishable_key())); ?></code></td>
-                    </tr>
-                    <tr>
-                        <th>Secret Key</th>
-                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_SECRET_KEY') ? ALM_STRIPE_SECRET_KEY : '')); ?></code></td>
-                    </tr>
-                    <tr>
-                        <th>Webhook Secret</th>
-                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_WEBHOOK_SECRET') ? ALM_STRIPE_WEBHOOK_SECRET : '')); ?></code></td>
-                    </tr>
-                </table>
-
+                <div class="alm-key-grid">
+                    <div class="alm-key-row"><span class="alm-key-label">Publishable Key</span><span class="alm-key-val"><?php echo esc_html($mask(ALM_Stripe::get_publishable_key())); ?></span></div>
+                    <div class="alm-key-row"><span class="alm-key-label">Secret Key</span><span class="alm-key-val"><?php echo esc_html($mask(defined('ALM_STRIPE_SECRET_KEY') ? ALM_STRIPE_SECRET_KEY : '')); ?></span></div>
+                    <div class="alm-key-row"><span class="alm-key-label">Webhook Secret</span><span class="alm-key-val"><?php echo esc_html($mask(defined('ALM_STRIPE_WEBHOOK_SECRET') ? ALM_STRIPE_WEBHOOK_SECRET : '')); ?></span></div>
+                </div>
                 <?php else : ?>
-                <!-- Chiavi da DB — modificabili -->
-                <p style="font-size:13px;color:#666;margin:0 0 16px;">
-                    Inserisci le chiavi del tuo account Stripe. Trovi i valori nella
-                    <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener">Dashboard Stripe → Sviluppatori → Chiavi API</a>.
-                    Il campo Secret Key è mascherato: lascialo vuoto per non modificarlo.
+                <p class="alm-card-intro">
+                    Inserisci le chiavi del tuo account Stripe.
+                    <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener">Trovale in Dashboard Stripe → Sviluppatori → Chiavi API</a>.
                 </p>
-                <table class="form-table" role="presentation">
-                    <tr>
-                        <th><label for="stripe_publishable_key">Publishable Key</label></th>
-                        <td>
-                            <input type="text" id="stripe_publishable_key" name="stripe_publishable_key"
-                                   class="regular-text"
-                                   value="<?php echo esc_attr($stripe_db_keys['publishable_key'] ?? ''); ?>"
-                                   placeholder="pk_live_... oppure pk_test_..."
-                                   autocomplete="off" />
-                            <p class="description">Inizia con <code>pk_live_</code> (produzione) o <code>pk_test_</code> (test).</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="stripe_secret_key">Secret Key</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="stripe_secret_key" name="stripe_secret_key"
-                                       class="regular-text"
-                                       value=""
-                                       placeholder="<?php echo !empty($stripe_db_keys['secret_key']) ? '••••••••' . substr($stripe_db_keys['secret_key'], -4) : 'sk_live_...'; ?>"
-                                       autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('stripe_secret_key');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">
-                                Inizia con <code>sk_live_</code>. Lascia vuoto per mantenere il valore già salvato.
-                            </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="stripe_webhook_secret">Webhook Secret</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="stripe_webhook_secret" name="stripe_webhook_secret"
-                                       class="regular-text"
-                                       value=""
-                                       placeholder="<?php echo !empty($stripe_db_keys['webhook_secret']) ? '••••••••' . substr($stripe_db_keys['webhook_secret'], -4) : 'whsec_...'; ?>"
-                                       autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('stripe_webhook_secret');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">
-                                Inizia con <code>whsec_</code>. Ottenuto nella Dashboard Stripe → Sviluppatori → Webhook → Endpoint → Signing secret. Lascia vuoto per mantenere il valore salvato.
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-
-                <div style="background:#fffbeb;border:1px solid #f0d080;border-radius:4px;padding:12px 16px;margin-top:16px;font-size:12px;color:#7a6000;">
-                    <strong>Alternativa sicura:</strong> definisci le costanti in <code>wp-config.php</code> — avranno priorità assoluta e non verranno mai scritte nel database.
-                    <br><code>define('ALM_STRIPE_SECRET_KEY', 'sk_live_...');</code><br>
-                    <code>define('ALM_STRIPE_PUBLISHABLE_KEY', 'pk_live_...');</code><br>
-                    <code>define('ALM_STRIPE_WEBHOOK_SECRET', 'whsec_...');</code>
+                <div class="alm-field-list">
+                    <div class="alm-field">
+                        <label for="s-pk">Publishable Key <span class="alm-hint">inizia con pk_live_ o pk_test_</span></label>
+                        <input type="text" id="s-pk" class="regular-text"
+                               value="<?php echo esc_attr($stripe_db_keys['publishable_key'] ?? ''); ?>"
+                               placeholder="pk_live_..." autocomplete="off" />
+                    </div>
+                    <div class="alm-field">
+                        <label for="s-sk">Secret Key <span class="alm-hint">inizia con sk_live_ — non condividere mai</span></label>
+                        <div class="alm-input-row">
+                            <input type="password" id="s-sk" class="regular-text" value=""
+                                   placeholder="<?php echo !empty($stripe_db_keys['secret_key']) ? '••••••••' . substr($stripe_db_keys['secret_key'], -4) : 'sk_live_...'; ?>"
+                                   autocomplete="new-password" />
+                            <button type="button" class="button button-small alm-reveal" data-for="s-sk">Mostra</button>
+                        </div>
+                        <span class="alm-hint" style="margin-top:3px;">Lascia vuoto per mantenere la chiave già salvata</span>
+                    </div>
+                    <div class="alm-field">
+                        <label for="s-wh">Webhook Secret <span class="alm-hint">inizia con whsec_</span></label>
+                        <div class="alm-input-row">
+                            <input type="password" id="s-wh" class="regular-text" value=""
+                                   placeholder="<?php echo !empty($stripe_db_keys['webhook_secret']) ? '••••••••' . substr($stripe_db_keys['webhook_secret'], -4) : 'whsec_...'; ?>"
+                                   autocomplete="new-password" />
+                            <button type="button" class="button button-small alm-reveal" data-for="s-wh">Mostra</button>
+                        </div>
+                        <span class="alm-hint" style="margin-top:3px;">Dashboard Stripe → Sviluppatori → Webhook → Signing secret</span>
+                    </div>
+                </div>
+                <div id="alm-stripe-db-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
+                <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
+                    <button type="button" class="button button-primary"
+                            onclick="almSaveStripeDb('<?php echo esc_js(wp_create_nonce('alm_save_stripe_db')); ?>')">
+                        Salva chiavi Stripe
+                    </button>
                 </div>
                 <?php endif; ?>
-
-            </div><!-- /body -->
+            </div>
         </div>
 
-        <script>
-        function almStripeToggle() {
-            var body    = document.getElementById('alm-stripe-body');
-            var chevron = document.getElementById('alm-stripe-chevron');
-            if (body.style.display === 'none') {
-                body.style.display = 'block';
-                chevron.style.transform = 'rotate(180deg)';
-            } else {
-                body.style.display = 'none';
-                chevron.style.transform = '';
-            }
-        }
-        // Apri automaticamente se non configurata
-        <?php if (!$stripe_configured) : ?>
-        almStripeToggle();
-        <?php endif; ?>
-        </script>
-
-        <!-- Stripe → wp-config.php (nascosta se le costanti sono già in wp-config: la card Stripe sopra mostra già tutto) -->
-        <?php if (!$stripe_from_cfg) : ?>
-        <?php
-        $wpcfg_path     = ABSPATH . 'wp-config.php';
-        if (!file_exists($wpcfg_path)) $wpcfg_path = dirname(ABSPATH) . '/wp-config.php';
-        $wpcfg_writable = file_exists($wpcfg_path) && is_writable($wpcfg_path);
-        $wpcfg_locked   = false;
-        $wpcfg_nonce    = wp_create_nonce('alm_write_stripe_config');
-        ?>
-        <div class="alm-admin-card" id="alm-wpcfg-card" style="max-width:720px;margin-bottom:24px;">
-
-            <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almWpcfgToggle()">
-                <h2 style="display:flex;align-items:center;gap:10px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Stripe — scrivi in wp-config.php
-                </h2>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <?php if ($wpcfg_locked) : ?>
-                        <span class="alm-badge alm-badge--success">Attivo ✓</span>
-                    <?php elseif (!$wpcfg_writable) : ?>
-                        <span class="alm-badge alm-badge--warning">Non scrivibile</span>
-                    <?php else : ?>
-                        <span class="alm-badge alm-badge--error">Non configurato</span>
-                    <?php endif; ?>
-                    <span id="alm-wpcfg-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+        <!-- Card URL webhook -->
+        <div class="alm-settings-card" style="max-width:700px;">
+            <div class="alm-settings-card__head">
+                <div>
+                    <h2>URL Webhook Stripe</h2>
+                    <p class="alm-card-desc">Incolla questo URL in Dashboard Stripe per ricevere le notifiche di pagamento.</p>
                 </div>
             </div>
-
-            <div id="alm-wpcfg-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
-
-                <?php if ($wpcfg_locked) : ?>
-                <!-- ── Sola lettura: costanti già presenti ── -->
-                <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#2e7d32;">
-                    <strong>Le chiavi sono scritte in wp-config.php — sola lettura.</strong><br>
-                    Per modificarle, rimuovi le righe <code>define('ALM_STRIPE_*', …)</code> dal file e aggiorna la pagina.
+            <div class="alm-settings-card__body">
+                <div class="alm-copybox">
+                    <code id="alm-stripe-wh-url"><?php echo esc_html(get_rest_url(null, 'alm/v1/stripe-webhook')); ?></code>
+                    <button type="button" class="button button-small" onclick="almCopy('alm-stripe-wh-url',this)">Copia</button>
                 </div>
-                <table class="form-table" role="presentation">
-                    <tr>
-                        <th style="width:160px;">Publishable Key</th>
-                        <td><code style="color:#555;"><?php echo esc_html($mask(ALM_Stripe::get_publishable_key())); ?></code></td>
-                    </tr>
-                    <tr>
-                        <th>Secret Key</th>
-                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_SECRET_KEY') ? ALM_STRIPE_SECRET_KEY : '')); ?></code></td>
-                    </tr>
-                    <tr>
-                        <th>Webhook Secret</th>
-                        <td><code style="color:#555;"><?php echo esc_html($mask(defined('ALM_STRIPE_WEBHOOK_SECRET') ? ALM_STRIPE_WEBHOOK_SECRET : '')); ?></code></td>
-                    </tr>
-                </table>
-
-                <?php elseif (!$wpcfg_writable) : ?>
-                <!-- ── File non scrivibile: mostra blocco da copiare ── -->
-                <div style="background:#fffbeb;border:1px solid #f0d080;border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#7a6000;">
-                    <strong>wp-config.php non è scrivibile</strong> dal web server (permessi). Aggiungi manualmente le righe seguenti prima di <code>/* That's all, stop editing! */</code>:
-                </div>
-                <pre style="background:#f6f6f6;border:1px solid #ddd;border-radius:4px;padding:14px 16px;font-size:12px;overflow-x:auto;line-height:1.6;">// Stripe — Almaretna Booking
-define( 'ALM_STRIPE_PUBLISHABLE_KEY', 'pk_live_...' );
-define( 'ALM_STRIPE_SECRET_KEY',      'sk_live_...' );
-define( 'ALM_STRIPE_WEBHOOK_SECRET',  'whsec_...' );</pre>
-
-                <?php else : ?>
-                <!-- ── Form: scrivi le chiavi in wp-config.php ── -->
-                <p style="font-size:13px;color:#666;margin:0 0 16px;">
-                    Inserisci le chiavi Stripe: verranno scritte direttamente in <code>wp-config.php</code>.<br>
-                    Una volta salvate, questa card diventa <strong>sola lettura</strong> e le chiavi non saranno mai nel database.
+                <p class="alm-hint" style="margin-top:8px;">
+                    Stripe Dashboard → Sviluppatori → Webhook → Aggiungi endpoint<br>
+                    Seleziona eventi: <code>payment_intent.succeeded</code>, <code>payment_intent.payment_failed</code>, <code>charge.refunded</code>
                 </p>
-                <table class="form-table" role="presentation">
-                    <tr>
-                        <th style="width:160px;"><label for="wpcfg_pk">Publishable Key</label></th>
-                        <td>
-                            <input type="text" id="wpcfg_pk" class="regular-text"
-                                   placeholder="pk_live_… oppure pk_test_…" autocomplete="off" />
-                            <p class="description">Inizia con <code>pk_live_</code> (prod) o <code>pk_test_</code> (test).</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="wpcfg_sk">Secret Key</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="wpcfg_sk" class="regular-text"
-                                       placeholder="sk_live_…" autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('wpcfg_sk');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">Inizia con <code>sk_live_</code> o <code>sk_test_</code>.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="wpcfg_whsec">Webhook Secret</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="wpcfg_whsec" class="regular-text"
-                                       placeholder="whsec_…" autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('wpcfg_whsec');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">Ottenuto in Dashboard Stripe → Sviluppatori → Webhook → Signing secret.</p>
-                        </td>
-                    </tr>
-                </table>
+            </div>
+        </div>
+    </div>
 
-                <div id="alm-wpcfg-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
+    <!-- ══════════════════════════════════════════════════
+         TAB: CANALI
+    ══════════════════════════════════════════════════ -->
+    <div id="alm-tab-canali" class="alm-tab-pane <?php echo $active_tab === 'canali' ? 'is-active' : ''; ?>">
 
-                <div style="margin-top:20px;display:flex;align-items:center;gap:16px;">
-                    <button type="button" id="alm-wpcfg-save" class="button button-primary"
-                            onclick="almWpcfgSave('<?php echo esc_js($wpcfg_nonce); ?>')">
-                        Salva in wp-config.php
-                    </button>
-                    <span style="font-size:12px;color:#999;">Questa operazione modifica il file wp-config.php del sito.</span>
-                </div>
-                <?php endif; ?>
-
-            </div><!-- /body -->
-        </div><!-- /card -->
-
-        <script>
-        function almWpcfgToggle() {
-            var body    = document.getElementById('alm-wpcfg-body');
-            var chevron = document.getElementById('alm-wpcfg-chevron');
-            if (body.style.display === 'none') {
-                body.style.display = 'block';
-                chevron.style.transform = 'rotate(180deg)';
-            } else {
-                body.style.display = 'none';
-                chevron.style.transform = '';
-            }
-        }
-        function almWpcfgSave(nonce) {
-            var pk    = (document.getElementById('wpcfg_pk')    || {}).value || '';
-            var sk    = (document.getElementById('wpcfg_sk')    || {}).value || '';
-            var whsec = (document.getElementById('wpcfg_whsec') || {}).value || '';
-            var msgEl = document.getElementById('alm-wpcfg-msg');
-            var btn   = document.getElementById('alm-wpcfg-save');
-
-            function showMsg(text, ok) {
-                msgEl.style.display = 'block';
-                msgEl.style.background = ok ? '#f0f9f0' : '#fdf0f0';
-                msgEl.style.border     = '1px solid ' + (ok ? '#a8d5a2' : '#f5a5a5');
-                msgEl.style.color      = ok ? '#2e7d32' : '#c62828';
-                msgEl.textContent      = text;
-            }
-
-            pk = pk.trim(); sk = sk.trim(); whsec = whsec.trim();
-            if (!pk || !sk || !whsec) { showMsg('Compila tutti e tre i campi prima di salvare.', false); return; }
-
-            btn.disabled    = true;
-            btn.textContent = 'Salvataggio…';
-
-            var fd = new FormData();
-            fd.append('action', 'alm_write_stripe_config');
-            fd.append('nonce',  nonce);
-            fd.append('pk',    pk);
-            fd.append('sk',    sk);
-            fd.append('whsec', whsec);
-
-            fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (data.success) {
-                        showMsg('✓ ' + (data.data.message || 'Chiavi salvate!'), true);
-                        setTimeout(function () { location.reload(); }, 1500);
-                    } else {
-                        showMsg((data.data || 'Si è verificato un errore.'), false);
-                        btn.disabled    = false;
-                        btn.textContent = 'Salva in wp-config.php';
-                    }
-                })
-                .catch(function () {
-                    showMsg('Errore di rete. Riprova.', false);
-                    btn.disabled    = false;
-                    btn.textContent = 'Salva in wp-config.php';
-                });
-        }
-        <?php if (!$wpcfg_locked) : ?>
-        almWpcfgToggle(); // aperta di default se non ancora configurata
+        <?php if (!$b24_configured) : ?>
+        <div class="alm-banner alm-banner--info" style="max-width:700px;margin-bottom:20px;">
+            <span class="dashicons dashicons-admin-links"></span>
+            <div>
+                <strong>Collega Beds24 per sincronizzare i calendari</strong>
+                <p>Beds24 mantiene allineata la disponibilità su tutti i portali (Airbnb, Booking.com, ecc.). Se non lo usi, puoi ignorare questa sezione.</p>
+            </div>
+        </div>
         <?php endif; ?>
-        </script>
-        <?php endif; /* !$stripe_from_cfg */ ?>
 
-        <!-- Beds24 -->
-        <?php
-        $b24_configured  = ALM_Beds24::is_configured();
-        $b24_from_cfg    = ALM_Beds24::keys_source() === 'config';
-        $b24_db_keys     = get_option('alm_beds24_keys', []);
-        $mask_b24 = static function (string $key): string {
-            if ($key === '') return '';
-            return substr($key, 0, 4) . str_repeat('•', max(0, strlen($key) - 8)) . substr($key, -4);
-        };
-        ?>
-        <div class="alm-admin-card" id="alm-beds24-card" style="max-width:720px;margin-bottom:24px;">
-            <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almB24Toggle()">
-                <h2 style="display:flex;align-items:center;gap:10px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                    Beds24
-                </h2>
-                <div style="display:flex;align-items:center;gap:10px;">
+        <div class="alm-settings-card" id="alm-b24-card" style="max-width:700px;">
+            <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('b24')">
+                <div>
+                    <h2>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                        Beds24
+                    </h2>
+                    <p class="alm-card-desc">Sincronizzazione automatica disponibilità e tariffe.</p>
+                </div>
+                <div class="alm-settings-card__badges">
                     <?php if ($b24_configured) : ?>
-                        <span class="alm-badge alm-badge--success">Configurato &#10003;</span>
+                        <span class="alm-badge alm-badge--ok">✓ Configurato</span>
                     <?php else : ?>
-                        <span class="alm-badge alm-badge--error">Non configurato</span>
+                        <span class="alm-badge alm-badge--miss">Non configurato</span>
                     <?php endif; ?>
-                    <?php if ($b24_from_cfg) : ?>
-                        <span class="alm-badge" style="background:#e8f4fd;color:#0077cc;border:1px solid #c2ddf5;">wp-config.php</span>
-                    <?php endif; ?>
-                    <span id="alm-b24-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+                    <?php if ($b24_from_cfg) : ?><span class="alm-badge alm-badge--blue">wp-config.php</span><?php endif; ?>
+                    <span class="alm-chevron" id="alm-b24-chev">▾</span>
                 </div>
             </div>
 
-            <div id="alm-b24-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
-
+            <div id="alm-b24-body" class="alm-settings-card__body" style="display:none;">
                 <?php if ($b24_from_cfg) : ?>
-                <div style="background:#e8f4fd;border:1px solid #c2ddf5;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#0077cc;">
-                    <strong>Chiavi definite in wp-config.php</strong> — hanno priorità e non possono essere modificate da qui.<br>
-                    Per usare l'editor rimuovi le costanti <code>ALM_BEDS24_*</code> da wp-config.php.
+                <div class="alm-infobox alm-infobox--blue">
+                    <span class="dashicons dashicons-lock"></span>
+                    <div>Chiavi definite in <strong>wp-config.php</strong> — non modificabili da qui.</div>
                 </div>
-                <table class="form-table" role="presentation">
-                    <tr><th>API Token</th><td><code><?php echo esc_html($mask_b24(defined('ALM_BEDS24_API_TOKEN') ? ALM_BEDS24_API_TOKEN : '')); ?></code></td></tr>
-                    <tr><th>Prop Key</th><td><code><?php echo esc_html($mask_b24(defined('ALM_BEDS24_PROP_KEY') ? ALM_BEDS24_PROP_KEY : '')); ?></code></td></tr>
-                    <tr><th>Webhook Token</th><td><code><?php echo esc_html($mask_b24(defined('ALM_BEDS24_WEBHOOK_TOKEN') ? ALM_BEDS24_WEBHOOK_TOKEN : '')); ?></code></td></tr>
-                </table>
+                <div class="alm-key-grid" style="margin-top:12px;">
+                    <div class="alm-key-row"><span class="alm-key-label">API Token</span><span class="alm-key-val"><?php echo esc_html($mask4(defined('ALM_BEDS24_API_TOKEN') ? ALM_BEDS24_API_TOKEN : '')); ?></span></div>
+                    <div class="alm-key-row"><span class="alm-key-label">Prop Key</span><span class="alm-key-val"><?php echo esc_html($mask4(defined('ALM_BEDS24_PROP_KEY') ? ALM_BEDS24_PROP_KEY : '')); ?></span></div>
+                    <div class="alm-key-row"><span class="alm-key-label">Webhook Token</span><span class="alm-key-val"><?php echo esc_html($mask4(defined('ALM_BEDS24_WEBHOOK_TOKEN') ? ALM_BEDS24_WEBHOOK_TOKEN : '')); ?></span></div>
+                </div>
                 <?php else : ?>
-                <p style="font-size:13px;color:#666;margin:0 0 16px;">
-                    Inserisci le credenziali del tuo account Beds24. Trovi i valori in
-                    <a href="https://beds24.com/control2.php?pagetype=apiv2tokens" target="_blank" rel="noopener">Beds24 → Account → API v2 Tokens</a>.
+                <p class="alm-card-intro">
+                    <a href="https://beds24.com/control2.php?pagetype=apiv2tokens" target="_blank" rel="noopener">Beds24 → Account → API v2 Tokens</a> per trovare i valori.
                 </p>
-                <table class="form-table" role="presentation">
-                    <tr>
-                        <th style="width:160px;"><label for="b24-api-token">API Token</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="b24-api-token" class="regular-text"
-                                       value=""
-                                       placeholder="<?php echo !empty($b24_db_keys['api_token']) ? '••••' . substr($b24_db_keys['api_token'], -4) : 'Incolla il token Beds24'; ?>"
-                                       autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('b24-api-token');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">Lascia vuoto per mantenere il valore già salvato.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="b24-prop-key">Prop Key</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="b24-prop-key" class="regular-text"
-                                       value=""
-                                       placeholder="<?php echo !empty($b24_db_keys['prop_key']) ? '••••' . substr($b24_db_keys['prop_key'], -4) : 'Prop Key della proprietà'; ?>"
-                                       autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('b24-prop-key');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">Lascia vuoto per mantenere il valore già salvato.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="b24-webhook">Webhook Token</label></th>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="password" id="b24-webhook" class="regular-text"
-                                       value=""
-                                       placeholder="<?php echo !empty($b24_db_keys['webhook_token']) ? '••••' . substr($b24_db_keys['webhook_token'], -4) : 'Token segreto webhook'; ?>"
-                                       autocomplete="new-password" />
-                                <button type="button" class="button button-small"
-                                        onclick="var f=document.getElementById('b24-webhook');f.type=f.type==='password'?'text':'password';this.textContent=f.type==='password'?'Mostra':'Nascondi';">Mostra</button>
-                            </div>
-                            <p class="description">Usato per autenticare le notifiche in arrivo da Beds24.</p>
-                        </td>
-                    </tr>
-                </table>
-
-                <div id="alm-b24-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
-
+                <div class="alm-field-list">
+                    <div class="alm-field">
+                        <label for="b24-token">API Token</label>
+                        <div class="alm-input-row">
+                            <input type="password" id="b24-token" class="regular-text" value=""
+                                   placeholder="<?php echo !empty($b24_db_keys['api_token']) ? '••••' . substr($b24_db_keys['api_token'], -4) : 'Incolla il token Beds24'; ?>"
+                                   autocomplete="new-password" />
+                            <button type="button" class="button button-small alm-reveal" data-for="b24-token">Mostra</button>
+                        </div>
+                    </div>
+                    <div class="alm-field">
+                        <label for="b24-propkey">Prop Key</label>
+                        <div class="alm-input-row">
+                            <input type="password" id="b24-propkey" class="regular-text" value=""
+                                   placeholder="<?php echo !empty($b24_db_keys['prop_key']) ? '••••' . substr($b24_db_keys['prop_key'], -4) : 'Prop Key della proprietà'; ?>"
+                                   autocomplete="new-password" />
+                            <button type="button" class="button button-small alm-reveal" data-for="b24-propkey">Mostra</button>
+                        </div>
+                    </div>
+                    <div class="alm-field">
+                        <label for="b24-wh">Webhook Token</label>
+                        <div class="alm-input-row">
+                            <input type="password" id="b24-wh" class="regular-text" value=""
+                                   placeholder="<?php echo !empty($b24_db_keys['webhook_token']) ? '••••' . substr($b24_db_keys['webhook_token'], -4) : 'Token segreto webhook'; ?>"
+                                   autocomplete="new-password" />
+                            <button type="button" class="button button-small alm-reveal" data-for="b24-wh">Mostra</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="alm-b24-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
                 <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
                     <button type="button" class="button button-primary"
-                            onclick="almB24Save('<?php echo esc_js(wp_create_nonce('alm_save_beds24')); ?>')">
+                            onclick="almSaveBeds24('<?php echo esc_js(wp_create_nonce('alm_save_beds24')); ?>')">
                         Salva chiavi Beds24
                     </button>
                     <?php if ($b24_configured) : ?>
-                    <button type="button" id="alm-test-beds24" class="button button-secondary"
-                            onclick="almB24Test('<?php echo esc_js(wp_create_nonce('alm_test_beds24')); ?>')">
+                    <button type="button" class="button"
+                            onclick="almTestBeds24('<?php echo esc_js(wp_create_nonce('alm_test_beds24')); ?>')">
                         Testa connessione
                     </button>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
 
-                <!-- Checkbox sync (sempre visibile) -->
-                <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0;">
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-                    <input type="checkbox" name="beds24_enabled" value="1"
-                           <?php checked(!empty($s['beds24_enabled'])); ?> />
-                    <?php esc_html_e('Abilita sincronizzazione automatica (twicedaily)', 'almaretna-booking'); ?>
-                </label>
-
-            </div><!-- /b24-body -->
-        </div>
-
-        <script>
-        function almB24Toggle() {
-            var b = document.getElementById('alm-b24-body');
-            var c = document.getElementById('alm-b24-chevron');
-            var open = b.style.display === 'block';
-            b.style.display = open ? 'none' : 'block';
-            c.style.transform = open ? '' : 'rotate(180deg)';
-        }
-        function almB24ShowMsg(text, ok) {
-            var m = document.getElementById('alm-b24-msg');
-            if (!m) return;
-            m.style.display = 'block';
-            m.style.background = ok ? '#f0f9f0' : '#fef2f2';
-            m.style.border = '1px solid ' + (ok ? '#a8d5a2' : '#fca5a5');
-            m.style.color  = ok ? '#2e7d32' : '#c62828';
-            m.textContent  = text;
-        }
-        function almB24Save(nonce) {
-            var token   = document.getElementById('b24-api-token').value.trim();
-            var propkey = document.getElementById('b24-prop-key').value.trim();
-            var webhook = document.getElementById('b24-webhook').value.trim();
-            var fd = new FormData();
-            fd.append('action',        'alm_save_beds24');
-            fd.append('nonce',         nonce);
-            fd.append('api_token',     token);
-            fd.append('prop_key',      propkey);
-            fd.append('webhook_token', webhook);
-            fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
-                .then(function(r){ return r.json(); })
-                .then(function(d){
-                    almB24ShowMsg(d.data || (d.success ? '✓ Salvato' : '✗ Errore'), d.success);
-                    if (d.success) setTimeout(function(){ location.reload(); }, 1500);
-                })
-                .catch(function(){ almB24ShowMsg('Errore di rete.', false); });
-        }
-        function almB24Test(nonce) {
-            var res = document.getElementById('alm-beds24-test-result') || { style:{}, textContent:'' };
-            fetch(ajaxurl + '?action=alm_test_beds24&nonce=' + nonce)
-                .then(function(r){ return r.json(); })
-                .then(function(d){
-                    almB24ShowMsg(d.data || (d.success ? '✓ Connessione OK' : '✗ Errore'), d.success);
-                });
-        }
-        <?php if (!$b24_configured) : ?>
-        almB24Toggle(); // apri di default se non configurato
-        <?php endif; ?>
-        </script>
-
-        <?php submit_button(__('Salva impostazioni', 'almaretna-booking')); ?>
-
-    </form>
-
-    <!-- ── Google Search Console ────────────────────────────────────────── -->
-    <?php
-    $gsc_code   = get_option('alm_gsc_verification', '');
-    $gsc_locked = (bool) get_option('alm_gsc_locked', false);
-    ?>
-    <div class="alm-admin-card" id="alm-gsc-card" style="max-width:720px;margin-top:32px;margin-bottom:24px;">
-
-        <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almGscToggle()">
-            <h2 style="display:flex;align-items:center;gap:10px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Google Search Console
-            </h2>
-            <div style="display:flex;align-items:center;gap:10px;">
-                <?php if ($gsc_locked) : ?>
-                    <span class="alm-badge alm-badge--success">Verificato 🔒</span>
-                <?php elseif ($gsc_code !== '') : ?>
-                    <span class="alm-badge alm-badge--warning">Codice inserito</span>
-                <?php else : ?>
-                    <span class="alm-badge alm-badge--error">Non configurato</span>
-                <?php endif; ?>
-                <span id="alm-gsc-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
+                <div class="alm-section-divider"></div>
+                <p style="font-size:13px;font-weight:600;margin:0 0 8px;">URL Webhook Beds24</p>
+                <div class="alm-copybox">
+                    <code id="alm-b24-wh-url"><?php echo esc_html(get_rest_url(null, 'alm/v1/beds24/webhook')); ?></code>
+                    <button type="button" class="button button-small" onclick="almCopy('alm-b24-wh-url',this)">Copia</button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div id="alm-gsc-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
+    <!-- ══════════════════════════════════════════════════
+         TAB: ANALYTICS
+    ══════════════════════════════════════════════════ -->
+    <div id="alm-tab-analytics" class="alm-tab-pane <?php echo $active_tab === 'analytics' ? 'is-active' : ''; ?>">
+        <div style="max-width:700px;">
 
-            <?php if ($gsc_locked) : ?>
-            <!-- Sola lettura -->
-            <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#2e7d32;">
-                <strong>Card congelata — connessione stabilita.</strong><br>
-                Il tag di verifica è attivo nel <code>&lt;head&gt;</code> del sito.
-            </div>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th style="width:160px;">Codice verifica</th>
-                    <td><code style="color:#555;word-break:break-all;"><?php echo esc_html($gsc_code); ?></code></td>
-                </tr>
-            </table>
-            <div style="margin-top:16px;">
-                <button type="button" class="button button-secondary"
-                        onclick="almGscUnlock('<?php echo esc_js(wp_create_nonce('alm_unlock_gsc')); ?>')">
-                    🔓 Modifica (sblocca card)
-                </button>
-            </div>
-
-            <?php else : ?>
-            <!-- Form -->
-            <p style="font-size:13px;color:#666;margin:0 0 16px;">
-                Incolla il codice di verifica Google Search Console.<br>
-                Trovi il valore in <strong>GSC → Impostazioni → Verifica proprietà → Tag HTML</strong>
-                — copia solo il contenuto dell'attributo <code>content</code>, non tutto il tag.
-            </p>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th style="width:160px;"><label for="alm-gsc-code">Codice verifica</label></th>
-                    <td>
-                        <input type="text" id="alm-gsc-code" class="large-text"
-                               value="<?php echo esc_attr($gsc_code); ?>"
-                               placeholder="AbCdEf1234…" autocomplete="off" />
-                        <p class="description">Esempio: <code>AbCdEfGhIjKlMnOpQrStUvWxYz1234567</code></p>
-                    </td>
-                </tr>
-            </table>
-            <div id="alm-gsc-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
-            <div style="margin-top:16px;display:flex;align-items:center;gap:16px;">
-                <button type="button" id="alm-gsc-save" class="button button-primary"
-                        onclick="almGscSave('<?php echo esc_js(wp_create_nonce('alm_save_gsc')); ?>')">
-                    Salva e congela
-                </button>
-                <span style="font-size:12px;color:#999;">La card si blocca dopo il salvataggio.</span>
-            </div>
-            <?php endif; ?>
-
-        </div><!-- /body -->
-    </div><!-- /gsc-card -->
-
-    <!-- ── Google Analytics 4 ─────────────────────────────────────────────── -->
-    <?php
-    $ga4_id     = get_option('alm_ga4_measurement_id', '');
-    $ga4_locked = (bool) get_option('alm_ga4_locked', false);
-    ?>
-    <div class="alm-admin-card" id="alm-ga4-card" style="max-width:720px;margin-bottom:24px;">
-
-        <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almGa4Toggle()">
-            <h2 style="display:flex;align-items:center;gap:10px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                Google Analytics 4
-            </h2>
-            <div style="display:flex;align-items:center;gap:10px;">
-                <?php if ($ga4_locked) : ?>
-                    <span class="alm-badge alm-badge--success">Attivo 🔒</span>
-                <?php elseif ($ga4_id !== '') : ?>
-                    <span class="alm-badge alm-badge--warning">ID inserito</span>
-                <?php else : ?>
-                    <span class="alm-badge alm-badge--error">Non configurato</span>
-                <?php endif; ?>
-                <span id="alm-ga4-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
-            </div>
-        </div>
-
-        <div id="alm-ga4-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
-
-            <?php if ($ga4_locked) : ?>
-            <!-- Sola lettura -->
-            <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#2e7d32;">
-                <strong>Card congelata — snippet GA4 attivo nel sito.</strong><br>
-                Il tag <code>gtag.js</code> viene caricato automaticamente su ogni pagina.
-            </div>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th style="width:160px;">Measurement ID</th>
-                    <td><code style="color:#555;"><?php echo esc_html($ga4_id); ?></code></td>
-                </tr>
-            </table>
-            <div style="margin-top:16px;">
-                <button type="button" class="button button-secondary"
-                        onclick="almGa4Unlock('<?php echo esc_js(wp_create_nonce('alm_unlock_ga4')); ?>')">
-                    🔓 Modifica (sblocca card)
-                </button>
-            </div>
-
-            <?php else : ?>
-            <!-- Form -->
-            <p style="font-size:13px;color:#666;margin:0 0 16px;">
-                Inserisci il Measurement ID del tuo property Google Analytics 4.<br>
-                Trovi l'ID in <strong>GA4 → Amministrazione → Flussi di dati → seleziona il flusso web → ID misurazione</strong>.
-            </p>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th style="width:160px;"><label for="alm-ga4-id">Measurement ID</label></th>
-                    <td>
+            <!-- GA4 -->
+            <div class="alm-settings-card" id="alm-ga4-card" style="margin-bottom:16px;">
+                <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('ga4')">
+                    <div>
+                        <h2>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Google Analytics 4
+                        </h2>
+                        <p class="alm-card-desc">Traccia visite e conversioni sul sito.</p>
+                    </div>
+                    <div class="alm-settings-card__badges">
+                        <?php if ($ga4_locked) : ?><span class="alm-badge alm-badge--ok">✓ Attivo</span>
+                        <?php elseif ($ga4_id) : ?><span class="alm-badge alm-badge--warn">ID inserito</span>
+                        <?php else : ?><span class="alm-badge alm-badge--miss">Non configurato</span><?php endif; ?>
+                        <span class="alm-chevron" id="alm-ga4-chev">▾</span>
+                    </div>
+                </div>
+                <div id="alm-ga4-body" class="alm-settings-card__body" style="display:none;">
+                    <?php if ($ga4_locked) : ?>
+                    <div class="alm-infobox alm-infobox--green">
+                        <span class="dashicons dashicons-yes-alt"></span>
+                        <div>GA4 attivo — Measurement ID: <strong><?php echo esc_html($ga4_id); ?></strong></div>
+                    </div>
+                    <button type="button" class="button" style="margin-top:12px;"
+                            onclick="almUnlock('ga4','<?php echo esc_js(wp_create_nonce('alm_unlock_ga4')); ?>')">
+                        🔓 Modifica
+                    </button>
+                    <?php else : ?>
+                    <p class="alm-card-intro">Trovi il Measurement ID in <strong>GA4 → Amministrazione → Flussi di dati → seleziona il flusso → ID misurazione</strong>.</p>
+                    <div class="alm-field" style="max-width:320px;">
+                        <label for="alm-ga4-id">Measurement ID</label>
                         <input type="text" id="alm-ga4-id" class="regular-text"
                                value="<?php echo esc_attr($ga4_id); ?>"
-                               placeholder="G-XXXXXXXXXX" autocomplete="off"
-                               style="font-family:monospace;letter-spacing:.5px;" />
-                        <p class="description">Formato: <code>G-</code> seguito da lettere e numeri.</p>
-                    </td>
-                </tr>
-            </table>
-            <div id="alm-ga4-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
-            <div style="margin-top:16px;display:flex;align-items:center;gap:16px;">
-                <button type="button" id="alm-ga4-save" class="button button-primary"
-                        onclick="almGa4Save('<?php echo esc_js(wp_create_nonce('alm_save_ga4')); ?>')">
-                    Salva e congela
-                </button>
-                <span style="font-size:12px;color:#999;">La card si blocca dopo il salvataggio.</span>
-            </div>
-            <?php endif; ?>
-
-        </div><!-- /body -->
-    </div><!-- /ga4-card -->
-
-    <script>
-    /* ── Shared msg helper ── */
-    function almShowMsg(msgId, text, ok) {
-        var el = document.getElementById(msgId);
-        if (!el) return;
-        el.style.display = 'block';
-        if (ok) { el.style.background = '#f0f9f0'; el.style.border = '1px solid #a8d5a2'; el.style.color = '#2e7d32'; }
-        else     { el.style.background = '#fdf0f0'; el.style.border = '1px solid #f5a5a5'; el.style.color = '#c62828'; }
-        el.textContent = text;
-    }
-
-    /* ── GSC ── */
-    function almGscToggle() {
-        var b = document.getElementById('alm-gsc-body');
-        var c = document.getElementById('alm-gsc-chevron');
-        var open = b.style.display === 'none';
-        b.style.display = open ? 'block' : 'none';
-        c.style.transform = open ? 'rotate(180deg)' : '';
-    }
-    function almGscSave(nonce) {
-        var code = (document.getElementById('alm-gsc-code') || {}).value || '';
-        code = code.trim();
-        if (!code) { almShowMsg('alm-gsc-msg', 'Inserisci il codice di verifica.', false); return; }
-        var btn = document.getElementById('alm-gsc-save');
-        btn.disabled = true; btn.textContent = 'Salvataggio…';
-        almAjax('alm_save_gsc', nonce, { code: code }, 'alm-gsc-msg', btn, 'Salva e congela');
-    }
-    function almGscUnlock(nonce) {
-        if (!confirm('Sbloccare la card GSC per modificare il codice?')) return;
-        almAjax('alm_unlock_gsc', nonce, {}, null, null, null);
-    }
-
-    /* ── GA4 ── */
-    function almGa4Toggle() {
-        var b = document.getElementById('alm-ga4-body');
-        var c = document.getElementById('alm-ga4-chevron');
-        var open = b.style.display === 'none';
-        b.style.display = open ? 'block' : 'none';
-        c.style.transform = open ? 'rotate(180deg)' : '';
-    }
-    function almGa4Save(nonce) {
-        var id = (document.getElementById('alm-ga4-id') || {}).value || '';
-        id = id.trim();
-        if (!id) { almShowMsg('alm-ga4-msg', 'Inserisci il Measurement ID.', false); return; }
-        var btn = document.getElementById('alm-ga4-save');
-        btn.disabled = true; btn.textContent = 'Salvataggio…';
-        almAjax('alm_save_ga4', nonce, { id: id }, 'alm-ga4-msg', btn, 'Salva e congela');
-    }
-    function almGa4Unlock(nonce) {
-        if (!confirm('Sbloccare la card GA4 per modificare l\'ID?')) return;
-        almAjax('alm_unlock_ga4', nonce, {}, null, null, null);
-    }
-
-    /* ── Shared AJAX helper ── */
-    function almAjax(action, nonce, extra, msgId, btn, btnLabel) {
-        var fd = new FormData();
-        fd.append('action', action); fd.append('nonce', nonce);
-        Object.keys(extra).forEach(function(k) { fd.append(k, extra[k]); });
-        fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    if (msgId) {
-                        var el = document.getElementById(msgId);
-                        el.style.display = 'block';
-                        el.style.background = '#f0f9f0'; el.style.border = '1px solid #a8d5a2';
-                        el.style.color = '#2e7d32';
-                        el.textContent = '✓ ' + (data.data.message || 'OK');
-                    }
-                    setTimeout(function() { location.reload(); }, 1200);
-                } else {
-                    var msg = data.data || 'Errore.';
-                    if (msgId) {
-                        var el2 = document.getElementById(msgId);
-                        el2.style.display = 'block';
-                        el2.style.background = '#fdf0f0'; el2.style.border = '1px solid #f5a5a5';
-                        el2.style.color = '#c62828'; el2.textContent = msg;
-                    }
-                    if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
-                }
-            })
-            .catch(function() {
-                if (msgId) {
-                    var el3 = document.getElementById(msgId);
-                    el3.style.display = 'block'; el3.style.color = '#c62828';
-                    el3.textContent = 'Errore di rete. Riprova.';
-                }
-                if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
-            });
-    }
-
-    /* Auto-apri le card non ancora configurate */
-    <?php if (!$gsc_locked) : ?>almGscToggle();<?php endif; ?>
-    <?php if (!$ga4_locked) : ?>almGa4Toggle();<?php endif; ?>
-    </script>
-
-    <!-- ── Checklist pre-lancio ────────────────────────────────────────── -->
-    <div class="alm-admin-card" style="max-width:720px;margin-top:32px;margin-bottom:24px;">
-        <div class="alm-admin-card__header">
-            <h2><?php esc_html_e('Checklist pre-lancio', 'almaretna-booking'); ?></h2>
-        </div>
-        <ul class="alm-status-list" style="padding:12px 20px !important;">
-            <?php
-            $checks = alm_run_launch_checklist();
-            foreach ($checks as $check) :
-                $icon  = $check['ok'] ? 'dashicons-yes-alt' : 'dashicons-warning';
-                $color = $check['ok'] ? '#2e7d32' : '#c62828';
-            ?>
-            <li style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px;">
-                <span class="dashicons <?php echo esc_attr($icon); ?>" style="color:<?php echo esc_attr($color); ?>;flex-shrink:0;"></span>
-                <span><?php echo esc_html($check['label']); ?></span>
-                <?php if (!empty($check['action'])) : ?>
-                    <a href="<?php echo esc_url($check['action']); ?>" style="margin-left:auto;font-size:12px;">
-                        <?php esc_html_e('Configura', 'almaretna-booking'); ?>
-                    </a>
-                <?php endif; ?>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-
-    <!-- ── URL Webhook ─────────────────────────────────────────────────── -->
-    <div class="alm-admin-card" style="max-width:720px;margin-bottom:24px;">
-        <div class="alm-admin-card__header">
-            <h2><?php esc_html_e('URL Webhook', 'almaretna-booking'); ?></h2>
-        </div>
-        <p style="padding:12px 20px 0;font-size:13px;color:#666;">
-            <?php esc_html_e('Usa questi URL per configurare i webhook nei rispettivi pannelli:', 'almaretna-booking'); ?>
-        </p>
-        <table class="alm-detail-table" style="margin:0 20px 16px;width:calc(100% - 40px);">
-            <tr>
-                <th style="width:100px;">Stripe</th>
-                <td>
-                    <code style="font-size:12px;word-break:break-all;">
-                        <?php echo esc_html(get_rest_url(null, 'scv/v1/stripe/webhook')); ?>
-                    </code>
-                </td>
-            </tr>
-            <tr>
-                <th>Beds24</th>
-                <td>
-                    <code style="font-size:12px;word-break:break-all;">
-                        <?php echo esc_html(get_rest_url(null, 'scv/v1/beds24/webhook')); ?>
-                    </code>
-                </td>
-            </tr>
-        </table>
-        <p style="padding:0 20px 12px;font-size:12px;color:#888;">
-            <?php esc_html_e('Stripe Dashboard: Developers → Webhooks → Add endpoint. Seleziona gli eventi: payment_intent.succeeded, payment_intent.payment_failed, charge.refunded.', 'almaretna-booking'); ?>
-        </p>
-    </div>
-
-    <!-- ── Google API — Service Account (per Dashboard Analytics) ──────────── -->
-    <?php
-    $gapi_configured = class_exists('ALM_Google_API') && ALM_Google_API::is_configured();
-    $gapi_prop       = get_option('alm_ga4_property_id', '');
-    $gapi_site       = get_option('alm_gsc_site_url', home_url('/'));
-    ?>
-    <div class="alm-admin-card" id="alm-google-card" style="max-width:720px;margin-top:32px;margin-bottom:24px;">
-
-        <div class="alm-admin-card__header" style="cursor:pointer;user-select:none;" onclick="almGoogleToggle()">
-            <h2 style="display:flex;align-items:center;gap:10px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.7"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                Google API — Dashboard Analytics
-            </h2>
-            <div style="display:flex;align-items:center;gap:10px;">
-                <?php if ($gapi_configured && $gapi_prop !== '') : ?>
-                    <span class="alm-badge alm-badge--success">Configurato &#10003;</span>
-                <?php elseif ($gapi_configured) : ?>
-                    <span class="alm-badge alm-badge--warning">SA OK — manca Property ID</span>
-                <?php else : ?>
-                    <span class="alm-badge alm-badge--error">Non configurato</span>
-                <?php endif; ?>
-                <span id="alm-google-chevron" style="font-size:18px;color:#888;transition:transform .2s;">▾</span>
-            </div>
-        </div>
-
-        <div id="alm-google-body" style="display:none;border-top:1px solid #e5e5e5;padding:20px;">
-
-            <div style="background:#e8f4fd;border:1px solid #c2ddf5;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#0077cc;line-height:1.6;">
-                <strong>Come configurare:</strong><br>
-                1. <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" rel="noopener">Google Cloud Console</a> → IAM → Service Account → Crea → scarica il JSON<br>
-                2. In <strong>GA4</strong>: Amministrazione → Gestione accessi proprietà → Aggiungi utente (email del SA) con ruolo <em>Spettatore</em><br>
-                3. In <strong>Search Console</strong>: Impostazioni → Utenti e autorizzazioni → Aggiungi utente (email del SA)<br>
-                4. Incolla il JSON qui sotto e salva
+                               placeholder="G-XXXXXXXXXX" style="font-family:monospace;" />
+                    </div>
+                    <div id="alm-ga4-msg" style="display:none;margin-top:10px;" class="alm-msg"></div>
+                    <button type="button" class="button button-primary" style="margin-top:14px;"
+                            onclick="almSaveAnalytics('ga4','<?php echo esc_js(wp_create_nonce('alm_save_ga4')); ?>')">
+                        Salva e attiva
+                    </button>
+                    <?php endif; ?>
+                </div>
             </div>
 
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th style="width:160px;"><label for="alm-gapi-sa">Service Account JSON</label></th>
-                    <td>
-                        <?php if ($gapi_configured) : ?>
-                        <div style="background:#f0f9f0;border:1px solid #a8d5a2;border-radius:4px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#2e7d32;">
-                            &#10003; Service Account configurato —
-                            <code><?php echo esc_html(json_decode(get_option('alm_google_sa_json','{}'), true)['client_email'] ?? ''); ?></code>
+            <!-- GSC -->
+            <div class="alm-settings-card" id="alm-gsc-card" style="margin-bottom:16px;">
+                <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('gsc')">
+                    <div>
+                        <h2>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Google Search Console
+                        </h2>
+                        <p class="alm-card-desc">Verifica il sito su Google e monitora le ricerche organiche.</p>
+                    </div>
+                    <div class="alm-settings-card__badges">
+                        <?php if ($gsc_locked) : ?><span class="alm-badge alm-badge--ok">✓ Verificato</span>
+                        <?php elseif ($gsc_code) : ?><span class="alm-badge alm-badge--warn">Codice inserito</span>
+                        <?php else : ?><span class="alm-badge alm-badge--miss">Non configurato</span><?php endif; ?>
+                        <span class="alm-chevron" id="alm-gsc-chev">▾</span>
+                    </div>
+                </div>
+                <div id="alm-gsc-body" class="alm-settings-card__body" style="display:none;">
+                    <?php if ($gsc_locked) : ?>
+                    <div class="alm-infobox alm-infobox--green">
+                        <span class="dashicons dashicons-yes-alt"></span>
+                        <div>Search Console verificata.</div>
+                    </div>
+                    <button type="button" class="button" style="margin-top:12px;"
+                            onclick="almUnlock('gsc','<?php echo esc_js(wp_create_nonce('alm_unlock_gsc')); ?>')">
+                        🔓 Modifica
+                    </button>
+                    <?php else : ?>
+                    <p class="alm-card-intro">Vai in <strong>Google Search Console → Impostazioni → Verifica proprietà → Tag HTML</strong> e copia solo il contenuto dell'attributo <code>content</code>.</p>
+                    <div class="alm-field" style="max-width:480px;">
+                        <label for="alm-gsc-code">Codice di verifica</label>
+                        <input type="text" id="alm-gsc-code" class="large-text"
+                               value="<?php echo esc_attr($gsc_code); ?>" placeholder="AbCdEf1234…" />
+                    </div>
+                    <div id="alm-gsc-msg" style="display:none;margin-top:10px;" class="alm-msg"></div>
+                    <button type="button" class="button button-primary" style="margin-top:14px;"
+                            onclick="almSaveAnalytics('gsc','<?php echo esc_js(wp_create_nonce('alm_save_gsc')); ?>')">
+                        Salva e verifica
+                    </button>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Google API / Service Account -->
+            <div class="alm-settings-card" id="alm-gapi-card">
+                <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('gapi')">
+                    <div>
+                        <h2>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                            Dashboard Analytics (Google API)
+                        </h2>
+                        <p class="alm-card-desc">Mostra statistiche GA4 e Search Console direttamente nell'admin WordPress.</p>
+                    </div>
+                    <div class="alm-settings-card__badges">
+                        <?php if ($gapi_configured && $gapi_prop) : ?><span class="alm-badge alm-badge--ok">✓ Configurato</span>
+                        <?php elseif ($gapi_configured) : ?><span class="alm-badge alm-badge--warn">Manca Property ID</span>
+                        <?php else : ?><span class="alm-badge alm-badge--miss">Non configurato</span><?php endif; ?>
+                        <span class="alm-chevron" id="alm-gapi-chev">▾</span>
+                    </div>
+                </div>
+                <div id="alm-gapi-body" class="alm-settings-card__body" style="display:none;">
+                    <div class="alm-infobox alm-infobox--blue" style="margin-bottom:16px;">
+                        <span class="dashicons dashicons-info"></span>
+                        <div style="font-size:12px;line-height:1.7;">
+                            <strong>Come configurare (una volta sola):</strong><br>
+                            1. <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" rel="noopener">Google Cloud Console</a> → IAM → Service Account → Crea → scarica il file JSON<br>
+                            2. In <strong>GA4</strong>: Amministrazione → Accessi proprietà → Aggiungi l'email del Service Account (ruolo: Spettatore)<br>
+                            3. In <strong>Search Console</strong>: Impostazioni → Utenti → Aggiungi l'email del Service Account<br>
+                            4. Incolla il JSON qui sotto e salva
                         </div>
+                    </div>
+                    <div class="alm-field-list">
+                        <div class="alm-field">
+                            <label for="alm-gapi-sa">Service Account JSON</label>
+                            <?php if ($gapi_configured) : ?>
+                            <div class="alm-infobox alm-infobox--green" style="margin-bottom:8px;">
+                                <span class="dashicons dashicons-yes-alt"></span>
+                                <code><?php echo esc_html(json_decode(get_option('alm_google_sa_json','{}'), true)['client_email'] ?? ''); ?></code>
+                            </div>
+                            <?php endif; ?>
+                            <textarea id="alm-gapi-sa" rows="4" class="large-text code"
+                                      style="font-size:11px;font-family:monospace;"
+                                      placeholder='{"type":"service_account","project_id":"...","client_email":"...@....iam.gserviceaccount.com",...}'></textarea>
+                        </div>
+                        <div class="alm-field" style="max-width:400px;">
+                            <label for="alm-gapi-prop">GA4 Property ID <span class="alm-hint">es. properties/123456789</span></label>
+                            <input type="text" id="alm-gapi-prop" class="regular-text"
+                                   value="<?php echo esc_attr($gapi_prop); ?>" placeholder="properties/XXXXXXXXX" />
+                        </div>
+                        <div class="alm-field" style="max-width:400px;">
+                            <label for="alm-gapi-site">GSC Site URL</label>
+                            <input type="url" id="alm-gapi-site" class="regular-text"
+                                   value="<?php echo esc_attr($gapi_site); ?>" placeholder="https://www.almaretna.it/" />
+                        </div>
+                    </div>
+                    <div id="alm-gapi-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+                        <button type="button" class="button button-primary"
+                                onclick="almSaveGapi('<?php echo esc_js(wp_create_nonce('alm_save_google_api')); ?>')">
+                            Salva configurazione
+                        </button>
+                        <?php if ($gapi_configured) : ?>
+                        <button type="button" class="button"
+                                onclick="almTestApi('ga4','<?php echo esc_js(wp_create_nonce('alm_test_ga4')); ?>')">
+                            Testa GA4
+                        </button>
+                        <button type="button" class="button"
+                                onclick="almTestApi('gsc','<?php echo esc_js(wp_create_nonce('alm_test_gsc')); ?>')">
+                            Testa Search Console
+                        </button>
                         <?php endif; ?>
-                        <textarea id="alm-gapi-sa" rows="5" class="large-text code"
-                                  placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"...@....iam.gserviceaccount.com",...}'
-                                  style="font-size:11px;font-family:monospace;"></textarea>
-                        <p class="description">Incolla il contenuto del file JSON scaricato da Google Cloud Console. Non verrà mostrato dopo il salvataggio.</p>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="alm-gapi-prop">GA4 Property ID</label></th>
-                    <td>
-                        <input type="text" id="alm-gapi-prop" class="regular-text"
-                               value="<?php echo esc_attr($gapi_prop); ?>"
-                               placeholder="properties/123456789" />
-                        <p class="description">
-                            Trovi l'ID in GA4 → Amministrazione → Dettagli proprietà. Formato: <code>properties/XXXXXXXXX</code>
-                        </p>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="alm-gapi-site">GSC Site URL</label></th>
-                    <td>
-                        <input type="url" id="alm-gapi-site" class="regular-text"
-                               value="<?php echo esc_attr($gapi_site); ?>"
-                               placeholder="https://www.almaretna.it/" />
-                        <p class="description">URL del sito così come è verificato in Search Console (con o senza www).</p>
-                    </td>
-                </tr>
-            </table>
-
-            <div id="alm-gapi-msg" style="display:none;margin:12px 0;padding:10px 14px;border-radius:4px;font-size:13px;"></div>
-
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
-                <button type="button" class="button button-primary"
-                        onclick="almGapiSave('<?php echo esc_js(wp_create_nonce('alm_save_google_api')); ?>')">
-                    Salva configurazione
-                </button>
-                <?php if ($gapi_configured) : ?>
-                <button type="button" class="button button-secondary"
-                        onclick="almTestGa4('<?php echo esc_js(wp_create_nonce('alm_test_ga4')); ?>')">
-                    Testa GA4
-                </button>
-                <button type="button" class="button button-secondary"
-                        onclick="almTestGsc('<?php echo esc_js(wp_create_nonce('alm_test_gsc')); ?>')">
-                    Testa Search Console
-                </button>
-                <?php endif; ?>
+                    </div>
+                </div>
             </div>
 
-        </div><!-- /google-body -->
-    </div><!-- /google-card -->
+        </div>
+    </div>
 
-    <script>
-    function almGoogleToggle() {
-        var b = document.getElementById('alm-google-body');
-        var c = document.getElementById('alm-google-chevron');
-        var open = b.style.display === 'block';
-        b.style.display = open ? 'none' : 'block';
-        c.style.transform = open ? '' : 'rotate(180deg)';
-    }
-    function almShowGapiMsg(text, ok) {
-        var m = document.getElementById('alm-gapi-msg');
-        m.style.display = 'block';
-        m.style.background = ok ? '#f0f9f0' : '#fef2f2';
-        m.style.border = '1px solid ' + (ok ? '#a8d5a2' : '#fca5a5');
-        m.style.color  = ok ? '#2e7d32' : '#c62828';
-        m.innerHTML = text;
-    }
-    function almGapiSave(nonce) {
-        var sa   = document.getElementById('alm-gapi-sa').value.trim();
-        var prop = document.getElementById('alm-gapi-prop').value.trim();
-        var site = document.getElementById('alm-gapi-site').value.trim();
-        if (!sa && !prop && !site) { almShowGapiMsg('Compila almeno un campo.', false); return; }
-        if (sa) {
-            try { JSON.parse(sa); } catch(e) { almShowGapiMsg('JSON non valido: ' + e.message, false); return; }
-        }
-        var fd = new FormData();
-        fd.append('action', 'alm_save_google_api');
-        fd.append('nonce', nonce);
-        fd.append('sa_json', sa);
-        fd.append('property_id', prop);
-        fd.append('site_url', site);
-        fetch(ajaxurl, { method: 'POST', credentials: 'same-origin', body: fd })
-            .then(function(r){ return r.json(); })
-            .then(function(d){ almShowGapiMsg(d.data || (d.success ? '✓' : '✗'), d.success); if (d.success) setTimeout(function(){ location.reload(); }, 1500); })
-            .catch(function(){ almShowGapiMsg('Errore di rete.', false); });
-    }
-    function almTestGa4(nonce) {
-        almShowGapiMsg('Test GA4 in corso…', true);
-        var fd = new FormData(); fd.append('action','alm_test_ga4'); fd.append('nonce',nonce);
-        fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(d){almShowGapiMsg(d.data||(d.success?'OK':'Errore'),d.success);});
-    }
-    function almTestGsc(nonce) {
-        almShowGapiMsg('Test GSC in corso…', true);
-        var fd = new FormData(); fd.append('action','alm_test_gsc'); fd.append('nonce',nonce);
-        fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(d){almShowGapiMsg(d.data||(d.success?'OK':'Errore'),d.success);});
-    }
-    <?php if (!$gapi_configured) : ?>
-    almGoogleToggle(); // apri di default se non ancora configurato
-    <?php endif; ?>
-    </script>
+    <!-- ══════════════════════════════════════════════════
+         TAB: SISTEMA
+    ══════════════════════════════════════════════════ -->
+    <div id="alm-tab-sistema" class="alm-tab-pane <?php echo $active_tab === 'sistema' ? 'is-active' : ''; ?>">
+        <div style="max-width:700px;">
 
-</div>
+            <!-- Checklist -->
+            <div class="alm-settings-card" style="margin-bottom:16px;">
+                <div class="alm-settings-card__head">
+                    <div>
+                        <h2>Checklist pre-lancio</h2>
+                        <p class="alm-card-desc">Tutto verde = sito pronto per andare online.</p>
+                    </div>
+                </div>
+                <ul class="alm-checklist">
+                    <?php foreach (alm_run_launch_checklist() as $chk) : ?>
+                    <li class="alm-checklist__item <?php echo $chk['ok'] ? 'is-ok' : 'is-warn'; ?>">
+                        <span class="dashicons <?php echo $chk['ok'] ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+                        <span><?php echo esc_html($chk['label']); ?></span>
+                        <?php if (!empty($chk['action'])) : ?>
+                        <a href="<?php echo esc_url($chk['action']); ?>" class="button button-small" style="margin-left:auto;">Vai →</a>
+                        <?php endif; ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+
+            <!-- Diagnostica -->
+            <div class="alm-settings-card">
+                <div class="alm-settings-card__head">
+                    <div>
+                        <h2>Diagnostica</h2>
+                        <p class="alm-card-desc">Strumenti di manutenzione per sviluppatori.</p>
+                    </div>
+                </div>
+                <div class="alm-settings-card__body">
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                        <div>
+                            <strong style="font-size:13px;">Cache PHP (OPcache)</strong>
+                            <p class="alm-hint" style="margin:2px 0 0;">Svuota se le modifiche al plugin non sembrano applicate.</p>
+                        </div>
+                        <button type="button" class="button" style="margin-left:auto;white-space:nowrap;"
+                                onclick="almResetOpcache('<?php echo esc_js(wp_create_nonce('alm_reset_opcache')); ?>')">
+                            ↺ Svuota cache PHP
+                        </button>
+                    </div>
+                    <div class="alm-section-divider"></div>
+                    <div class="alm-debug-info">
+                        <span>Plugin <strong><?php echo esc_html(ALM_BOOKING_VERSION); ?></strong></span>
+                        <span>PHP <strong><?php echo esc_html(PHP_VERSION); ?></strong></span>
+                        <span>WP <strong><?php echo esc_html(get_bloginfo('version')); ?></strong></span>
+                        <span>settings.php <strong><?php echo esc_html(date('d/m/Y H:i', filemtime(__FILE__))); ?></strong></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div><!-- /.alm-admin-wrap -->
+
+<script>
+/* ─── Tab navigation ─── */
+function almSwitchTab(tab) {
+    document.querySelectorAll('.alm-tab-pane').forEach(function(p){ p.classList.remove('is-active'); });
+    document.querySelectorAll('.alm-tab-btn').forEach(function(b){ b.classList.remove('is-active'); });
+    var pane = document.getElementById('alm-tab-' + tab);
+    if (pane) pane.classList.add('is-active');
+    document.querySelectorAll('[data-tab="' + tab + '"]').forEach(function(b){ b.classList.add('is-active'); });
+    try { localStorage.setItem('alm_stab', tab); } catch(e) {}
+}
+document.querySelectorAll('.alm-tab-btn').forEach(function(b){
+    b.addEventListener('click', function(){ almSwitchTab(this.dataset.tab); });
+});
+(function(){
+    try {
+        var s = localStorage.getItem('alm_stab');
+        if (s && !<?php echo !empty($_GET['updated']) ? 'true' : 'false'; ?>) almSwitchTab(s);
+    } catch(e) {}
+})();
+
+/* ─── Accordion ─── */
+function almToggle(id) {
+    var body = document.getElementById('alm-' + id + '-body');
+    var chev = document.getElementById('alm-' + id + '-chev');
+    if (!body) return;
+    var open = body.style.display === 'block';
+    body.style.display = open ? 'none' : 'block';
+    if (chev) chev.classList.toggle('is-open', !open);
+}
+/* Auto-apri card non configurate quando il tab diventa visibile */
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!$stripe_configured) : ?>almToggle('stripe');<?php endif; ?>
+    <?php if (!$b24_configured)    : ?>almToggle('b24');<?php endif; ?>
+    <?php if (!$ga4_locked)        : ?>almToggle('ga4');<?php endif; ?>
+    <?php if (!$gsc_locked)        : ?>almToggle('gsc');<?php endif; ?>
+    <?php if (!$gapi_configured)   : ?>almToggle('gapi');<?php endif; ?>
+});
+
+/* ─── Reveal password ─── */
+document.querySelectorAll('.alm-reveal').forEach(function(btn){
+    btn.addEventListener('click', function(){
+        var inp = document.getElementById(this.dataset.for);
+        if (!inp) return;
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        this.textContent = inp.type === 'password' ? 'Mostra' : 'Nascondi';
+    });
+});
+
+/* ─── Copy to clipboard ─── */
+function almCopy(id, btn) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.textContent.trim()).then(function(){
+        var orig = btn.textContent;
+        btn.textContent = '✓ Copiato!';
+        setTimeout(function(){ btn.textContent = orig; }, 2000);
+    }).catch(function(){
+        var r = document.createRange(); r.selectNode(el);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(r);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        var orig2 = btn.textContent;
+        btn.textContent = '✓ Copiato!';
+        setTimeout(function(){ btn.textContent = orig2; }, 2000);
+    });
+}
+
+/* ─── Show message ─── */
+function almMsg(id, text, ok) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'block';
+    el.className = 'alm-msg ' + (ok ? 'alm-msg--ok' : 'alm-msg--err');
+    el.textContent = text;
+}
+
+/* ─── OPcache ─── */
+function almResetOpcache(nonce) {
+    var btn  = event.currentTarget;
+    var msgEl = document.getElementById('alm-opcache-msg');
+    var orig = btn.textContent;
+    btn.disabled = true; btn.textContent = '…';
+    var fd = new FormData();
+    fd.append('action','alm_reset_opcache'); fd.append('nonce',nonce);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            if (msgEl){ msgEl.style.color = d.success ? '#2e7d32' : '#c62828'; msgEl.textContent = d.data||(d.success?'✓ Fatto':'✗ Errore'); }
+            btn.disabled = false; btn.textContent = orig;
+            if (d.success) setTimeout(function(){ location.reload(); },1500);
+        }).catch(function(){
+            if (msgEl){ msgEl.style.color='#c62828'; msgEl.textContent='Errore di rete'; }
+            btn.disabled = false; btn.textContent = orig;
+        });
+}
+
+/* ─── Stripe DB save ─── */
+function almSaveStripeDb(nonce) {
+    var pk = (document.getElementById('s-pk')||{value:''}).value.trim();
+    var sk = (document.getElementById('s-sk')||{value:''}).value.trim();
+    var wh = (document.getElementById('s-wh')||{value:''}).value.trim();
+    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='…';
+    var fd = new FormData();
+    fd.append('action','alm_save_stripe_db'); fd.append('nonce',nonce);
+    fd.append('pk',pk); fd.append('sk',sk); fd.append('whsec',wh);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-stripe-db-msg', d.data?.message||d.data||(d.success?'✓ Salvato':'✗ Errore'), d.success);
+            if (d.success) setTimeout(function(){ location.reload(); },1400);
+            else { btn.disabled=false; btn.textContent=orig; }
+        }).catch(function(){
+            almMsg('alm-stripe-db-msg','Errore di rete. Riprova.',false);
+            btn.disabled=false; btn.textContent=orig;
+        });
+}
+
+/* ─── Beds24 ─── */
+function almSaveBeds24(nonce) {
+    var token   = (document.getElementById('b24-token')  ||{value:''}).value.trim();
+    var propkey = (document.getElementById('b24-propkey')||{value:''}).value.trim();
+    var wh      = (document.getElementById('b24-wh')     ||{value:''}).value.trim();
+    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='…';
+    var fd = new FormData();
+    fd.append('action','alm_save_beds24'); fd.append('nonce',nonce);
+    fd.append('api_token',token); fd.append('prop_key',propkey); fd.append('webhook_token',wh);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-b24-msg', d.data||(d.success?'✓ Salvato':'✗ Errore'), d.success);
+            if (d.success) setTimeout(function(){ location.reload(); },1400);
+            else { btn.disabled=false; btn.textContent=orig; }
+        }).catch(function(){
+            almMsg('alm-b24-msg','Errore di rete.',false);
+            btn.disabled=false; btn.textContent=orig;
+        });
+}
+function almTestBeds24(nonce) {
+    fetch(ajaxurl+'?action=alm_test_beds24&nonce='+nonce)
+        .then(function(r){ return r.json(); })
+        .then(function(d){ almMsg('alm-b24-msg', d.data||(d.success?'✓ OK':'✗ Errore'), d.success); });
+}
+
+/* ─── Analytics (GA4 + GSC) ─── */
+function almSaveAnalytics(service, nonce) {
+    var val, action;
+    if (service === 'ga4') { val = (document.getElementById('alm-ga4-id')||{value:''}).value.trim(); action = 'alm_save_ga4'; }
+    else                   { val = (document.getElementById('alm-gsc-code')||{value:''}).value.trim(); action = 'alm_save_gsc'; }
+    if (!val) return;
+    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='…';
+    var fd = new FormData();
+    fd.append('action',action); fd.append('nonce',nonce);
+    fd.append(service==='ga4'?'id':'code', val);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-'+service+'-msg', d.data?.message||d.data||(d.success?'✓ Salvato':'✗ Errore'), d.success);
+            if (d.success) setTimeout(function(){ location.reload(); },1400);
+            else { btn.disabled=false; btn.textContent=orig; }
+        }).catch(function(){
+            almMsg('alm-'+service+'-msg','Errore di rete.',false);
+            btn.disabled=false; btn.textContent=orig;
+        });
+}
+function almUnlock(service, nonce) {
+    if (!confirm('Sbloccare la card ' + service.toUpperCase() + ' per modificarla?')) return;
+    var fd = new FormData();
+    fd.append('action','alm_unlock_'+service); fd.append('nonce',nonce);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(){ location.reload(); });
+}
+
+/* ─── Google API / Service Account ─── */
+function almSaveGapi(nonce) {
+    var sa   = (document.getElementById('alm-gapi-sa')  ||{value:''}).value.trim();
+    var prop = (document.getElementById('alm-gapi-prop')||{value:''}).value.trim();
+    var site = (document.getElementById('alm-gapi-site')||{value:''}).value.trim();
+    if (sa) { try { JSON.parse(sa); } catch(e){ almMsg('alm-gapi-msg','JSON non valido: '+e.message,false); return; } }
+    var fd = new FormData();
+    fd.append('action','alm_save_google_api'); fd.append('nonce',nonce);
+    fd.append('sa_json',sa); fd.append('property_id',prop); fd.append('site_url',site);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-gapi-msg', d.data||(d.success?'✓ Salvato':'✗ Errore'), d.success);
+            if (d.success) setTimeout(function(){ location.reload(); },1400);
+        }).catch(function(){ almMsg('alm-gapi-msg','Errore di rete.',false); });
+}
+function almTestApi(service, nonce) {
+    almMsg('alm-gapi-msg','Test '+service.toUpperCase()+' in corso…',true);
+    var fd = new FormData();
+    fd.append('action','alm_test_'+service); fd.append('nonce',nonce);
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){ almMsg('alm-gapi-msg', d.data||(d.success?'✓ OK':'✗ Errore'), d.success); });
+}
+</script>
+
 <?php
-
 function alm_run_launch_checklist(): array {
     $checks = [];
 
-    // Stripe
-    $checks[] = [
-        'label'  => 'Stripe: chiavi API configurate',
-        'ok'     => ALM_Stripe::is_configured(),
-        'action' => '',
-    ];
+    $checks[] = ['label' => 'Stripe: chiavi API configurate',                   'ok' => ALM_Stripe::is_configured(),    'action' => ''];
     if (ALM_Stripe::is_configured()) {
-        $checks[] = [
-            'label' => 'Stripe: modalità ' . (ALM_Stripe::is_test_mode() ? 'TEST (cambia in LIVE prima del lancio)' : 'LIVE ✓'),
-            'ok'    => !ALM_Stripe::is_test_mode(),
-            'action'=> '',
-        ];
+        $checks[] = ['label' => 'Stripe: modalità ' . (ALM_Stripe::is_test_mode() ? 'TEST ⚠ (cambia in LIVE prima del lancio)' : 'LIVE ✓'), 'ok' => !ALM_Stripe::is_test_mode(), 'action' => ''];
     }
+    $checks[] = ['label' => 'Beds24: API token configurato',                     'ok' => ALM_Beds24::is_configured(),    'action' => ''];
 
-    // Beds24
-    $checks[] = [
-        'label'  => 'Beds24: API token configurato',
-        'ok'     => ALM_Beds24::is_configured(),
-        'action' => '',
-    ];
-
-    // Email host
     $host_email = get_option('alm_booking_settings')['host_email'] ?? '';
-    $checks[] = [
-        'label'  => 'Email struttura configurata',
-        'ok'     => !empty($host_email),
-        'action' => admin_url('admin.php?page=alm-settings'),
-    ];
+    $checks[] = ['label' => 'Email struttura configurata',                       'ok' => !empty($host_email),            'action' => admin_url('admin.php?page=alm-settings')];
 
-    // Camere
     $rooms_count = wp_count_posts('almaretna_room')->publish ?? 0;
-    $checks[]    = [
-        'label'  => 'Camere inserite (' . $rooms_count . ')',
-        'ok'     => $rooms_count > 0,
-        'action' => admin_url('post-new.php?post_type=almaretna_room'),
-    ];
+    $checks[] = ['label' => 'Camere inserite (' . $rooms_count . ')',            'ok' => $rooms_count > 0,               'action' => admin_url('post-new.php?post_type=almaretna_room')];
 
-    // Pagina prenota
     $prenota_page = get_page_by_path('prenota');
-    $checks[] = [
-        'label'  => 'Pagina "Prenota" creata',
-        'ok'     => $prenota_page !== null,
-        'action' => admin_url('post-new.php?post_type=page'),
-    ];
+    $checks[] = ['label' => 'Pagina "Prenota" creata',                           'ok' => $prenota_page !== null,         'action' => admin_url('post-new.php?post_type=page')];
 
-    // Permalink non plain
-    $checks[] = [
-        'label'  => 'Permalink non-plain (consigliato: /%postname%/)',
-        'ok'     => get_option('permalink_structure') !== '',
-        'action' => admin_url('options-permalink.php'),
-    ];
-
-    // HTTPS
-    $checks[] = [
-        'label' => 'Sito su HTTPS',
-        'ok'    => is_ssl() || str_starts_with(home_url(), 'https://'),
-        'action'=> '',
-    ];
-
-    // wp-cron attivo
-    $checks[] = [
-        'label' => 'WP-Cron attivo (necessario per reminder email)',
-        'ok'    => !defined('DISABLE_WP_CRON') || !DISABLE_WP_CRON,
-        'action'=> '',
-    ];
+    $checks[] = ['label' => 'Permalink non-plain (consigliato: /%postname%/)',   'ok' => get_option('permalink_structure') !== '', 'action' => admin_url('options-permalink.php')];
+    $checks[] = ['label' => 'Sito su HTTPS',                                     'ok' => is_ssl() || str_starts_with(home_url(), 'https://'), 'action' => ''];
+    $checks[] = ['label' => 'WP-Cron attivo (necessario per email reminder)',    'ok' => !defined('DISABLE_WP_CRON') || !DISABLE_WP_CRON, 'action' => ''];
 
     return $checks;
 }

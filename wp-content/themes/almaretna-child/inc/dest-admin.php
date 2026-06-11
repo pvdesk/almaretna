@@ -152,3 +152,99 @@ add_action('admin_enqueue_scripts', function($hook) {
     $screen = get_current_screen();
     if ($screen && $screen->post_type === 'page') wp_enqueue_media();
 });
+
+/* ─── Seconda metabox: Immagini sezioni contenuto ────────────────────────────
+   3 slot immagine da posizionare nelle sezioni della pagina destinazione.
+   Meta: _alm_dest_sec1, _alm_dest_sec2, _alm_dest_sec3
+   ─────────────────────────────────────────────────────────────────────────── */
+
+add_action('add_meta_boxes', 'alm_dest_add_sections_metabox');
+function alm_dest_add_sections_metabox() {
+    add_meta_box('alm_dest_sections', '🖼 Immagini sezioni pagina', 'alm_dest_sections_render', 'page', 'normal', 'default');
+}
+
+function alm_dest_sections_render($post) {
+    $tpl = get_post_meta($post->ID, '_wp_page_template', true);
+    if ($tpl !== 'page-destinazione.php') return;
+
+    wp_nonce_field('alm_dest_sections_save', 'alm_dest_sections_nonce');
+
+    $slots = [
+        '_alm_dest_sec1' => 'Sezione 1 — Storia e origini',
+        '_alm_dest_sec2' => 'Sezione 2 — Cosa fare',
+        '_alm_dest_sec3' => 'Sezione 3 — Consigli pratici',
+    ];
+    ?>
+    <p style="margin:0 0 16px;font-size:.82rem;color:#666">
+        Queste immagini compaiono nelle sezioni di testo della pagina.
+        Se non carichi un'immagine, la sezione mostra solo il testo.
+    </p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+    <?php foreach ($slots as $meta => $label) :
+        $img_id  = (int) get_post_meta($post->ID, $meta, true);
+        $img_url = $img_id ? wp_get_attachment_image_url($img_id, 'medium') : '';
+        $uniq    = sanitize_key($meta);
+    ?>
+        <div style="flex:0 0 220px">
+            <p style="margin:0 0 6px;font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:#555">
+                <?php echo esc_html($label); ?>
+            </p>
+            <div id="<?php echo $uniq; ?>-preview"
+                 style="width:220px;height:140px;background:#f5f5f5;border:2px dashed #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:8px">
+                <?php if ($img_url) : ?>
+                    <img src="<?php echo esc_url($img_url); ?>" style="width:100%;height:100%;object-fit:cover">
+                <?php else : ?>
+                    <span style="color:#bbb;font-size:.8rem">Nessuna foto</span>
+                <?php endif; ?>
+            </div>
+            <input type="hidden" name="<?php echo esc_attr($meta); ?>"
+                   id="<?php echo $uniq; ?>-id"
+                   value="<?php echo esc_attr($img_id ?: ''); ?>">
+            <button type="button" class="button button-secondary alm-sec-pick"
+                    data-target="<?php echo $uniq; ?>">Seleziona</button>
+            <button type="button" class="button alm-sec-rm"
+                    data-target="<?php echo $uniq; ?>"
+                    style="color:#a00;margin-left:6px;<?php echo $img_id ? '' : 'display:none'; ?>">
+                Rimuovi
+            </button>
+        </div>
+    <?php endforeach; ?>
+    </div>
+
+    <script>
+    (function($){
+        $('.alm-sec-pick').on('click', function(){
+            var t = $(this).data('target');
+            var frame = wp.media({title:'Immagine sezione',button:{text:'Usa questa'},multiple:false,library:{type:'image'}});
+            frame.on('select', function(){
+                var a = frame.state().get('selection').first().toJSON();
+                $('#'+t+'-id').val(a.id);
+                var url = (a.sizes && a.sizes.medium) ? a.sizes.medium.url : a.url;
+                $('#'+t+'-preview').html('<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">');
+                $('[data-target="'+t+'"].alm-sec-rm').show();
+            });
+            frame.open();
+        });
+        $('.alm-sec-rm').on('click', function(){
+            var t = $(this).data('target');
+            $('#'+t+'-id').val('');
+            $('#'+t+'-preview').html('<span style="color:#bbb;font-size:.8rem">Nessuna foto</span>');
+            $(this).hide();
+        });
+    })(jQuery);
+    </script>
+    <?php
+}
+
+add_action('save_post_page', 'alm_dest_sections_save');
+function alm_dest_sections_save($post_id) {
+    if (empty($_POST['alm_dest_sections_nonce'])) return;
+    if (!wp_verify_nonce($_POST['alm_dest_sections_nonce'], 'alm_dest_sections_save')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    foreach (['_alm_dest_sec1', '_alm_dest_sec2', '_alm_dest_sec3'] as $meta) {
+        $val = absint($_POST[$meta] ?? 0);
+        update_post_meta($post_id, $meta, $val ?: '');
+    }
+}

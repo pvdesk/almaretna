@@ -62,6 +62,14 @@ foreach ($gall_ids as $gid) {
     ];
 }
 
+/* ── Sezioni contenuto ───────────────────────────────────────────────── */
+$sec_ids = [
+    (int) get_post_meta($post_id, '_alm_dest_sec1', true),
+    (int) get_post_meta($post_id, '_alm_dest_sec2', true),
+    (int) get_post_meta($post_id, '_alm_dest_sec3', true),
+];
+$sections = $d['sections'] ?? [];
+
 /* ── SEO ─────────────────────────────────────────────────────────────── */
 $seo = alm_destinazione_seo($slug);
 if (!empty($seo)) {
@@ -148,6 +156,22 @@ get_header();
 .dest-gallery__img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
 .dest-gallery__link:hover .dest-gallery__img{transform:scale(1.05)}
 @media(max-width:600px){.dest-gallery{grid-template-columns:1fr 1fr}}
+.dest-sections{display:flex;flex-direction:column;gap:64px;margin-bottom:64px;padding-top:8px}
+.dest-sec{display:grid;grid-template-columns:1fr 400px;gap:48px;align-items:center}
+.dest-sec--reverse{grid-template-columns:400px 1fr}
+.dest-sec--reverse .dest-sec__text{order:2}
+.dest-sec--reverse .dest-sec__img{order:1}
+.dest-sec__title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:600;color:#3D3530;margin:0 0 16px;line-height:1.3}
+.dest-sec__body{font-size:.97rem;line-height:1.9;color:#6B6058;margin:0}
+.dest-sec__img{border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:#f0ece6;border:1px solid #e8e2dc;flex-shrink:0}
+.dest-sec__img img{width:100%;height:100%;object-fit:cover;display:block}
+.dest-sec__img--empty{display:flex;align-items:center;justify-content:center}
+.dest-sec__placeholder{font-size:3rem;opacity:.25}
+@media(max-width:768px){
+    .dest-sec,.dest-sec--reverse{grid-template-columns:1fr}
+    .dest-sec--reverse .dest-sec__text,.dest-sec--reverse .dest-sec__img{order:unset}
+    .dest-sec__img{max-width:100%}
+}
 </style>
 
 <main class="dest-page">
@@ -199,6 +223,32 @@ get_header();
                              alt="<?php echo esc_attr($img['alt'] ?: ($d['title'] ?? '')); ?>"
                              class="dest-gallery__img" loading="lazy">
                     </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($sections)) : ?>
+            <div class="dest-sections">
+                <?php foreach ($sections as $i => $sec) :
+                    $img_id  = $sec_ids[$i] ?? 0;
+                    $img_url = $img_id ? wp_get_attachment_image_url($img_id, 'large') : '';
+                    $reverse = ($i % 2 === 1);
+                ?>
+                    <div class="dest-sec<?php echo $reverse ? ' dest-sec--reverse' : ''; ?>">
+                        <div class="dest-sec__text">
+                            <h2 class="dest-sec__title"><?php echo esc_html($sec['title']); ?></h2>
+                            <p class="dest-sec__body"><?php echo esc_html($sec['text']); ?></p>
+                        </div>
+                        <div class="dest-sec__img<?php echo !$img_url ? ' dest-sec__img--empty' : ''; ?>">
+                            <?php if ($img_url) : ?>
+                                <img src="<?php echo esc_url($img_url); ?>"
+                                     alt="<?php echo esc_attr($sec['title']); ?>"
+                                     loading="lazy">
+                            <?php else : ?>
+                                <span class="dest-sec__placeholder">📷</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>

@@ -76,6 +76,20 @@ function alm_destinazione_data(string $slug): array {
                 'winter'   => "In inverno Taormina si trasforma in una meta romantica e autentica. Meno folla, prezzi più bassi, clima mite e nessuna coda ai monumenti. Nelle giornate limpide la vista sull'Etna innevato è spettacolare.",
                 'distance' => '25 min da Almaretna',
                 'dist_note'=> 'Strada panoramica costiera. Consigliamo la mattina presto o il tardo pomeriggio in estate.',
+                'sections' => [
+                    [
+                        'title' => 'Tremila anni di storia',
+                        'text'  => "Taormina non è nata con i Greci, anche se è con loro che raggiunse la sua prima grande fioritura. La città di Naxos, la più antica colonia greca di Sicilia, fu fondata nel 734 a.C. e sorgeva proprio ai piedi dell'attuale Taormina. Dopo la sua distruzione, i superstiti risalirono il promontorio e diedero vita a Tauromenium. Nei secoli successivi passò ai Romani, ai Bizantini, agli Arabi e ai Normanni: ogni civiltà ha lasciato il proprio segno in pietre, archi, sapori e tradizioni. Passeggiare per il centro storico significa attraversare secoli di storia mediterranea in poche centinaia di metri.",
+                    ],
+                    [
+                        'title' => 'Sapori e tradizioni da non perdere',
+                        'text'  => "La cucina taorminese è un inno alla Sicilia orientale: granite di mandorla con brioscia calda per colazione, pesce spada alla messinese, arancini croccanti e dolci di mandorle. Il mercato coperto al Palazzo dei Duchi di Santo Stefano ospita prodotti artigianali e gastronomici locali. Lungo il Corso Umberto si trovano alcune delle migliori pasticcerie della costa ionica, dove assaggiare i cannoli freschi e i famosi dolci al pistacchio. Il vino Etna DOC — prodotto proprio sulle pendici del vulcano che si vede dalla terrazza — è ormai riconosciuto tra i migliori d'Italia.",
+                    ],
+                    [
+                        'title' => 'Consigli per la visita',
+                        'text'  => "Taormina si visita idealmente di mattina presto (prima delle 9) o nel tardo pomeriggio. D'estate le sue strade si riempiono di turisti: prenotare il Teatro Antico online è indispensabile. Almaretna si trova a 25 minuti di guida, su una strada panoramica che costeggia il mare. Se preferisci evitare l'auto, in estate corre un servizio di navetta dalla stazione di Taormina-Giardini. Per il parcheggio, il garage Lumbi o il parcheggio sul lungomare di Mazzarò sono le soluzioni più comode.",
+                    ],
+                ],
             ],
             'en' => [
                 'title'    => 'Taormina',
@@ -160,6 +174,20 @@ function alm_destinazione_data(string $slug): array {
                 'winter'   => "In inverno l'Etna offre sciistica, ciaspolate e paesaggi da cartolina. Piano Provenzana (Etna Nord) è la stazione sciistica più vicina ad Almaretna — meno di 30 minuti.",
                 'distance' => '20 min (accesso Etna Nord – Piano Provenzana)',
                 'dist_note'=> 'Via Linguaglossa. Accesso Etna Sud (Rifugio Sapienza) circa 45 min.',
+                'sections' => [
+                    [
+                        'title' => 'Un vulcano vivo, non un museo',
+                        'text'  => "L'Etna non è un vulcano da contemplare da lontano: è un sistema geologico attivo che cambia forma ogni anno. Le eruzioni del 2019, 2021 e 2022 hanno aperto nuovi crateri, modificato i panorami e depositato colate laviche fresche visibili a occhio nudo. Camminare su quel terreno scuro e rugoso, ancora caldo sotto la suola, è un'esperienza che rende concreta la forza della natura. Il contrasto tra il nero della lava e il verde dei boschi di betulla e leccio che crescono tra le colate è uno dei paesaggi più surreali e belli d'Italia.",
+                    ],
+                    [
+                        'title' => 'Etna d\'estate: dai crateri al vino',
+                        'text'  => "Da giugno a ottobre l'Etna si esplora con trekking guidati, escursioni in jeep 4×4 e la funivia che da Rifugio Sapienza sale fino a quota 2.500 metri. I percorsi per i Crateri Silvestri (facilissimi, adatti a famiglie) e quelli per i crateri sommitali (con guida vulcanologica obbligatoria) offrono esperienze completamente diverse. Nel tardo pomeriggio, le cantine della DOC Etna — Benanti, Passopisciaro, Cornelissen, Terre Nere — aprono le porte per degustazioni di Nerello Mascalese e Carricante, tra i vini più discussi d'Italia. Una giornata sull'Etna inizia sul vulcano e finisce con un bicchiere di rosso davanti al tramonto.",
+                    ],
+                    [
+                        'title' => 'Come organizzare la visita da Almaretna',
+                        'text'  => "Da Almaretna l'accesso più veloce è quello nord, via Linguaglossa, in circa 20 minuti fino a Piano Provenzana. Da qui partono escursioni guidate, noleggi di abbigliamento tecnico e, in inverno, gli impianti sciistici. Per l'accesso sud (funivia, Crateri Silvestri) il percorso è Nunziata → Zafferana Etnea → Rifugio Sapienza: circa 45-50 minuti. Si consiglia di prenotare le escursioni guidate con anticipo, specialmente in luglio e agosto. Gli abiti leggeri non bastano oltre i 2.000 metri, anche d'estate: una giacca a vento e scarpe chiuse sono indispensabili.",
+                    ],
+                ],
             ],
             'en' => [
                 'title'    => 'Etna',
@@ -245,6 +273,20 @@ function alm_destinazione_data(string $slug): array {
                 'winter'   => "In inverno Catania mantiene un clima mite e una vita cittadina piena d'energia. Il periodo natalizio e la Festa di Sant'Agata (febbraio) sono momenti di festa imperdibili, con l'intera città in movimento.",
                 'distance' => '30 min da Almaretna',
                 'dist_note'=> 'Autostrada A18. Aeroporto di Catania-Fontanarossa: 30 min — gateway per voli internazionali.',
+                'sections' => [
+                    [
+                        'title' => 'Pietra lavica e barocco UNESCO',
+                        'text'  => "Catania è costruita su se stessa: ogni terremoto, ogni eruzione — e ce ne sono stati molti — ha sepolto e poi rivelato strati di storia. Il centro storico che vediamo oggi è in gran parte quello ricostruito dopo il devastante terremoto del 1693 e l'eruzione del 1669. I palazzi barocchi in pietra lavica scura che si affacciano su Piazza del Duomo sono stati proclamati Patrimonio UNESCO nel 2002 insieme ad altre sette città siciliane del Val di Noto. Questa pietra nera è il DNA di Catania: la stessa materia che distrugge diventa la materia con cui si costruisce.",
+                    ],
+                    [
+                        'title' => 'La Pescheria e la cucina di strada',
+                        'text'  => "Il mercato del pesce di Catania — la Pescheria — è uno spettacolo che si tiene dal lunedì al sabato mattina, nascosto dietro la Fontana dell'Elefante, in pieno centro storico. I banchi del pesce fresco si affiancano a quelli di frutta, verdura, spezie e salumi in un'esplosione sensoriale che è rimasta invariata per secoli. Qui si comprendono le radici della cucina catanese: pasta alla norma, arancini alla carne, impanate di pesce, polpette di melanzane. Il street food del centro — in particolare quello di Via Plebiscito e Piazza Carlo Alberto — è tra i più ricchi e autentici della Sicilia.",
+                    ],
+                    [
+                        'title' => 'Come visitare Catania da Almaretna',
+                        'text'  => "Catania dista circa 30 minuti da Almaretna via A18. Per una giornata intera si consiglia di arrivare entro le 9 per godersi la Pescheria al massimo della sua attività. I parcheggi più comodi sono quelli interrati vicino a Piazza Stesicoro o al porto. In alternativa, la stazione ferroviaria di Giarre-Riposto (5 minuti da Almaretna) ha treni frequenti per Catania Centrale in circa 35 minuti — una comodità che evita lo stress del traffico e del parcheggio. L'aeroporto di Fontanarossa è a 30 minuti da Almaretna: utile per chi arriva o parte in giornata.",
+                    ],
+                ],
             ],
             'en' => [
                 'title'    => 'Catania',
@@ -334,6 +376,20 @@ function alm_destinazione_data(string $slug): array {
                 'winter'   => "Siracusa d'inverno è straordinariamente affascinante: clima mite (15-18°C), assenza di folle e una luce dorata sui palazzi barocchi. Un'atmosfera unica, lontana dall'overtourism.",
                 'distance' => '~90 min da Almaretna',
                 'dist_note'=> 'Consigliamo una giornata intera o anche due notti per vivere appieno Ortigia e dintorni.',
+                'sections' => [
+                    [
+                        'title' => 'La città più antica della Sicilia',
+                        'text'  => "Siracusa è stata fondata nel 734 a.C. da coloni corinzi che sbarcarono sull'isolotto di Ortigia e vi trovarono una sorgente d'acqua dolce — la mitica Aretusa — a pochi passi dal mare. Nel giro di due secoli divenne la città più potente della Magna Grecia, rivale di Atene e Cartagine. Il suo Teatro Greco, scavato nella roccia nel V secolo a.C., aveva una capienza di 15.000 spettatori. La Latomia del Paradiso — cava di pietra usata poi come prigione — ospita la grotta chiamata Orecchio di Dionisio, la cui acustica straordinaria ha alimentato leggende per secoli. Visitare Siracusa è fare un salto in una delle città più importanti del mondo antico.",
+                    ],
+                    [
+                        'title' => 'Ortigia: un labirinto a misura d\'uomo',
+                        'text'  => "L'isola di Ortigia è il cuore di Siracusa: un quadrilatero di vicoli barocchi dove ci si perde con piacere. La Cattedrale, costruita inglobando le colonne del Tempio di Atena del V secolo a.C., è uno degli edifici più straordinari di tutto il Mediterraneo — un palinsesto di architetture che racconta duemila anni di storia in un solo edificio. Tutt'intorno si aprono trattorie con vista mare, mercatini di ceramiche e spezie, bar sulla riva dove prendere un caffè di fronte alla baia. Ortigia è piccola — si attraversa a piedi in 20 minuti — ma densa e sorprendente, capace di stupire ad ogni angolo.",
+                    ],
+                    [
+                        'title' => 'Consigli per godersi Siracusa al meglio',
+                        'text'  => "La distanza da Almaretna (~90 minuti) rende Siracusa ideale per un'escursione di almeno una giornata intera, o meglio ancora una notte. Il periodo migliore è aprile-giugno e settembre-ottobre: meno caldo, meno affollata, luce dorata. In estate la stagione teatrale dell'INDA al Teatro Greco (maggio-luglio) è un'esperienza unica da non perdere — i biglietti vanno prenotati con settimane d'anticipo. A 40 km da Siracusa c'è Noto, la città barocca più bella del mondo: vale la deviazione. Le spiagge di Vendicari e Plemmirio, a pochi chilometri, sono tra le più belle d'Italia.",
+                    ],
+                ],
             ],
             'en' => [
                 'title'    => 'Syracuse',
@@ -423,6 +479,20 @@ function alm_destinazione_data(string $slug): array {
                 'winter'   => "In inverno Messina ha un fascino particolare: le tradizioni natalizie siciliane, i presepi viventi e un clima comunque mite la rendono una meta piacevole tutto l'anno.",
                 'distance' => '~50 min da Almaretna',
                 'dist_note'=> 'Autostrada A18 nord. In estate consigliamo di partire la mattina presto.',
+                'sections' => [
+                    [
+                        'title' => 'La città che rinasce sempre',
+                        'text'  => "Messina ha una storia straziante e straordinaria: il terremoto del 28 dicembre 1908 — uno dei più distruttivi mai registrati in Europa — rase al suolo l'intera città in 37 secondi, uccidendo tra 75.000 e 200.000 persone. Quello che vediamo oggi è una città interamente ricostruita nel Novecento, con una pianta razionale e ampi viali. Eppure Messina ha mantenuto la sua anima: il Duomo normanno ricostruito, l'Orologio Astronomico più grande al mondo, le tradizioni dei Giganti Mata e Grifone che ogni anno sfilano per le strade. Una città resiliente, che ha trasformato la tragedia in identità.",
+                    ],
+                    [
+                        'title' => 'Lo Stretto, le Eolie e la Calabria',
+                        'text'  => "La posizione di Messina è unica: si trova sul punto più stretto del Mediterraneo occidentale, dove Sicilia e Calabria distano appena 3 km. Da Messina i traghetti per Villa San Giovanni partono ogni 20 minuti — una gita in Calabria è questione di un'ora. Dal porto si organizzano anche escursioni alle Isole Eolie (Lipari, Vulcano, Stromboli) in giornata: un'esperienza indimenticabile con il vulcano di Stromboli attivo che di notte illumina il mare. Lo Stretto è anche un fenomeno naturale: le correnti, il vortice di Cariddi (il mitico Scilla e Cariddi di Omero), gli avvistamenti di delfini e capodogli.",
+                    ],
+                    [
+                        'title' => 'Ganzirri e i sapori dello Stretto',
+                        'text'  => "A nord di Messina, il piccolo borgo lacustre di Ganzirri è il posto dove i messinesi vanno a mangiare le cozze. Le lagune di Ganzirri e di Faro producono mitili allevati in acque pulitissime: le trattorie sul lungolaguna le servono crude, gratinate, con pasta o in zuppe fumanti. È qui che si capisce la cucina dello Stretto — più semplice e marinara di quella palermitana, con il pesce azzurro protagonista. Il tramonto sul Faro di Messina, con la Calabria illuminata dall'altra parte, è uno di quei paesaggi che restano impressi.",
+                    ],
+                ],
             ],
             'en' => [
                 'title'    => 'Messina',
@@ -511,6 +581,20 @@ function alm_destinazione_data(string $slug): array {
                 'winter'   => "Anche in inverno il mare di Sicilia ha il suo fascino: le passeggiate sul lungomare deserto, i ristoranti di pesce frequentati dai locali, la luce bassa che dipinge il mare di oro. Non per nuotare, ma per ammirare.",
                 'distance' => '10 min (Fondachello)',
                 'dist_note'=> 'Torre Archirafi 15 min · Giardini Naxos 20 min · Taormina/Isola Bella 30 min.',
+                'sections' => [
+                    [
+                        'title' => 'Un mare ionico, non un mare qualunque',
+                        'text'  => "Il mare che bagna Almaretna è il Mar Ionio: acque profonde, temperature che salgono a 28°C in agosto, fondali rocciosi alternati a sabbia fine e una trasparenza che in certi giorni permette di vedere il fondo a 10 metri di profondità. La corrente circolare dello Ionio mantiene le acque pulite e ossigenate, creando condizioni ideali per lo snorkeling e le immersioni. La costa ionica siciliana non ha le acque piatte del Tirreno: c'è il profumo del largo, le onde che arrivano dalla Grecia, una luce che in certi pomeriggi di settembre trasforma il mare in un quadro d'oro.",
+                    ],
+                    [
+                        'title' => 'Da Fondachello a Isola Bella: le spiagge vicine',
+                        'text'  => "Fondachello — a 10 minuti da Almaretna — è la spiaggia di tutti i giorni: stabilimenti balneari con ombrelloni, lettini, docce e bar, ma anche tratti liberi con sabbia grigia vulcanica. Torre Archirafi (15 min), Praiola di Riposto (20 min) e Giardini Naxos (20 min) sono le tappe di una piccola vacanza balneare che non richiede ore di auto. Salendo verso Taormina, l'Isola Bella (30 min) offre l'esperienza marina più fotogenica della costa: acque smeraldo, il profilo dell'Etna sullo sfondo, il piccolo istmo che all'alba è ancora deserto.",
+                    ],
+                    [
+                        'title' => 'Quando e come vivere il mare ionioco',
+                        'text'  => "La stagione balneare sul Mar Ionio va da maggio a ottobre. Giugno e settembre sono i mesi perfetti: il mare è già caldo (24-26°C), le spiagge non sono affollate come ad agosto e le giornate lunghe permettono di combinare mare e visite culturali. Per chi vuole il massimo del relax e del silenzio, le prime ore del mattino sulle spiagge libere di Fondachello o Torre Archirafi sono un'esperienza di pace assoluta. I migliori ristoranti di pesce della costa sono a Torre Archirafi e Riposto: pesce di giornata, crudo misto e zuppa di cozze preparati come li facevano i nonni.",
+                    ],
+                ],
             ],
             'en' => [
                 'title'    => 'The Sicilian sea',

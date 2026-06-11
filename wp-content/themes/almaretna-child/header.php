@@ -93,7 +93,7 @@ $dest_items = [
 
                 <!-- Mega trigger -->
                 <li class="site-nav__item--has-mega" id="nav-scopri-li">
-                    <button class="site-nav__mega-trigger" id="nav-scopri-btn"
+                    <button type="button" class="site-nav__mega-trigger" id="nav-scopri-btn"
                             aria-expanded="false"
                             aria-controls="nav-mega-scopri"
                             aria-haspopup="true">

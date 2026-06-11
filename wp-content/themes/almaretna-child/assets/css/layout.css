@@ -189,41 +189,47 @@ body.front-page .site-content {
 
 /* ─── MEGA MENU ─────────────────────────────────────────────────────────── */
 
-/* Trigger button */
+/* Trigger button — override Bootstrap con !important */
 .site-nav__item--has-mega { position: relative; }
 
-.site-nav__mega-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0.5rem 0.875rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--nav-link-color);
-    border-radius: 6px;
-    transition: color 0.2s, background 0.2s;
-    white-space: nowrap;
-    line-height: 1;
+.site-nav__mega-trigger,
+.site-nav .site-nav__mega-trigger {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 0.5rem 0.875rem !important;
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    font-family: inherit !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    color: var(--nav-link-color) !important;
+    border-radius: 6px !important;
+    transition: color 0.2s, background 0.2s !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    outline: none !important;
 }
 
 .site-nav__mega-trigger:hover,
 .site-nav__item--has-mega.is-open .site-nav__mega-trigger {
-    color: var(--color-primary);
-    background: rgba(197, 180, 156, 0.12);
+    color: var(--color-primary) !important;
+    background: rgba(197, 180, 156, 0.12) !important;
 }
 
 .site-header--home:not(.is-scrolled) .site-nav__mega-trigger {
-    color: var(--nav-link-home);
+    color: var(--nav-link-home) !important;
 }
 
 .site-header--home:not(.is-scrolled) .site-nav__mega-trigger:hover,
 .site-header--home:not(.is-scrolled) .site-nav__item--has-mega.is-open .site-nav__mega-trigger {
-    background: rgba(255,255,255,0.15);
-    color: #fff;
+    background: rgba(255,255,255,0.15) !important;
+    color: #fff !important;
 }
 
 .nav-chevron { transition: transform 0.25s cubic-bezier(.4,0,.2,1); flex-shrink: 0; }
@@ -241,18 +247,25 @@ body.front-page .site-content {
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 20px 60px rgba(0,0,0,0.12);
     border-top: 1px solid var(--color-border);
+    /* Nascondi con visibility + opacity: sicuro anche se opacity viene ovveridato */
     opacity: 0;
+    visibility: hidden;
     transform: translateY(-10px);
     pointer-events: none;
     transition: opacity 0.28s cubic-bezier(.4,0,.2,1),
-                transform 0.28s cubic-bezier(.4,0,.2,1);
+                transform 0.28s cubic-bezier(.4,0,.2,1),
+                visibility 0s linear 0.28s;
     will-change: opacity, transform;
 }
 
 .nav-mega.is-open {
     opacity: 1;
+    visibility: visible;
     transform: translateY(0);
     pointer-events: all;
+    transition: opacity 0.28s cubic-bezier(.4,0,.2,1),
+                transform 0.28s cubic-bezier(.4,0,.2,1),
+                visibility 0s linear 0s;
 }
 
 .nav-mega__inner {

@@ -180,56 +180,107 @@ if ($room_id && !empty($rates)) {
                             <th><?php esc_html_e('Al', 'almaretna-booking'); ?></th>
                             <th><?php esc_html_e('Canale', 'almaretna-booking'); ?></th>
                             <th><?php esc_html_e('Min. notti', 'almaretna-booking'); ?></th>
-                            <th><?php esc_html_e('Stato / Info', 'almaretna-booking'); ?></th>
+                            <th><?php esc_html_e('Stato', 'almaretna-booking'); ?></th>
                             <th><?php esc_html_e('Azioni', 'almaretna-booking'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php foreach ($rates as $rate) :
-                        $has_overlap = isset($overlapping_ids[$rate['id']]);
-                        $row_style = $has_overlap ? 'background-color: #fff5f5 !important;' : '';
+                        $rid         = (int) $rate['id'];
+                        $has_overlap = isset($overlapping_ids[$rid]);
+                        $row_style   = $has_overlap ? 'background-color: #fff5f5 !important;' : '';
+                        $df          = !empty($rate['date_from']) ? (new DateTime($rate['date_from']))->format('Y-m-d') : '';
+                        $dt          = !empty($rate['date_to'])   ? (new DateTime($rate['date_to']))->format('Y-m-d')   : '';
                     ?>
-                        <tr style="<?php echo esc_attr($row_style); ?>">
-                            <td>
-                                <strong><?php echo esc_html($rate['rate_name'] ?? ''); ?></strong>
+                        <tr id="alm-rate-row-<?php echo $rid; ?>" style="<?php echo esc_attr($row_style); ?>">
+                            <td><strong><?php echo esc_html($rate['rate_name'] ?? ''); ?></strong>
                                 <?php if ($has_overlap) : ?>
-                                    <span style="color:#d94f4f; font-size:10px; font-weight:700; display:block; margin-top:2px;">
-                                        [<?php esc_html_e('CONFLITTO DATE', 'almaretna-booking'); ?>]
-                                    </span>
+                                    <span style="color:#d94f4f;font-size:10px;font-weight:700;display:block;margin-top:2px;">[<?php esc_html_e('CONFLITTO DATE', 'almaretna-booking'); ?>]</span>
                                 <?php endif; ?>
                             </td>
-                            <td>€ <?php echo esc_html(number_format((float) ($rate['price_per_night'] ?? 0), 2, ',', '.')); ?></td>
+                            <td>€ <?php echo esc_html(number_format((float)($rate['price_per_night'] ?? 0), 2, ',', '.')); ?></td>
                             <td><?php echo esc_html(!empty($rate['date_from']) ? (new DateTime($rate['date_from']))->format('d/m/Y') : '—'); ?></td>
                             <td><?php echo esc_html(!empty($rate['date_to'])   ? (new DateTime($rate['date_to']))->format('d/m/Y')   : '—'); ?></td>
-                            <td>
-                                <span class="alm-badge alm-badge--secondary" style="font-size:11px;">
-                                    <?php echo esc_html(ucfirst($rate['channel'] ?? 'all')); ?>
-                                </span>
-                            </td>
-                            <td><?php echo esc_html((string) ($rate['min_stay'] ?? 1)); ?> gg</td>
+                            <td><span class="alm-badge alm-badge--secondary" style="font-size:11px;"><?php echo esc_html(ucfirst($rate['channel'] ?? 'all')); ?></span></td>
+                            <td><?php echo esc_html((string)($rate['min_stay'] ?? 1)); ?> gg</td>
                             <td>
                                 <?php if ($has_overlap) : ?>
-                                    <span style="color:#d94f4f; font-weight:600; font-size:11px;">
-                                        <span class="dashicons dashicons-warning" style="font-size:15px; width:15px; height:15px; vertical-align:middle; margin-right:2px;"></span>
-                                        <?php esc_html_e('Sovrapposizione', 'almaretna-booking'); ?>
-                                    </span>
+                                    <span style="color:#d94f4f;font-weight:600;font-size:11px;"><span class="dashicons dashicons-warning" style="font-size:15px;width:15px;height:15px;vertical-align:middle;margin-right:2px;"></span><?php esc_html_e('Sovrapposizione', 'almaretna-booking'); ?></span>
                                 <?php else : ?>
-                                    <span style="color:#708a72; font-weight:600; font-size:11px;">
-                                        <span class="dashicons dashicons-yes-alt" style="font-size:15px; width:15px; height:15px; vertical-align:middle; margin-right:2px;"></span>
-                                        <?php esc_html_e('Valida', 'almaretna-booking'); ?>
-                                    </span>
+                                    <span style="color:#708a72;font-weight:600;font-size:11px;"><span class="dashicons dashicons-yes-alt" style="font-size:15px;width:15px;height:15px;vertical-align:middle;margin-right:2px;"></span><?php esc_html_e('Valida', 'almaretna-booking'); ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <td style="white-space:nowrap;">
+                                <button type="button" class="button button-small"
+                                        onclick="almToggleEditRate(<?php echo $rid; ?>)"
+                                        style="margin-right:4px;">
+                                    ✏ <?php esc_html_e('Modifica', 'almaretna-booking'); ?>
+                                </button>
                                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
                                     <?php wp_nonce_field('alm_delete_rate'); ?>
                                     <input type="hidden" name="action"  value="alm_delete_rate" />
-                                    <input type="hidden" name="rate_id" value="<?php echo esc_attr((string) $rate['id']); ?>" />
-                                    <input type="hidden" name="room_id" value="<?php echo esc_attr((string) $room_id); ?>" />
+                                    <input type="hidden" name="rate_id" value="<?php echo esc_attr((string)$rid); ?>" />
+                                    <input type="hidden" name="room_id" value="<?php echo esc_attr((string)$room_id); ?>" />
                                     <button type="submit" class="button button-small button-link-delete"
                                             onclick="return confirm('<?php esc_attr_e('Eliminare questa tariffa speciale?', 'almaretna-booking'); ?>')">
                                         <?php esc_html_e('Elimina', 'almaretna-booking'); ?>
                                     </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <!-- Riga inline di modifica -->
+                        <tr id="alm-rate-edit-<?php echo $rid; ?>" style="display:none; background:#f0f4f0;">
+                            <td colspan="8" style="padding:16px 20px;">
+                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                    <?php wp_nonce_field('alm_save_rates'); ?>
+                                    <input type="hidden" name="action"  value="alm_save_rates" />
+                                    <input type="hidden" name="rate_id" value="<?php echo esc_attr((string)$rid); ?>" />
+                                    <input type="hidden" name="room_id" value="<?php echo esc_attr((string)$room_id); ?>" />
+
+                                    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+                                        <div>
+                                            <label style="display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;"><?php esc_html_e('Nome tariffa', 'almaretna-booking'); ?></label>
+                                            <input type="text" name="name" required style="width:180px;"
+                                                   value="<?php echo esc_attr($rate['rate_name'] ?? ''); ?>" />
+                                        </div>
+                                        <div>
+                                            <label style="display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;"><?php esc_html_e('Prezzo/notte (€)', 'almaretna-booking'); ?></label>
+                                            <input type="number" name="price" min="0" step="0.01" required style="width:100px;"
+                                                   value="<?php echo esc_attr((string)($rate['price_per_night'] ?? 0)); ?>" />
+                                        </div>
+                                        <div>
+                                            <label style="display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;"><?php esc_html_e('Data inizio', 'almaretna-booking'); ?></label>
+                                            <input type="date" name="start_date" required style="width:140px;"
+                                                   value="<?php echo esc_attr($df); ?>" />
+                                        </div>
+                                        <div>
+                                            <label style="display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;"><?php esc_html_e('Data fine', 'almaretna-booking'); ?></label>
+                                            <input type="date" name="end_date" required style="width:140px;"
+                                                   value="<?php echo esc_attr($dt); ?>" />
+                                        </div>
+                                        <div>
+                                            <label style="display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;"><?php esc_html_e('Canale', 'almaretna-booking'); ?></label>
+                                            <select name="channel" style="width:130px;">
+                                                <option value="all"     <?php selected($rate['channel'] ?? 'all', 'all'); ?>><?php esc_html_e('Tutti (Globale)', 'almaretna-booking'); ?></option>
+                                                <option value="direct"  <?php selected($rate['channel'] ?? '', 'direct'); ?>><?php esc_html_e('Diretto', 'almaretna-booking'); ?></option>
+                                                <option value="booking" <?php selected($rate['channel'] ?? '', 'booking'); ?>>Booking.com</option>
+                                                <option value="airbnb"  <?php selected($rate['channel'] ?? '', 'airbnb'); ?>>Airbnb</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style="display:block;font-size:11px;font-weight:700;color:#50575e;margin-bottom:4px;"><?php esc_html_e('Min. notti', 'almaretna-booking'); ?></label>
+                                            <input type="number" name="min_stay" min="1" style="width:70px;"
+                                                   value="<?php echo esc_attr((string)($rate['min_stay'] ?? 1)); ?>" />
+                                        </div>
+                                        <div style="display:flex;gap:8px;padding-top:2px;">
+                                            <button type="submit" class="button button-primary" style="background:#708a72;border-color:#708a72;">
+                                                <?php esc_html_e('Salva modifiche', 'almaretna-booking'); ?>
+                                            </button>
+                                            <button type="button" class="button" onclick="almToggleEditRate(<?php echo $rid; ?>)">
+                                                <?php esc_html_e('Annulla', 'almaretna-booking'); ?>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </form>
                             </td>
                         </tr>
@@ -302,3 +353,19 @@ if ($room_id && !empty($rates)) {
         </div>
     <?php endif; // $room ?>
 </div>
+
+<script>
+function almToggleEditRate(id) {
+    var editRow = document.getElementById('alm-rate-edit-' + id);
+    var dataRow = document.getElementById('alm-rate-row-' + id);
+    if (!editRow) return;
+    var opening = editRow.style.display === 'none' || editRow.style.display === '';
+    // Chiudi tutte le righe di modifica aperte
+    document.querySelectorAll('[id^="alm-rate-edit-"]').forEach(function(r){ r.style.display = 'none'; });
+    if (opening) {
+        editRow.style.display = 'table-row';
+        // Scroll morbido alla riga
+        if (dataRow) dataRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+</script>

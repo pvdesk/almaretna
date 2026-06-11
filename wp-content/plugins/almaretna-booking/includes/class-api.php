@@ -116,6 +116,13 @@ class ALM_API {
             'callback'            => [$this, 'beds24_webhook'],
             'permission_callback' => '__return_true',
         ]);
+
+        // POST /guest-contact (utente loggato — area personale)
+        register_rest_route($ns, '/guest-contact', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'guest_contact'],
+            'permission_callback' => 'is_user_logged_in',
+        ]);
     }
 
     // ─── Handlers ────────────────────────────────────────────────────────────
@@ -852,6 +859,48 @@ class ALM_API {
         }
 
         return $user_id;
+    }
+
+    /**
+     * POST /guest-contact
+     * Invia un messaggio alla struttura dall'area personale ospite.
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public function guest_contact(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $subject = trim((string) $request->get_param('subject'));
+        $message = trim((string) $request->get_param('message'));
+
+        if ($subject === '' || $message === '') {
+            return new WP_Error('missing_fields', 'Compila tutti i campi.', ['status' => 400]);
+        }
+
+        $user       = wp_get_current_user();
+        $from_name  = $user->display_name ?: trim($user->first_name . ' ' . $user->last_name);
+        $from_email = $user->user_email;
+        $to         = (string) get_option('admin_email');
+
+        $body = sprintf(
+            "Messaggio dall'area personale\n\nDa: %s (%s)\n\nOggetto: %s\n\n%s",
+            $from_name,
+            $from_email,
+            $subject,
+            $message
+        );
+
+        $sent = wp_mail(
+            $to,
+            '[Almaretna] ' . $subject,
+            $body,
+            ['Reply-To: ' . $from_name . ' <' . $from_email . '>']
+        );
+
+        if (!$sent) {
+            return new WP_Error('mail_failed', 'Errore invio. Riprova più tardi.', ['status' => 500]);
+        }
+
+        return rest_ensure_response(['success' => true]);
     }
 
     // ─── Rate limiting ────────────────────────────────────────────────────────

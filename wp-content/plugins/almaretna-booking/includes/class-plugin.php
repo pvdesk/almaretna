@@ -67,6 +67,16 @@ class ALM_Plugin {
             return;
         }
 
+        // Blocca accesso wp-admin per utenti non-admin: redirect all'area personale
+        add_action('admin_init', static function(): void {
+            if (!wp_doing_ajax() && !current_user_can('manage_options')) {
+                $page = get_page_by_path('le-mie-prenotazioni');
+                $url  = $page ? (string) get_permalink($page) : home_url('/le-mie-prenotazioni/');
+                wp_safe_redirect($url, 302);
+                exit;
+            }
+        });
+
         $admin = new ALM_Admin($this->version);
 
         add_action('admin_menu',            [$admin, 'add_admin_menus']);
@@ -110,6 +120,15 @@ class ALM_Plugin {
 
         // SMTP: configura PHPMailer se le credenziali sono impostate
         add_action('phpmailer_init', [ALM_SMTP::class, 'configure_phpmailer']);
+
+        // Dopo login, subscriber → area personale (non wp-admin)
+        add_filter('login_redirect', static function(string $redirect_to, string $requested, WP_User|WP_Error $user): string {
+            if (!($user instanceof WP_User) || $user->has_cap('manage_options')) {
+                return $redirect_to;
+            }
+            $page = get_page_by_path('le-mie-prenotazioni');
+            return $page ? (string) get_permalink($page) : home_url('/le-mie-prenotazioni/');
+        }, 10, 3);
 
         // Google Search Console — meta tag di verifica
         add_action('wp_head', static function (): void {

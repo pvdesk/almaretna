@@ -630,6 +630,11 @@ class ALM_Admin {
             $config_path = dirname(ABSPATH) . '/wp-config.php';
         }
 
+        // Sicurezza: scrivi SOLO su un file che si chiama wp-config.php
+        if (basename($config_path) !== 'wp-config.php') {
+            wp_send_json_error(__('Percorso wp-config.php non valido.', 'almaretna-booking'));
+        }
+
         if (!file_exists($config_path) || !is_writable($config_path)) {
             wp_send_json_error(__('wp-config.php non trovato o non scrivibile. Inserisci le costanti manualmente.', 'almaretna-booking'));
         }

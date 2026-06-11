@@ -812,6 +812,15 @@
                                 borderColor: '#C5B49C',
                                 boxShadow:   '0 0 0 3px rgba(197,180,156,.20)',
                             },
+                            '.AccordionItem': {
+                                border:       '1px solid #EFEBE4',
+                                borderRadius: '8px',
+                                marginBottom: '8px',
+                            },
+                            '.AccordionItem--selected': {
+                                borderColor: '#C5B49C',
+                                boxShadow:   '0 0 0 1px #C5B49C',
+                            },
                         },
                     },
                 });
@@ -819,7 +828,14 @@
 
                 if (stripeElContainer) stripeElContainer.innerHTML = '';
 
-                const paymentEl = elements.create('payment');
+                const paymentEl = elements.create('payment', {
+                    layout: {
+                        type:               'accordion',
+                        defaultCollapsed:    false,
+                        radios:              false,
+                        spacedAccordionItems: true,
+                    },
+                });
                 paymentEl.mount('#stripe-payment-element');
 
                 paymentEl.on('ready', function () {

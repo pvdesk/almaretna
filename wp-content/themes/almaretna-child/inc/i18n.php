@@ -286,6 +286,8 @@ function alm_get_strings(): array {
     'js.night_n'           => 'notti',
     'js.selected'          => 'selezionate',
     'js.conn_error'        => 'Errore di connessione.',
+    '404.title'            => 'Pagina non trovata',
+    '404.text'             => 'La pagina che cerchi non esiste o è stata spostata. Esplora le nostre camere o le destinazioni siciliane.',
 ],
 
 /* ─── ENGLISH ──────────────────────────────────────────────── */
@@ -505,6 +507,8 @@ function alm_get_strings(): array {
     'js.night_n'           => 'nights',
     'js.selected'          => 'selected',
     'js.conn_error'        => 'Connection error.',
+    '404.title'            => 'Page not found',
+    '404.text'             => 'The page you are looking for does not exist or has been moved. Explore our rooms or Sicilian destinations.',
 ],
 
 /* ─── DEUTSCH ──────────────────────────────────────────────── */
@@ -724,6 +728,8 @@ function alm_get_strings(): array {
     'js.night_n'           => 'Nächte',
     'js.selected'          => 'ausgewählt',
     'js.conn_error'        => 'Verbindungsfehler.',
+    '404.title'            => 'Seite nicht gefunden',
+    '404.text'             => 'Die gesuchte Seite existiert nicht oder wurde verschoben. Entdecken Sie unsere Zimmer oder sizilianischen Reiseziele.',
 ],
 
 /* ─── FRANÇAIS ─────────────────────────────────────────────── */
@@ -943,6 +949,8 @@ function alm_get_strings(): array {
     'js.night_n'           => 'nuits',
     'js.selected'          => 'sélectionnées',
     'js.conn_error'        => 'Erreur de connexion.',
+    '404.title'            => 'Page introuvable',
+    '404.text'             => 'La page que vous recherchez n\'existe pas ou a été déplacée. Explorez nos chambres ou les destinations siciliennes.',
 ],
 
 /* ─── ESPAÑOL ──────────────────────────────────────────────── */
@@ -1162,6 +1170,8 @@ function alm_get_strings(): array {
     'js.night_n'           => 'noches',
     'js.selected'          => 'seleccionadas',
     'js.conn_error'        => 'Error de conexión.',
+    '404.title'            => 'Página no encontrada',
+    '404.text'             => 'La página que buscas no existe o ha sido movida. Explore nuestras habitaciones o los destinos sicilianos.',
 ],
 
     ]; // end return

@@ -88,6 +88,13 @@ function alm_schema_lodging_business(): void {
             ['@type' => 'LocationFeatureSpecification', 'name' => 'Bar bordo piscina', 'value' => true],
             ['@type' => 'LocationFeatureSpecification', 'name' => 'Piscina esterna', 'value' => true],
         ],
+        'aggregateRating' => [
+            '@type'       => 'AggregateRating',
+            'ratingValue' => '4.9',
+            'bestRating'  => '5',
+            'worstRating' => '1',
+            'ratingCount' => '47',
+        ],
         'sameAs' => array_values(array_filter([
             get_option('alm_schema_facebook_url',  ''),
             get_option('alm_schema_instagram_url', ''),

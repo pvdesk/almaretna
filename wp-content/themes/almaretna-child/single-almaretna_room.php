@@ -122,7 +122,7 @@ $camere_url  = alm_url_with_lang(!empty($camere_page) ? get_permalink($camere_pa
                              data-full="<?php echo esc_url($full[0]); ?>"
                              style="aspect-ratio:1;overflow:hidden;cursor:pointer;opacity:<?php echo $idx === 0 ? '1' : '.65'; ?>;transition:opacity .2s;<?php echo $idx === 0 ? 'outline:2px solid #C5B49C;outline-offset:-2px;' : ''; ?>"
                              aria-label="<?php echo esc_attr(alm_t('room.img_view')); ?>">
-                            <img src="<?php echo esc_url($thumb[0]); ?>" alt="" loading="lazy"
+                            <img src="<?php echo esc_url($thumb[0]); ?>" alt="<?php echo esc_attr(get_the_title() . ' — foto ' . ($idx + 1)); ?>" loading="lazy"
                                  style="width:100%;height:100%;object-fit:cover;display:block;" />
                         </div>
                         <?php endforeach; ?>

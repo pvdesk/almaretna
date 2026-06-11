@@ -445,34 +445,40 @@ class ALM_API {
             );
         }
 
-        if (ALM_Stripe::is_configured()) {
-            $intent = ALM_Stripe::get_payment_intent($pi_id_to_verify);
+        if (!ALM_Stripe::is_configured()) {
+            return new WP_Error(
+                'payment_system_unavailable',
+                __('Il sistema di pagamento non è configurato. Impossibile verificare il pagamento.', 'almaretna-booking'),
+                ['status' => 503]
+            );
+        }
 
-            if (is_wp_error($intent)) {
-                return new WP_Error(
-                    'payment_verify_failed',
-                    __('Impossibile verificare il pagamento con Stripe.', 'almaretna-booking'),
-                    ['status' => 422]
-                );
-            }
+        $intent = ALM_Stripe::get_payment_intent($pi_id_to_verify);
 
-            if (($intent['status'] ?? '') !== 'succeeded') {
-                return new WP_Error(
-                    'payment_not_succeeded',
-                    __('Il pagamento non risulta completato.', 'almaretna-booking'),
-                    ['status' => 422]
-                );
-            }
+        if (is_wp_error($intent)) {
+            return new WP_Error(
+                'payment_verify_failed',
+                __('Impossibile verificare il pagamento con Stripe.', 'almaretna-booking'),
+                ['status' => 422]
+            );
+        }
 
-            // Verifica che il PaymentIntent appartenga a questa prenotazione.
-            $ref_in_meta = $intent['metadata']['booking_ref'] ?? '';
-            if ($ref_in_meta && $ref_in_meta !== $booking_ref) {
-                return new WP_Error(
-                    'payment_mismatch',
-                    __('Il pagamento non corrisponde alla prenotazione indicata.', 'almaretna-booking'),
-                    ['status' => 403]
-                );
-            }
+        if (($intent['status'] ?? '') !== 'succeeded') {
+            return new WP_Error(
+                'payment_not_succeeded',
+                __('Il pagamento non risulta completato.', 'almaretna-booking'),
+                ['status' => 422]
+            );
+        }
+
+        // Verifica che il PaymentIntent appartenga a questa prenotazione.
+        $ref_in_meta = $intent['metadata']['booking_ref'] ?? '';
+        if ($ref_in_meta && $ref_in_meta !== $booking_ref) {
+            return new WP_Error(
+                'payment_mismatch',
+                __('Il pagamento non corrisponde alla prenotazione indicata.', 'almaretna-booking'),
+                ['status' => 403]
+            );
         }
 
         $confirmed = $booking->confirm($pi_id_to_verify ?: null);
@@ -631,8 +637,8 @@ class ALM_API {
         $token = $request->get_header('X-Beds24-Token')
                ?: sanitize_text_field($request->get_param('token') ?? '');
 
-        $expected = defined('ALM_BEDS24_WEBHOOK_TOKEN') ? ALM_BEDS24_WEBHOOK_TOKEN : '';
-        if ($expected && !hash_equals($expected, $token)) {
+        $expected = defined('ALM_BEDS24_WEBHOOK_TOKEN') ? ALM_BEDS24_WEBHOOK_TOKEN : get_option('alm_beds24_webhook_token', '');
+        if (!$expected || !hash_equals($expected, $token)) {
             return new WP_Error('unauthorized', 'Token non valido.', ['status' => 403]);
         }
 

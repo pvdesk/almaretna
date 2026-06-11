@@ -108,6 +108,7 @@ class ALM_Plugin {
         add_action('wp_dashboard_setup',             [$admin, 'register_dashboard_widgets']);
         add_action('wp_ajax_alm_save_smtp',          [$admin, 'ajax_save_smtp']);
         add_action('wp_ajax_alm_test_smtp',          [$admin, 'ajax_test_smtp']);
+        add_action('wp_ajax_alm_save_struttura',     [$admin, 'ajax_save_struttura']);
     }
 
     /**

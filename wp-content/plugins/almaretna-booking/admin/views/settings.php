@@ -96,56 +96,52 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
          TAB: STRUTTURA
     ══════════════════════════════════════════════════ -->
     <div id="alm-tab-struttura" class="alm-tab-pane <?php echo $active_tab === 'struttura' ? 'is-active' : ''; ?>">
+        <div class="alm-tab-body">
 
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-            <?php wp_nonce_field('alm_save_settings'); ?>
-            <input type="hidden" name="action" value="alm_save_settings" />
-
-            <div class="alm-settings-card" style="max-width:700px;">
+            <div class="alm-settings-card">
                 <div class="alm-settings-card__head">
                     <div>
                         <h2>Informazioni struttura</h2>
-                        <p class="alm-card-desc">Questi dati compaiono nelle email agli ospiti e nel sito.</p>
+                        <p class="alm-card-desc">Dati usati nelle email agli ospiti e nel sito.</p>
                     </div>
                 </div>
                 <div class="alm-settings-card__body">
                     <div class="alm-field-grid">
                         <div class="alm-field alm-field--full">
                             <label for="host_name">Nome struttura</label>
-                            <input type="text" id="host_name" name="host_name" class="regular-text"
+                            <input type="text" id="host_name"
                                    value="<?php echo esc_attr($s['host_name'] ?? 'Almaretna'); ?>" />
                         </div>
                         <div class="alm-field">
-                            <label for="host_email">Email <span class="alm-hint">mittente e destinatario email prenotazioni</span></label>
-                            <input type="email" id="host_email" name="host_email" class="regular-text"
+                            <label for="host_email">Email struttura <span class="alm-hint">mittente e destinatario</span></label>
+                            <input type="email" id="host_email"
                                    value="<?php echo esc_attr($s['host_email'] ?? get_option('admin_email')); ?>" />
                         </div>
                         <div class="alm-field">
                             <label for="host_phone">Telefono</label>
-                            <input type="tel" id="host_phone" name="host_phone" class="regular-text"
+                            <input type="tel" id="host_phone"
                                    value="<?php echo esc_attr($s['host_phone'] ?? ''); ?>"
                                    placeholder="+39 095 000 0000" />
                         </div>
                         <div class="alm-field alm-field--full">
-                            <label for="whatsapp_webhook_url">WhatsApp Webhook URL <span class="alm-hint">Opzionale &mdash; Make.com / Zapier / N8N per invio automatico indicazioni all&rsquo;ospite</span></label>
-                            <input type="url" id="whatsapp_webhook_url" name="whatsapp_webhook_url" class="regular-text"
+                            <label for="whatsapp_webhook_url">WhatsApp Webhook URL <span class="alm-hint">Make.com / Zapier / N8N — facoltativo</span></label>
+                            <input type="url" id="whatsapp_webhook_url"
                                    value="<?php echo esc_attr(get_option('alm_whatsapp_webhook_url', '')); ?>"
                                    placeholder="https://hook.make.com/..." />
                         </div>
                         <div class="alm-field">
-                            <label for="checkin_time">Check-in</label>
-                            <input type="time" id="checkin_time" name="checkin_time"
+                            <label for="checkin_time">Check-in (orario)</label>
+                            <input type="time" id="checkin_time"
                                    value="<?php echo esc_attr($s['checkin_time'] ?? '15:00'); ?>" />
                         </div>
                         <div class="alm-field">
-                            <label for="checkout_time">Check-out</label>
-                            <input type="time" id="checkout_time" name="checkout_time"
+                            <label for="checkout_time">Check-out (orario)</label>
+                            <input type="time" id="checkout_time"
                                    value="<?php echo esc_attr($s['checkout_time'] ?? '11:00'); ?>" />
                         </div>
                         <div class="alm-field">
-                            <label for="min_stay_global">Soggiorno minimo <span class="alm-hint">notti · override per camera</span></label>
-                            <input type="number" id="min_stay_global" name="min_stay_global"
-                                   class="small-text" min="1"
+                            <label for="min_stay_global">Soggiorno minimo <span class="alm-hint">notti (override per camera)</span></label>
+                            <input type="number" id="min_stay_global" min="1"
                                    value="<?php echo esc_attr((string) ($s['min_stay_global'] ?? 1)); ?>" />
                         </div>
                     </div>
@@ -153,29 +149,35 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                     <div class="alm-section-divider"></div>
 
                     <label class="alm-toggle-label">
-                        <input type="checkbox" name="beds24_enabled" value="1"
+                        <input type="checkbox" id="beds24_enabled" value="1"
                                <?php checked(!empty($s['beds24_enabled'])); ?> />
                         <span class="alm-toggle-text">
-                            Sincronizzazione Beds24 attiva
-                            <span class="alm-hint" style="display:block;margin-top:2px;">Aggiorna disponibilità e prezzi da Beds24 automaticamente (2× al giorno)</span>
+                            <strong>Sincronizzazione Beds24 attiva</strong>
+                            <span class="alm-hint">Aggiorna disponibilità e prezzi da Beds24 automaticamente (2× al giorno)</span>
                         </span>
                     </label>
                 </div>
             </div>
 
-            <div style="margin-top:16px;">
-                <button type="submit" class="button button-primary button-large">Salva impostazioni</button>
+            <div id="alm-struttura-msg" class="alm-msg"></div>
+            <div class="alm-form-actions">
+                <button type="button" class="button button-primary"
+                        onclick="almSaveStruttura('<?php echo esc_js(wp_create_nonce('alm_save_struttura')); ?>')">
+                    Salva impostazioni
+                </button>
             </div>
-        </form>
+
+        </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════
          TAB: PAGAMENTI
     ══════════════════════════════════════════════════ -->
     <div id="alm-tab-pagamenti" class="alm-tab-pane <?php echo $active_tab === 'pagamenti' ? 'is-active' : ''; ?>">
+        <div class="alm-tab-body">
 
         <?php if (!$stripe_configured) : ?>
-        <div class="alm-banner alm-banner--info" style="max-width:700px;margin-bottom:20px;">
+        <div class="alm-banner alm-banner--info">
             <span class="dashicons dashicons-info-outline"></span>
             <div>
                 <strong>Come attivare i pagamenti online</strong>
@@ -186,7 +188,7 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
         <?php endif; ?>
 
         <!-- Card Stripe chiavi -->
-        <div class="alm-settings-card" id="alm-stripe-card" style="max-width:700px;margin-bottom:20px;">
+        <div class="alm-settings-card" id="alm-stripe-card">
             <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('stripe')">
                 <div>
                     <h2>
@@ -254,8 +256,8 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                         <span class="alm-hint" style="margin-top:3px;">Dashboard Stripe → Sviluppatori → Webhook → Signing secret</span>
                     </div>
                 </div>
-                <div id="alm-stripe-db-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
-                <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
+                <div id="alm-stripe-db-msg" class="alm-msg"></div>
+                <div class="alm-form-actions">
                     <button type="button" class="button button-primary"
                             onclick="almSaveStripeDb('<?php echo esc_js(wp_create_nonce('alm_save_stripe_db')); ?>')">
                         Salva chiavi Stripe
@@ -266,7 +268,7 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
         </div>
 
         <!-- Card URL webhook -->
-        <div class="alm-settings-card" style="max-width:700px;">
+        <div class="alm-settings-card">
             <div class="alm-settings-card__head">
                 <div>
                     <h2>URL Webhook Stripe</h2>
@@ -284,15 +286,18 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                 </p>
             </div>
         </div>
+
+        </div><!-- /.alm-tab-body -->
     </div>
 
     <!-- ══════════════════════════════════════════════════
          TAB: CANALI
     ══════════════════════════════════════════════════ -->
     <div id="alm-tab-canali" class="alm-tab-pane <?php echo $active_tab === 'canali' ? 'is-active' : ''; ?>">
+        <div class="alm-tab-body">
 
         <?php if (!$b24_configured) : ?>
-        <div class="alm-banner alm-banner--info" style="max-width:700px;margin-bottom:20px;">
+        <div class="alm-banner alm-banner--info">
             <span class="dashicons dashicons-admin-links"></span>
             <div>
                 <strong>Collega Beds24 per sincronizzare i calendari</strong>
@@ -301,7 +306,7 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
         </div>
         <?php endif; ?>
 
-        <div class="alm-settings-card" id="alm-b24-card" style="max-width:700px;">
+        <div class="alm-settings-card" id="alm-b24-card">
             <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('b24')">
                 <div>
                     <h2>
@@ -365,8 +370,8 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                         </div>
                     </div>
                 </div>
-                <div id="alm-b24-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
-                <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                <div id="alm-b24-msg" class="alm-msg"></div>
+                <div class="alm-form-actions">
                     <button type="button" class="button button-primary"
                             onclick="almSaveBeds24('<?php echo esc_js(wp_create_nonce('alm_save_beds24')); ?>')">
                         Salva chiavi Beds24
@@ -381,23 +386,25 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                 <?php endif; ?>
 
                 <div class="alm-section-divider"></div>
-                <p style="font-size:13px;font-weight:600;margin:0 0 8px;">URL Webhook Beds24</p>
+                <p style="font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#6b7280;margin:0 0 8px;">URL Webhook Beds24</p>
                 <div class="alm-copybox">
                     <code id="alm-b24-wh-url"><?php echo esc_html(get_rest_url(null, 'alm/v1/beds24/webhook')); ?></code>
                     <button type="button" class="button button-small" onclick="almCopy('alm-b24-wh-url',this)">Copia</button>
                 </div>
             </div>
         </div>
+
+        </div><!-- /.alm-tab-body -->
     </div>
 
     <!-- ══════════════════════════════════════════════════
          TAB: ANALYTICS
     ══════════════════════════════════════════════════ -->
     <div id="alm-tab-analytics" class="alm-tab-pane <?php echo $active_tab === 'analytics' ? 'is-active' : ''; ?>">
-        <div style="max-width:700px;">
+        <div class="alm-tab-body">
 
             <!-- GA4 -->
-            <div class="alm-settings-card" id="alm-ga4-card" style="margin-bottom:16px;">
+            <div class="alm-settings-card" id="alm-ga4-card">
                 <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('ga4')">
                     <div>
                         <h2>
@@ -427,21 +434,23 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                     <p class="alm-card-intro">Trovi il Measurement ID in <strong>GA4 → Amministrazione → Flussi di dati → seleziona il flusso → ID misurazione</strong>.</p>
                     <div class="alm-field" style="max-width:320px;">
                         <label for="alm-ga4-id">Measurement ID</label>
-                        <input type="text" id="alm-ga4-id" class="regular-text"
+                        <input type="text" id="alm-ga4-id"
                                value="<?php echo esc_attr($ga4_id); ?>"
                                placeholder="G-XXXXXXXXXX" style="font-family:monospace;" />
                     </div>
-                    <div id="alm-ga4-msg" style="display:none;margin-top:10px;" class="alm-msg"></div>
-                    <button type="button" class="button button-primary" style="margin-top:14px;"
-                            onclick="almSaveAnalytics('ga4','<?php echo esc_js(wp_create_nonce('alm_save_ga4')); ?>')">
-                        Salva e attiva
-                    </button>
+                    <div id="alm-ga4-msg" class="alm-msg"></div>
+                    <div class="alm-form-actions">
+                        <button type="button" class="button button-primary"
+                                onclick="almSaveAnalytics('ga4','<?php echo esc_js(wp_create_nonce('alm_save_ga4')); ?>')">
+                            Salva e attiva
+                        </button>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>
 
             <!-- GSC -->
-            <div class="alm-settings-card" id="alm-gsc-card" style="margin-bottom:16px;">
+            <div class="alm-settings-card" id="alm-gsc-card">
                 <div class="alm-settings-card__head alm-settings-card__head--toggle" onclick="almToggle('gsc')">
                     <div>
                         <h2>
@@ -469,16 +478,18 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                     </button>
                     <?php else : ?>
                     <p class="alm-card-intro">Vai in <strong>Google Search Console → Impostazioni → Verifica proprietà → Tag HTML</strong> e copia solo il contenuto dell'attributo <code>content</code>.</p>
-                    <div class="alm-field" style="max-width:480px;">
+                    <div class="alm-field">
                         <label for="alm-gsc-code">Codice di verifica</label>
-                        <input type="text" id="alm-gsc-code" class="large-text"
+                        <input type="text" id="alm-gsc-code"
                                value="<?php echo esc_attr($gsc_code); ?>" placeholder="AbCdEf1234…" />
                     </div>
-                    <div id="alm-gsc-msg" style="display:none;margin-top:10px;" class="alm-msg"></div>
-                    <button type="button" class="button button-primary" style="margin-top:14px;"
-                            onclick="almSaveAnalytics('gsc','<?php echo esc_js(wp_create_nonce('alm_save_gsc')); ?>')">
-                        Salva e verifica
-                    </button>
+                    <div id="alm-gsc-msg" class="alm-msg"></div>
+                    <div class="alm-form-actions">
+                        <button type="button" class="button button-primary"
+                                onclick="almSaveAnalytics('gsc','<?php echo esc_js(wp_create_nonce('alm_save_gsc')); ?>')">
+                            Salva e verifica
+                        </button>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -524,19 +535,19 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                                       style="font-size:11px;font-family:monospace;"
                                       placeholder='{"type":"service_account","project_id":"...","client_email":"...@....iam.gserviceaccount.com",...}'></textarea>
                         </div>
-                        <div class="alm-field" style="max-width:400px;">
+                        <div class="alm-field">
                             <label for="alm-gapi-prop">GA4 Property ID <span class="alm-hint">es. properties/123456789</span></label>
-                            <input type="text" id="alm-gapi-prop" class="regular-text"
+                            <input type="text" id="alm-gapi-prop"
                                    value="<?php echo esc_attr($gapi_prop); ?>" placeholder="properties/XXXXXXXXX" />
                         </div>
-                        <div class="alm-field" style="max-width:400px;">
+                        <div class="alm-field">
                             <label for="alm-gapi-site">GSC Site URL</label>
-                            <input type="url" id="alm-gapi-site" class="regular-text"
+                            <input type="url" id="alm-gapi-site"
                                    value="<?php echo esc_attr($gapi_site); ?>" placeholder="https://www.almaretna.it/" />
                         </div>
                     </div>
-                    <div id="alm-gapi-msg" style="display:none;margin-top:12px;" class="alm-msg"></div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+                    <div id="alm-gapi-msg" class="alm-msg"></div>
+                    <div class="alm-form-actions">
                         <button type="button" class="button button-primary"
                                 onclick="almSaveGapi('<?php echo esc_js(wp_create_nonce('alm_save_google_api')); ?>')">
                             Salva configurazione
@@ -562,7 +573,7 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
          TAB: EMAIL / SMTP
     ══════════════════════════════════════════════════ -->
     <div id="alm-tab-email" class="alm-tab-pane <?php echo $active_tab === 'email' ? 'is-active' : ''; ?>">
-        <div style="max-width:700px;">
+        <div class="alm-tab-body">
 
             <?php if ($smtp_from_cfg) : ?>
             <div class="notice notice-info inline" style="margin-bottom:16px;">
@@ -661,8 +672,8 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                     </div><!-- /.alm-field-list -->
 
                     <?php if (!$smtp_from_cfg) : ?>
-                    <div id="alm-smtp-msg" class="alm-msg" style="display:none;margin-top:16px;"></div>
-                    <div style="margin-top:16px;">
+                    <div id="alm-smtp-msg" class="alm-msg"></div>
+                    <div class="alm-form-actions">
                         <button type="button" class="button button-primary"
                                 onclick="almSaveSmtp('<?php echo esc_js(wp_create_nonce('alm_save_smtp')); ?>')">
                             Salva configurazione
@@ -675,7 +686,7 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
             </div>
 
             <!-- Test email -->
-            <div class="alm-settings-card" style="margin-top:16px;">
+            <div class="alm-settings-card">
                 <div class="alm-settings-card__head">
                     <div>
                         <h2>Test invio email</h2>
@@ -683,31 +694,29 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                     </div>
                 </div>
                 <div class="alm-settings-card__body">
-                    <div class="alm-field-list">
-                        <div class="alm-field">
-                            <label for="smtp-test-to">Destinatario test</label>
-                            <input type="email" id="smtp-test-to"
-                                   value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>"
-                                   placeholder="tua@email.it"
-                                   <?php echo !$smtp_configured ? 'disabled' : ''; ?> />
-                        </div>
+                    <div class="alm-field">
+                        <label for="smtp-test-to">Destinatario test</label>
+                        <input type="email" id="smtp-test-to"
+                               value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>"
+                               placeholder="tua@email.it"
+                               <?php echo !$smtp_configured ? 'disabled' : ''; ?> />
                     </div>
-                    <div id="alm-smtp-test-msg" class="alm-msg" style="display:none;margin-top:16px;"></div>
-                    <div style="margin-top:16px;">
+                    <div id="alm-smtp-test-msg" class="alm-msg"></div>
+                    <div class="alm-form-actions">
                         <button type="button" class="button" id="alm-smtp-test-btn"
                                 <?php echo !$smtp_configured ? 'disabled' : ''; ?>
                                 onclick="almTestSmtp('<?php echo esc_js(wp_create_nonce('alm_test_smtp')); ?>')">
                             ✉ Invia email di test
                         </button>
                         <?php if (!$smtp_configured) : ?>
-                        <span class="alm-hint" style="margin-left:10px;">Salva prima la configurazione SMTP.</span>
+                        <span class="alm-hint">Salva prima la configurazione SMTP.</span>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
 
             <!-- Guida provider -->
-            <div class="alm-settings-card" style="margin-top:16px;">
+            <div class="alm-settings-card">
                 <div class="alm-settings-card__head">
                     <div><h2>Impostazioni per provider comuni</h2></div>
                 </div>
@@ -739,10 +748,10 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
          TAB: SISTEMA
     ══════════════════════════════════════════════════ -->
     <div id="alm-tab-sistema" class="alm-tab-pane <?php echo $active_tab === 'sistema' ? 'is-active' : ''; ?>">
-        <div style="max-width:700px;">
+        <div class="alm-tab-body">
 
             <!-- Checklist -->
-            <div class="alm-settings-card" style="margin-bottom:16px;">
+            <div class="alm-settings-card">
                 <div class="alm-settings-card__head">
                     <div>
                         <h2>Checklist pre-lancio</h2>
@@ -771,14 +780,14 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
                     </div>
                 </div>
                 <div class="alm-settings-card__body">
-                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                    <div class="alm-form-actions" style="justify-content:space-between;align-items:flex-start;">
                         <div>
-                            <strong style="font-size:13px;">Cache PHP (OPcache)</strong>
-                            <p class="alm-hint" style="margin:2px 0 0;">Svuota se le modifiche al plugin non sembrano applicate.</p>
+                            <strong style="font-size:13px;color:#111827;">Cache PHP (OPcache)</strong>
+                            <p class="alm-hint" style="margin:3px 0 0;">Svuota se le modifiche al plugin non sembrano applicate.</p>
                         </div>
-                        <button type="button" class="button" style="margin-left:auto;white-space:nowrap;"
+                        <button type="button" class="button"
                                 onclick="almResetOpcache('<?php echo esc_js(wp_create_nonce('alm_reset_opcache')); ?>')">
-                            ↺ Svuota cache PHP
+                            ↺ Svuota cache
                         </button>
                     </div>
                     <div class="alm-section-divider"></div>
@@ -874,22 +883,46 @@ function almMsg(id, text, ok) {
     el.textContent = text;
 }
 
+/* ─── Struttura (AJAX save) ─── */
+function almSaveStruttura(nonce) {
+    var fd = new FormData();
+    fd.append('action','alm_save_struttura'); fd.append('nonce',nonce);
+    fd.append('host_name',        (document.getElementById('host_name')            ||{value:''}).value.trim());
+    fd.append('host_email',       (document.getElementById('host_email')           ||{value:''}).value.trim());
+    fd.append('host_phone',       (document.getElementById('host_phone')           ||{value:''}).value.trim());
+    fd.append('whatsapp_webhook_url',(document.getElementById('whatsapp_webhook_url')||{value:''}).value.trim());
+    fd.append('checkin_time',     (document.getElementById('checkin_time')         ||{value:''}).value);
+    fd.append('checkout_time',    (document.getElementById('checkout_time')        ||{value:''}).value);
+    fd.append('min_stay_global',  (document.getElementById('min_stay_global')      ||{value:'1'}).value);
+    fd.append('beds24_enabled',   (document.getElementById('beds24_enabled')       ||{checked:false}).checked ? 1 : 0);
+    var btn = event.currentTarget; btn.disabled=true; var orig=btn.textContent; btn.textContent='…';
+    fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            almMsg('alm-struttura-msg', d.data||(d.success?'✓ Salvato':'✗ Errore'), d.success);
+            btn.disabled=false; btn.textContent=orig;
+        }).catch(function(){
+            almMsg('alm-struttura-msg','Errore di rete.',false);
+            btn.disabled=false; btn.textContent=orig;
+        });
+}
+
 /* ─── OPcache ─── */
 function almResetOpcache(nonce) {
-    var btn  = event.currentTarget;
+    var btn   = event.currentTarget;
     var msgEl = document.getElementById('alm-opcache-msg');
-    var orig = btn.textContent;
+    var orig  = btn.textContent;
     btn.disabled = true; btn.textContent = '…';
     var fd = new FormData();
     fd.append('action','alm_reset_opcache'); fd.append('nonce',nonce);
     fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:fd})
         .then(function(r){ return r.json(); })
         .then(function(d){
-            if (msgEl){ msgEl.style.color = d.success ? '#2e7d32' : '#c62828'; msgEl.textContent = d.data||(d.success?'✓ Fatto':'✗ Errore'); }
+            if (msgEl){ msgEl.style.color = d.success ? '#059669' : '#dc2626'; msgEl.textContent = d.data||(d.success?'✓ Fatto':'✗ Errore'); }
             btn.disabled = false; btn.textContent = orig;
             if (d.success) setTimeout(function(){ location.reload(); },1500);
         }).catch(function(){
-            if (msgEl){ msgEl.style.color='#c62828'; msgEl.textContent='Errore di rete'; }
+            if (msgEl){ msgEl.style.color='#dc2626'; msgEl.textContent='Errore di rete'; }
             btn.disabled = false; btn.textContent = orig;
         });
 }

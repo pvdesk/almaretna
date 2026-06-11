@@ -601,6 +601,30 @@ class ALM_Admin {
         include $file;
     }
 
+    // ── AJAX: salva impostazioni struttura ───────────────────────────────────
+
+    public function ajax_save_struttura(): void {
+        check_ajax_referer('alm_save_struttura', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+
+        $settings = [
+            'host_name'       => sanitize_text_field(wp_unslash($_POST['host_name']     ?? '')),
+            'host_email'      => sanitize_email(wp_unslash($_POST['host_email']          ?? '')),
+            'host_phone'      => sanitize_text_field(wp_unslash($_POST['host_phone']     ?? '')),
+            'checkin_time'    => sanitize_text_field(wp_unslash($_POST['checkin_time']   ?? '15:00')),
+            'checkout_time'   => sanitize_text_field(wp_unslash($_POST['checkout_time']  ?? '11:00')),
+            'currency'        => 'EUR',
+            'min_stay_global' => absint($_POST['min_stay_global'] ?? 1),
+            'beds24_enabled'  => !empty($_POST['beds24_enabled']) ? 1 : 0,
+        ];
+        update_option('alm_booking_settings', $settings);
+        update_option('alm_whatsapp_webhook_url', esc_url_raw(wp_unslash($_POST['whatsapp_webhook_url'] ?? '')));
+
+        wp_send_json_success('✓ Impostazioni struttura salvate.');
+    }
+
     // ── AJAX: salva chiavi Stripe nel DB ─────────────────────────────────────
 
     public function ajax_save_stripe_db(): void {

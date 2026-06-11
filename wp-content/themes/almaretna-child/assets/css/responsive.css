@@ -379,18 +379,28 @@ img, video, iframe, embed, object {
     /* ── Stripe payment element: riduce padding su mobile ────── */
     .stripe-payment-element { padding: var(--space-md); min-height: 150px; }
 
-    /* ── Step 4: checkout summary stack su mobile ─────────────── */
+    /* ── Step 4: checkout summary → 1 colonna su mobile ──────── */
     .alm-checkout__summary {
-        flex-direction: column;
-        align-items: flex-start;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        padding: var(--space-lg);
+        gap: 0;
     }
+    .alm-checkout__summary-room { grid-row: 1; }
+    .alm-checkout__summary-meta { grid-row: 2; padding-bottom: var(--space-md); }
     .alm-checkout__summary-total {
+        grid-column: 1;
+        grid-row: 3;
         flex-direction: row;
-        align-items: center;
-        gap: var(--space-sm);
-        width: 100%;
+        align-items: baseline;
         justify-content: space-between;
+        padding-left: 0;
+        padding-top: var(--space-md);
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+        text-align: left;
     }
+    .alm-checkout__summary-total strong { font-size: var(--fs-xl); }
 
     /* ── room-card-premium footer: stack su schermi stretti ──── */
     .room-card-premium__footer {

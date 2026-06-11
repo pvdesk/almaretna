@@ -819,7 +819,7 @@
 
                 if (stripeElContainer) stripeElContainer.innerHTML = '';
 
-                const paymentEl = elements.create('payment', { layout: 'tabs' });
+                const paymentEl = elements.create('payment');
                 paymentEl.mount('#stripe-payment-element');
 
                 paymentEl.on('ready', function () {

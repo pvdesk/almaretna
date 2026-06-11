@@ -744,45 +744,79 @@ select.form-control {
     flex-direction: column;
     gap: var(--space-xl);
 }
+
+/* Riepilogo prenotazione — card professionale a 2 colonne */
 .alm-checkout__summary {
-    background: var(--color-bg);
+    background: var(--color-white);
     border: 1px solid var(--color-border);
+    border-top: 3px solid #A6957E;
     border-radius: var(--radius-md);
-    padding: var(--space-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex-wrap: wrap;
+    padding: var(--space-xl);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0 var(--space-xl);
+    box-shadow: var(--shadow-sm);
 }
 .alm-checkout__summary-room {
+    grid-column: 1;
+    grid-row: 1;
     font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: var(--fs-lg);
-    flex: 1;
-    min-width: 140px;
+    font-size: var(--fs-xl);
+    font-weight: 400;
+    color: var(--color-text);
+    line-height: 1.25;
+    padding-bottom: var(--space-xs);
 }
 .alm-checkout__summary-meta {
-    color: var(--color-text-light);
+    grid-column: 1;
+    grid-row: 2;
     font-size: var(--fs-sm);
-    flex: 2;
-    min-width: 140px;
+    color: var(--color-text-light);
+    letter-spacing: 0.01em;
+    line-height: 1.5;
 }
-.alm-checkout__summary-sep { opacity: .4; }
+.alm-checkout__summary-sep { opacity: .35; }
 .alm-checkout__summary-total {
+    grid-column: 2;
+    grid-row: 1 / span 2;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    justify-content: center;
+    gap: 4px;
+    padding-left: var(--space-xl);
+    border-left: 1px solid var(--color-border);
     flex-shrink: 0;
-    font-size: var(--fs-sm);
-    color: var(--color-text-light);
     text-align: right;
+}
+.alm-checkout__summary-total span {
+    font-size: var(--fs-xs);
+    color: var(--color-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
 }
 .alm-checkout__summary-total strong {
     font-family: var(--font-heading);
-    font-size: var(--fs-xl);
+    font-size: var(--fs-2xl);
     color: var(--color-text);
     white-space: nowrap;
+    line-height: 1;
+    font-weight: 400;
+}
+
+/* Titolo sezione Pagamento — label sobria nello step 4 */
+.alm-checkout__form .form-section-title {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-light);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
 }
 
 /* ─── Payment button with spinner ────────────────────────────── */

@@ -83,9 +83,9 @@ class ALM_Stripe {
         }
 
         $body = [
-            'amount'               => $amount_cents,
-            'currency'             => strtolower($currency),
-            'automatic_payment_methods[enabled]' => 'true',
+            'amount'                   => $amount_cents,
+            'currency'                 => strtolower($currency),
+            'payment_method_types[0]'  => 'card',
         ];
 
         foreach ($metadata as $k => $v) {

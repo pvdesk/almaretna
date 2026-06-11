@@ -39,6 +39,7 @@ spl_autoload_register(function (string $class_name): void {
         'ALM_Beds24'       => ALM_BOOKING_PATH . 'includes/class-beds24.php',
         'ALM_Google_API'   => ALM_BOOKING_PATH . 'includes/class-google-api.php',
         'ALM_Notifications'=> ALM_BOOKING_PATH . 'includes/class-notifications.php',
+        'ALM_SMTP'         => ALM_BOOKING_PATH . 'includes/class-smtp.php',
         'ALM_API'          => ALM_BOOKING_PATH . 'includes/class-api.php',
         'ALM_Admin'        => ALM_BOOKING_PATH . 'admin/class-admin.php',
         'ALM_Public'       => ALM_BOOKING_PATH . 'public/class-public.php',

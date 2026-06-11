@@ -96,6 +96,8 @@ class ALM_Plugin {
         add_action('wp_ajax_alm_refresh_ga4',        [$admin, 'ajax_refresh_ga4']);
         add_action('wp_ajax_alm_refresh_gsc',        [$admin, 'ajax_refresh_gsc']);
         add_action('wp_dashboard_setup',             [$admin, 'register_dashboard_widgets']);
+        add_action('wp_ajax_alm_save_smtp',          [$admin, 'ajax_save_smtp']);
+        add_action('wp_ajax_alm_test_smtp',          [$admin, 'ajax_test_smtp']);
     }
 
     /**
@@ -105,6 +107,9 @@ class ALM_Plugin {
         $public = new ALM_Public($this->version);
 
         add_action('wp_enqueue_scripts', [$public, 'enqueue_assets']);
+
+        // SMTP: configura PHPMailer se le credenziali sono impostate
+        add_action('phpmailer_init', [ALM_SMTP::class, 'configure_phpmailer']);
 
         // Google Search Console — meta tag di verifica
         add_action('wp_head', static function (): void {

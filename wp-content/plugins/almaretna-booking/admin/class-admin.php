@@ -1146,6 +1146,65 @@ class ALM_Admin {
         wp_send_json_success('&#10003; Connessione OK — ' . $clicks . ' click negli ultimi 7 giorni.');
     }
 
+    // ── AJAX: salva impostazioni SMTP ────────────────────────────────────────
+
+    public function ajax_save_smtp(): void {
+        check_ajax_referer('alm_save_smtp', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        if (ALM_SMTP::config_source() === 'config') {
+            wp_send_json_error('Le credenziali SMTP sono definite in wp-config.php — rimuovile prima di usare il DB.');
+        }
+
+        ALM_SMTP::save([
+            'host'       => wp_unslash($_POST['host']       ?? ''),
+            'port'       => wp_unslash($_POST['port']       ?? '587'),
+            'encryption' => wp_unslash($_POST['encryption'] ?? 'tls'),
+            'username'   => wp_unslash($_POST['username']   ?? ''),
+            'password'   => wp_unslash($_POST['password']   ?? ''),
+            'from_email' => wp_unslash($_POST['from_email'] ?? ''),
+            'from_name'  => wp_unslash($_POST['from_name']  ?? ''),
+        ]);
+
+        wp_send_json_success('✓ Configurazione SMTP salvata.');
+    }
+
+    // ── AJAX: test email SMTP ────────────────────────────────────────────────
+
+    public function ajax_test_smtp(): void {
+        check_ajax_referer('alm_test_smtp', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permesso negato.', 403);
+        }
+        if (!ALM_SMTP::is_configured()) {
+            wp_send_json_error('SMTP non configurato. Salva prima le credenziali.');
+        }
+
+        $to = sanitize_email(wp_unslash($_POST['to'] ?? ''));
+        if (!is_email($to)) {
+            wp_send_json_error('Indirizzo email destinatario non valido.');
+        }
+
+        $cfg     = ALM_SMTP::get_config();
+        $subject = '[Almaretna] Email di test SMTP — ' . gmdate('d/m/Y H:i');
+        $message = '<p>Questa è un\'email di test inviata dal plugin Almaretna Booking.</p>'
+                 . '<p>Server: <strong>' . esc_html($cfg['host']) . ':' . $cfg['port'] . '</strong><br>'
+                 . 'Mittente: <strong>' . esc_html($cfg['from_email'] ?: $cfg['username']) . '</strong></p>'
+                 . '<p style="color:#666;font-size:12px;">Inviata: ' . gmdate('d/m/Y H:i:s') . ' UTC</p>';
+
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        $sent    = wp_mail($to, $subject, $message, $headers);
+
+        if ($sent) {
+            wp_send_json_success('✓ Email inviata a ' . $to . ' — controlla la casella di posta.');
+        } else {
+            global $phpmailer;
+            $err = isset($phpmailer) ? $phpmailer->ErrorInfo : 'Errore sconosciuto.';
+            wp_send_json_error('✗ Invio fallito: ' . $err);
+        }
+    }
+
     // ── AJAX: reset OPcache PHP ───────────────────────────────────────────────
 
     public function ajax_reset_opcache(): void {

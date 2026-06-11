@@ -1205,11 +1205,13 @@ class ALM_Admin {
 
         remove_action('wp_mail_failed', $error_listener);
 
+        $info = sprintf('%s:%d (%s) → %s', $cfg['host'], $cfg['port'], $cfg['encryption'] ?: 'plain', $cfg['username']);
+
         if ($sent) {
-            wp_send_json_success('✓ Email inviata a ' . esc_html($to) . ' — controlla la casella di posta.');
+            wp_send_json_success('✓ Email inviata a ' . esc_html($to) . ' via ' . esc_html($info));
         } else {
-            $detail = $mail_error ?: 'Errore sconosciuto. Verifica server, porta e credenziali.';
-            wp_send_json_error('✗ Invio fallito: ' . $detail);
+            $detail = $mail_error ?: 'Connessione rifiutata o timeout. Verifica server, porta, cifratura e credenziali.';
+            wp_send_json_error('✗ ' . esc_html($info) . ' — ' . $detail);
         }
     }
 

@@ -49,10 +49,18 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
     <div class="alm-page-header">
         <h1><span class="dashicons dashicons-admin-settings"></span> Impostazioni</h1>
         <div class="alm-page-header__actions">
+            <?php
+            $done = (int)$stripe_configured + (int)$b24_configured + (int)$ga4_locked + (int)$gsc_locked + (int)$smtp_configured;
+            $all  = 5;
+            $clr  = $done === $all ? '#2e7d32' : ($done >= 2 ? '#e65100' : '#c62828');
+            ?>
+            <span style="font-size:12px;color:<?php echo $clr; ?>;font-weight:600;">
+                <?php echo $done; ?>/<?php echo $all; ?> servizi attivi
+            </span>
             <span class="alm-version-chip">v<?php echo esc_html(ALM_BOOKING_VERSION); ?></span>
             <button type="button" class="button button-small" id="alm-opcache-btn"
                     onclick="almResetOpcache('<?php echo esc_js(wp_create_nonce('alm_reset_opcache')); ?>')">
-                ↺ Svuota cache PHP
+                ↺ Cache PHP
             </button>
             <span id="alm-opcache-msg"></span>
         </div>
@@ -61,39 +69,6 @@ $smtp_cfg        = class_exists('ALM_SMTP') ? ALM_SMTP::get_config() : [];
     <?php if (!empty($_GET['updated'])) : ?>
     <div class="notice notice-success is-dismissible"><p>✓ Impostazioni salvate correttamente.</p></div>
     <?php endif; ?>
-
-    <!-- Barra di stato rapida -->
-    <div class="alm-status-bar">
-        <button type="button" class="alm-status-chip <?php echo $stripe_configured ? ($stripe_from_cfg || !empty($stripe_db_keys['secret_key']) ? 'is-ok' : 'is-warn') : 'is-miss'; ?>"
-                onclick="almSwitchTab('pagamenti')">
-            <span class="dashicons <?php echo $stripe_configured ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
-            Stripe<?php if ($stripe_configured): ?> <small><?php echo ALM_Stripe::is_test_mode() ? 'TEST' : 'LIVE'; ?></small><?php endif; ?>
-        </button>
-        <button type="button" class="alm-status-chip <?php echo $b24_configured ? 'is-ok' : 'is-miss'; ?>"
-                onclick="almSwitchTab('canali')">
-            <span class="dashicons <?php echo $b24_configured ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
-            Beds24
-        </button>
-        <button type="button" class="alm-status-chip <?php echo $ga4_locked ? 'is-ok' : ($ga4_id ? 'is-warn' : 'is-miss'); ?>"
-                onclick="almSwitchTab('analytics')">
-            <span class="dashicons <?php echo $ga4_locked ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
-            Analytics
-        </button>
-        <button type="button" class="alm-status-chip <?php echo $gsc_locked ? 'is-ok' : ($gsc_code ? 'is-warn' : 'is-miss'); ?>"
-                onclick="almSwitchTab('analytics')">
-            <span class="dashicons <?php echo $gsc_locked ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
-            Search Console
-        </button>
-        <button type="button" class="alm-status-chip <?php echo $smtp_configured ? 'is-ok' : 'is-miss'; ?>"
-                onclick="almSwitchTab('email')">
-            <span class="dashicons <?php echo $smtp_configured ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
-            Email SMTP
-        </button>
-        <?php
-        $done = (int)$stripe_configured + (int)$b24_configured + (int)$ga4_locked + (int)$gsc_locked + (int)$smtp_configured;
-        ?>
-        <span class="alm-status-bar__summary"><?php echo esc_html($done); ?>/5 servizi configurati</span>
-    </div>
 
     <!-- Navigazione tab -->
     <nav class="alm-tab-nav" role="tablist">

@@ -90,6 +90,36 @@ foreach ($pages as $p) {
     $results[] = "✅ Creata: <strong>{$p['post_title']}</strong> (ID {$id}) — <a href=\"{$url}\" target=\"_blank\">{$url}</a>";
 }
 
+/* ── Aggiungi "Scopri la Sicilia" al menu primario ───────────────────────── */
+$menu_locs = get_nav_menu_locations();
+$menu_id   = $menu_locs['primary'] ?? $menu_locs['main-menu'] ?? $menu_locs['menu-1'] ?? null;
+if ($menu_id) {
+    $scopri = get_page_by_path('scopri-la-sicilia');
+    if ($scopri) {
+        $already = false;
+        $items   = wp_get_nav_menu_items($menu_id) ?: [];
+        foreach ($items as $item) {
+            if ((int) $item->object_id === (int) $scopri->ID) { $already = true; break; }
+        }
+        if (!$already) {
+            $nav_id = wp_update_nav_menu_item($menu_id, 0, [
+                'menu-item-title'     => 'Scopri la Sicilia',
+                'menu-item-object'    => 'page',
+                'menu-item-object-id' => $scopri->ID,
+                'menu-item-type'      => 'post_type',
+                'menu-item-status'    => 'publish',
+            ]);
+            $results[] = is_wp_error($nav_id)
+                ? "⚠️ Impossibile aggiungere al menu: " . esc_html($nav_id->get_error_message())
+                : "✅ 'Scopri la Sicilia' aggiunto al menu primario.";
+        } else {
+            $results[] = "⚠️ 'Scopri la Sicilia' già presente nel menu primario.";
+        }
+    }
+} else {
+    $results[] = "⚠️ Nessun menu primario trovato. Aggiungere manualmente da <strong>Aspetto → Menu</strong>.";
+}
+
 ?><!DOCTYPE html>
 <html lang="it">
 <head>

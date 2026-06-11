@@ -582,3 +582,68 @@ function alm_destinazione_data(string $slug): array {
     if (!isset($all[$slug])) return [];
     return $all[$slug][$lang] ?? $all[$slug]['it'];
 }
+
+/* ─── SEO per ogni destinazione ─────────────────────────────────────────── */
+
+function alm_destinazione_seo(string $slug): array {
+    $lang = alm_get_lang();
+
+    $geo = [
+        'taormina'        => ['lat' => 37.8536, 'lon' => 15.2866, 'type' => 'TouristAttraction'],
+        'etna'            => ['lat' => 37.7510, 'lon' => 14.9952, 'type' => 'LandmarkOrHistoricalBuilding'],
+        'catania'         => ['lat' => 37.5079, 'lon' => 15.0830, 'type' => 'City'],
+        'siracusa'        => ['lat' => 37.0666, 'lon' => 15.2936, 'type' => 'TouristAttraction'],
+        'messina'         => ['lat' => 38.1938, 'lon' => 15.5540, 'type' => 'City'],
+        'mare-di-sicilia' => ['lat' => 37.7267, 'lon' => 15.2600, 'type' => 'TouristAttraction'],
+    ];
+
+    $seo = [
+        'taormina' => [
+            'it' => ['title' => 'Taormina | Almaretna – Villa in Sicilia Orientale',  'desc' => 'A 25 min da Almaretna: Teatro Greco antico, Isola Bella e panorami sul golfo ionico. Scopri Taormina con escursioni guidate su richiesta.'],
+            'en' => ['title' => 'Taormina | Almaretna – Villa Eastern Sicily',         'desc' => '25 min from Almaretna: ancient Greek Theatre, Isola Bella and stunning Ionian gulf views. Explore Taormina with guided excursions on request.'],
+            'de' => ['title' => 'Taormina | Almaretna – Villa Ostsizilien',            'desc' => '25 Min. von Almaretna: Antikes Theater, Isola Bella und Ionen-Meerespanoramen. Taormina mit geführten Ausflügen auf Anfrage erkunden.'],
+            'fr' => ['title' => 'Taormine | Almaretna – Villa Sicile Orientale',      'desc' => 'À 25 min d\'Almaretna : Théâtre grec antique, Isola Bella et panoramas sur le golfe ionique. Découvrez Taormine avec excursions guidées.'],
+            'es' => ['title' => 'Taormina | Almaretna – Villa Sicilia Oriental',      'desc' => 'A 25 min de Almaretna: Teatro Griego antiguo, Isola Bella y panoramas del golfo jónico. Explora Taormina con excursiones guiadas.'],
+        ],
+        'etna' => [
+            'it' => ['title' => 'Etna | Almaretna – Villa in Sicilia Orientale',      'desc' => 'Il vulcano più alto d\'Europa a 20 min da Almaretna: trekking e funivia in estate, sci a Piano Provenzana in inverno. Escursioni guidate.'],
+            'en' => ['title' => 'Mount Etna | Almaretna – Villa Eastern Sicily',       'desc' => 'Europe\'s highest volcano 20 min from Almaretna: summer trekking & cable car, winter skiing at Piano Provenzana. Guided excursions available.'],
+            'de' => ['title' => 'Ätna | Almaretna – Villa Ostsizilien',               'desc' => 'Europas höchster Vulkan, 20 Min. von Almaretna: Sommer-Trekking und Seilbahn, Ski in Piano Provenzana im Winter. Geführte Ausflüge buchbar.'],
+            'fr' => ['title' => 'Etna | Almaretna – Villa Sicile Orientale',          'desc' => 'Le plus haut volcan d\'Europe à 20 min d\'Almaretna : trekking estival, téléphérique et ski à Piano Provenzana en hiver. Excursions guidées.'],
+            'es' => ['title' => 'Etna | Almaretna – Villa Sicilia Oriental',          'desc' => 'El volcán más alto de Europa a 20 min de Almaretna: senderismo y teleférico en verano, esquí en Piano Provenzana en invierno. Excursiones.'],
+        ],
+        'catania' => [
+            'it' => ['title' => 'Catania | Almaretna – Villa in Sicilia Orientale',   'desc' => 'Catania barocca UNESCO a 30 min: fontana dell\'Elefante, Pescheria storica e street food autentico ai piedi dell\'Etna.'],
+            'en' => ['title' => 'Catania | Almaretna – Villa Eastern Sicily',          'desc' => 'UNESCO baroque Catania 30 min away: Elephant Fountain, historic Pescheria fish market and authentic Sicilian street food at Etna\'s foot.'],
+            'de' => ['title' => 'Catania | Almaretna – Villa Ostsizilien',             'desc' => 'Barockes Catania (UNESCO) 30 Min.: Elefantenbrunnen, historischer Fischmarkt Pescheria und authentisches Street Food am Fuß des Ätna.'],
+            'fr' => ['title' => 'Catane | Almaretna – Villa Sicile Orientale',        'desc' => 'Catane baroque UNESCO à 30 min : fontaine de l\'Éléphant, Pescheria historique et street food sicilien authentique au pied de l\'Etna.'],
+            'es' => ['title' => 'Catania | Almaretna – Villa Sicilia Oriental',       'desc' => 'Catania barroca UNESCO a 30 min: Fuente del Elefante, Pescheria histórica y street food siciliano auténtico al pie del Etna.'],
+        ],
+        'siracusa' => [
+            'it' => ['title' => 'Siracusa | Almaretna – Villa in Sicilia Orientale',  'desc' => 'Siracusa e Ortigia UNESCO a ~90 min: Teatro Greco, Orecchio di Dionisio e spiagge di Vendicari. Duemila anni di storia sul mare ionico.'],
+            'en' => ['title' => 'Syracuse | Almaretna – Villa Eastern Sicily',         'desc' => 'Syracuse & Ortigia UNESCO ~90 min away: Greek Theatre, Ear of Dionysius and Vendicari beaches. Two thousand years of history by the sea.'],
+            'de' => ['title' => 'Syrakus | Almaretna – Villa Ostsizilien',             'desc' => 'Syrakus & Ortigia UNESCO ~90 Min.: Griechisches Theater, Dionysiosohr und Vendicari-Strände. Zweitausend Jahre Geschichte am Meer.'],
+            'fr' => ['title' => 'Syracuse | Almaretna – Villa Sicile Orientale',      'desc' => 'Syracuse et Ortygie UNESCO à ~90 min : Théâtre grec, Oreille de Denys et plages de Vendicari. Deux mille ans d\'histoire en bord de mer.'],
+            'es' => ['title' => 'Siracusa | Almaretna – Villa Sicilia Oriental',      'desc' => 'Siracusa y Ortigia UNESCO a ~90 min: Teatro griego, Oreja de Dionisio y playas de Vendicari. Dos mil años de historia junto al mar.'],
+        ],
+        'messina' => [
+            'it' => ['title' => 'Messina | Almaretna – Villa in Sicilia Orientale',   'desc' => 'Messina e lo Stretto a ~50 min: orologio astronomico del Duomo, Museo Regionale e gateway per le Isole Eolie e la Calabria.'],
+            'en' => ['title' => 'Messina | Almaretna – Villa Eastern Sicily',          'desc' => 'Messina & the Strait ~50 min away: Cathedral astronomical clock, Regional Museum and gateway to the Aeolian Islands and Calabria.'],
+            'de' => ['title' => 'Messina | Almaretna – Villa Ostsizilien',             'desc' => 'Messina und Meerenge ~50 Min.: Astronomische Uhr des Doms, Regionalmuseum und Ausgangspunkt zu den Äolischen Inseln und Kalabrien.'],
+            'fr' => ['title' => 'Messine | Almaretna – Villa Sicile Orientale',       'desc' => 'Messine et le Détroit à ~50 min : horloge astronomique du dôme, Musée Régional et gateway vers les Éoliennes et la Calabre.'],
+            'es' => ['title' => 'Mesina | Almaretna – Villa Sicilia Oriental',        'desc' => 'Mesina y el Estrecho a ~50 min: reloj astronómico de la Catedral, Museo Regional y gateway a las Islas Eolias y Calabria.'],
+        ],
+        'mare-di-sicilia' => [
+            'it' => ['title' => 'Mare di Sicilia | Almaretna – Villa Sicilia Orientale', 'desc' => 'Spiagge ioniche a 10 min: Fondachello borgo marinaro, Torre Archirafi, Giardini Naxos e Isola Bella. Mare cristallino tutto l\'anno.'],
+            'en' => ['title' => 'Sicilian Sea | Almaretna – Villa Eastern Sicily',        'desc' => 'Ionian beaches 10 min away: Fondachello fishing village, Torre Archirafi, Giardini Naxos and Isola Bella. Crystal-clear sea all year.'],
+            'de' => ['title' => 'Sizilianisches Meer | Almaretna – Villa Ostsizilien',   'desc' => 'Ionische Strände 10 Min. entfernt: Fondachello Fischerdorf, Torre Archirafi, Giardini Naxos und Isola Bella. Kristallklares Meer.'],
+            'fr' => ['title' => 'Mer de Sicile | Almaretna – Villa Sicile Orientale',   'desc' => 'Plages ioniennes à 10 min : Fondachello village de pêcheurs, Torre Archirafi, Giardini Naxos et Isola Bella. Mer cristalline toute l\'année.'],
+            'es' => ['title' => 'Mar de Sicilia | Almaretna – Villa Sicilia Oriental',  'desc' => 'Playas jónicas a 10 min: Fondachello pueblo pesquero, Torre Archirafi, Giardini Naxos e Isola Bella. Mar cristalino todo el año.'],
+        ],
+    ];
+
+    if (!isset($seo[$slug])) return [];
+    $result         = $seo[$slug][$lang] ?? $seo[$slug]['it'] ?? [];
+    $result['geo']  = $geo[$slug] ?? null;
+    return $result;
+}

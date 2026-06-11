@@ -301,6 +301,7 @@ add_filter('wp_resource_hints', function (array $hints, string $relation_type): 
 $alm_includes = [
     'inc/i18n.php',              // Sistema multilingua (deve essere il primo)
     'inc/destinazioni.php',      // Contenuti pagine destinazione Sicilia
+    'inc/dest-admin.php',        // Metabox foto destinazione
     'inc/custom-post-types.php',
     'inc/helpers.php',
     'inc/shortcodes.php',

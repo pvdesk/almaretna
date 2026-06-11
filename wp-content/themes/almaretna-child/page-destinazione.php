@@ -45,6 +45,59 @@ $label_year_round = [
     'de' => 'Das ganze Jahr', 'fr' => 'Toute l\'année', 'es' => 'Todo el año',
 ][$lang] ?? 'Tutto l\'anno';
 
+/* ── Foto (post meta) ─────────────────────────────────────────────────── */
+$post_id  = get_the_ID();
+$hero_id  = (int) get_post_meta($post_id, '_alm_dest_hero', true);
+$hero_url = $hero_id ? wp_get_attachment_image_url($hero_id, 'full') : '';
+
+$gall_raw  = (string) get_post_meta($post_id, '_alm_dest_gallery', true);
+$gall_ids  = array_filter(array_map('intval', explode(',', $gall_raw)));
+$gall_imgs = [];
+foreach ($gall_ids as $gid) {
+    $url = wp_get_attachment_image_url($gid, 'large');
+    if ($url) $gall_imgs[] = [
+        'url'  => $url,
+        'full' => wp_get_attachment_image_url($gid, 'full'),
+        'alt'  => (string) get_post_meta($gid, '_wp_attachment_image_alt', true),
+    ];
+}
+
+/* ── SEO ─────────────────────────────────────────────────────────────── */
+$seo = alm_destinazione_seo($slug);
+if (!empty($seo)) {
+    add_filter('pre_get_document_title', function() use ($seo) {
+        return $seo['title'] ?? '';
+    }, 99);
+    add_action('wp_head', function() use ($seo, $hero_url, $post_id) {
+        $desc   = esc_attr($seo['desc'] ?? '');
+        $t      = esc_attr($seo['title'] ?? '');
+        $og_img = $hero_url;
+        echo '<meta name="description" content="'.$desc.'" />'."\n";
+        echo '<meta property="og:title" content="'.$t.'" />'."\n";
+        echo '<meta property="og:description" content="'.$desc.'" />'."\n";
+        echo '<meta property="og:type" content="website" />'."\n";
+        echo '<meta property="og:url" content="'.esc_url(get_permalink($post_id)).'" />'."\n";
+        if ($og_img) echo '<meta property="og:image" content="'.esc_url($og_img).'" />'."\n";
+        echo '<meta name="twitter:card" content="'.($og_img ? 'summary_large_image' : 'summary').'" />'."\n";
+        echo '<meta name="twitter:title" content="'.$t.'" />'."\n";
+        echo '<meta name="twitter:description" content="'.$desc.'" />'."\n";
+        if ($og_img) echo '<meta name="twitter:image" content="'.esc_url($og_img).'" />'."\n";
+        if (!empty($seo['geo'])) {
+            $jsonld = [
+                '@context'         => 'https://schema.org',
+                '@type'            => $seo['geo']['type'] ?? 'TouristAttraction',
+                'name'             => $seo['title'] ?? '',
+                'description'      => $seo['desc'] ?? '',
+                'url'              => get_permalink($post_id),
+                'geo'              => ['@type' => 'GeoCoordinates', 'latitude' => $seo['geo']['lat'], 'longitude' => $seo['geo']['lon']],
+                'containedInPlace' => ['@type' => 'Country', 'name' => 'Italy'],
+            ];
+            if ($og_img) $jsonld['image'] = $og_img;
+            echo '<script type="application/ld+json">'.json_encode($jsonld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).'</script>'."\n";
+        }
+    }, 2);
+}
+
 get_header();
 ?>
 <style>
@@ -90,10 +143,21 @@ get_header();
 .dest-nav__icon{font-size:1.6rem}
 .dest-nav__name{font-size:.85rem;font-weight:600}
 .dest-nav__dist{font-size:.75rem;color:#a09090}
+.dest-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:56px}
+.dest-gallery__link{display:block;aspect-ratio:4/3;overflow:hidden;border-radius:10px;border:1px solid #e8e2dc}
+.dest-gallery__img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
+.dest-gallery__link:hover .dest-gallery__img{transform:scale(1.05)}
+@media(max-width:600px){.dest-gallery{grid-template-columns:1fr 1fr}}
 </style>
 
 <main class="dest-page">
-    <div class="dest-hero">
+    <?php
+    $hero_style = '';
+    if ($hero_url) {
+        $hero_style = ' style="background-image:linear-gradient(rgba(10,30,50,.55),rgba(10,30,60,.65)),url('.esc_url($hero_url).');background-size:cover;background-position:center 35%;"';
+    }
+    ?>
+    <div class="dest-hero"<?php echo $hero_style; ?>>
         <?php
         $scopri_page = get_page_by_path('scopri-la-sicilia');
         $scopri_url  = $scopri_page ? get_permalink($scopri_page) : home_url('/scopri-la-sicilia/');
@@ -123,6 +187,18 @@ get_header();
                             <p><?php echo esc_html($text); ?></p>
                         </div>
                     </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($gall_imgs)) : ?>
+            <div class="dest-gallery">
+                <?php foreach ($gall_imgs as $img) : ?>
+                    <a href="<?php echo esc_url($img['full']); ?>" class="dest-gallery__link" target="_blank" rel="noopener">
+                        <img src="<?php echo esc_url($img['url']); ?>"
+                             alt="<?php echo esc_attr($img['alt'] ?: ($d['title'] ?? '')); ?>"
+                             class="dest-gallery__img" loading="lazy">
+                    </a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>

@@ -77,6 +77,28 @@ $content = [
 ];
 
 $c = $content[$lang] ?? $content['it'];
+
+/* ── SEO ─────────────────────────────────────────────────────────────── */
+$seo_overview = [
+    'it' => ['title' => 'Scopri la Sicilia Orientale | Almaretna – Villa Sicilia',    'desc' => 'Taormina, Etna, Catania, Siracusa e le spiagge ioniche a portata di mano. Escursioni personalizzate su richiesta da Almaretna.'],
+    'en' => ['title' => 'Discover Eastern Sicily | Almaretna – Villa Sicily',         'desc' => 'Taormina, Etna, Catania, Syracuse and Ionian beaches all within easy reach. Personalised excursions on request from Almaretna.'],
+    'de' => ['title' => 'Ostsizilien entdecken | Almaretna – Villa Sizilien',         'desc' => 'Taormina, Ätna, Catania, Syrakus und ionische Strände ganz in der Nähe. Individuelle Ausflüge auf Anfrage von Almaretna aus.'],
+    'fr' => ['title' => 'Découvrir la Sicile Orientale | Almaretna – Villa Sicile',  'desc' => 'Taormine, Etna, Catane, Syracuse et plages ioniennes à portée de main. Excursions personnalisées sur demande depuis Almaretna.'],
+    'es' => ['title' => 'Descubrir Sicilia Oriental | Almaretna – Villa Sicilia',    'desc' => 'Taormina, Etna, Catania, Siracusa y playas jónicas al alcance de la mano. Excursiones personalizadas a petición desde Almaretna.'],
+];
+$s_seo = $seo_overview[$lang] ?? $seo_overview['it'];
+add_filter('pre_get_document_title', function() use ($s_seo) { return $s_seo['title']; }, 99);
+add_action('wp_head', function() use ($s_seo) {
+    $desc = esc_attr($s_seo['desc']);
+    $t    = esc_attr($s_seo['title']);
+    echo '<meta name="description" content="'.$desc.'" />'."\n";
+    echo '<meta property="og:title" content="'.$t.'" />'."\n";
+    echo '<meta property="og:description" content="'.$desc.'" />'."\n";
+    echo '<meta property="og:type" content="website" />'."\n";
+    $jsonld = ['@context'=>'https://schema.org','@type'=>'TouristDestination','name'=>'Sicilia Orientale','description'=>$s_seo['desc'],'containedInPlace'=>['@type'=>'Country','name'=>'Italy']];
+    echo '<script type="application/ld+json">'.json_encode($jsonld, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES).'</script>'."\n";
+}, 2);
+
 $book_url = home_url('/prenota/');
 $contact_page = get_page_by_path('le-mie-prenotazioni');
 $contact_url  = $contact_page ? get_permalink($contact_page) : home_url('/le-mie-prenotazioni/');

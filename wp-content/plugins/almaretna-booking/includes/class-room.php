@@ -115,11 +115,18 @@ class ALM_Room {
             'posts_per_page' => -1,
             'orderby'        => 'menu_order',
             'order'          => 'ASC',
-            'meta_query'     => [[
-                'key'     => '_room_active',
-                'value'   => '0',
-                'compare' => '!=',
-            ]],
+            'meta_query'     => [
+                'relation' => 'OR',
+                [
+                    'key'     => '_room_active',
+                    'value'   => '0',
+                    'compare' => '!=',
+                ],
+                [
+                    'key'     => '_room_active',
+                    'compare' => 'NOT EXISTS',
+                ],
+            ],
         ];
 
         $query = new WP_Query(wp_parse_args($args, $defaults));

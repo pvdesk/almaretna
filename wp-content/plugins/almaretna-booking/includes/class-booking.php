@@ -108,9 +108,14 @@ class ALM_Booking {
      */
     private function hydrate(array $data): void {
         foreach ($data as $key => $value) {
-            if (property_exists($this, $key)) {
-                $this->{$key} = $value;
-            }
+            if (!property_exists($this, $key)) continue;
+            $this->{$key} = match($key) {
+                'id', 'user_id'                                  => $value !== null ? (int) $value : null,
+                'room_id', 'guest_adults', 'guest_children',
+                'nights'                                         => (int) $value,
+                'price_per_night', 'total_price', 'extras_total' => (float) $value,
+                default                                          => $value,
+            };
         }
     }
 

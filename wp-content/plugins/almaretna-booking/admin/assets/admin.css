@@ -287,8 +287,8 @@ details[open] summary { margin-bottom: 8px; }
 }
 
 /* Tab panes */
-.alm-tab-pane { display: none; }
-.alm-tab-pane.is-active { display: block; }
+.alm-tab-pane { display: none !important; }
+.alm-tab-pane.is-active { display: block !important; }
 
 /* Settings card */
 .alm-settings-card {

@@ -482,6 +482,7 @@ select.form-control {
     display: flex;
     align-items: baseline;
     gap: 2px;
+    flex-wrap: nowrap;
 }
 
 .room-result-card__price-amount {
@@ -489,11 +490,13 @@ select.form-control {
     font-family: var(--font-heading);
     font-weight: 700;
     color: var(--color-text);
+    white-space: nowrap;
 }
 
 .room-result-card__price-unit {
     font-size: var(--fs-xs);
     color: var(--color-text-light);
+    white-space: nowrap;
 }
 
 .room-result-card__price-total {

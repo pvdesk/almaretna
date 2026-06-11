@@ -61,10 +61,17 @@ function alm_build_sitemap_xml(): string {
 
     // Priorità esplicite per pagine chiave
     $priorities = [
-        'camere'     => '0.9',
-        'struttura'  => '0.7',
-        'dove-siamo' => '0.6',
-        'contatti'   => '0.6',
+        'camere'           => '0.9',
+        'struttura'        => '0.7',
+        'scopri-la-sicilia'=> '0.8',
+        'taormina'         => '0.7',
+        'etna'             => '0.7',
+        'catania'          => '0.7',
+        'siracusa'         => '0.7',
+        'messina'          => '0.7',
+        'mare-di-sicilia'  => '0.7',
+        'dove-siamo'       => '0.6',
+        'contatti'         => '0.6',
     ];
 
     // Mappa lingua → hreflang

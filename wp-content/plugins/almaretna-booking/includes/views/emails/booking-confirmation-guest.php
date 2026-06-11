@@ -125,8 +125,62 @@ $dashboard_url = !empty($data['dashboard_url']) ? $data['dashboard_url'] : $data
     <div class="info-block">
       <p class="info-block-title">Come arrivarci</p>
       <p class="info-block-text">
-        Via Scorciavacca Montarsi, 48<br>
-        Nunziata di Mascali (CT) &mdash; Sicilia<br><br>
+        Via Scorciavacca Montarsi, 48 &mdash; Nunziata di Mascali (CT) &mdash; Sicilia
+      </p>
+
+      <!-- Tasti navigazione -->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0 8px;">
+        <tr>
+          <td style="padding:0 4px 0 0; width:33%;">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Via+Scorciavacca+Montarsi%2C+48%2C+Nunziata+di+Mascali%2C+CT%2C+Italy"
+               style="display:block;text-align:center;background-color:#4285F4;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;padding:10px 6px;border-radius:4px;">
+              Google Maps
+            </a>
+          </td>
+          <td style="padding:0 4px; width:33%;">
+            <a href="https://waze.com/ul?q=Via+Scorciavacca+Montarsi+48+Nunziata+di+Mascali+CT&navigate=yes"
+               style="display:block;text-align:center;background-color:#05C8F7;color:#1A1A1A;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;padding:10px 6px;border-radius:4px;">
+              Waze
+            </a>
+          </td>
+          <td style="padding:0 0 0 4px; width:33%;">
+            <a href="https://maps.apple.com/?daddr=Via+Scorciavacca+Montarsi%2C+48%2C+Nunziata+di+Mascali%2C+CT%2C+Italy&dirflg=d"
+               style="display:block;text-align:center;background-color:#1C1C1E;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;padding:10px 6px;border-radius:4px;">
+              Apple Maps
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Indicazioni stradali -->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:20px;">
+        <tr>
+          <td style="padding:0 0 14px;">
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#3B2F22;font-weight:bold;margin:0 0 4px;">Dall&rsquo;Aeroporto di Catania Fontanarossa (CTA)</p>
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1714;margin:0;line-height:1.6;">A18 direzione Messina &rarr; Uscita <strong>Fiumefreddo</strong> &rarr; SP95 per Mascali &rarr; Nunziata di Mascali<br><span style="color:#8A7B68;font-size:12px;">Circa 45&ndash;50 minuti</span></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 14px;border-top:1px solid #EFEBE4;padding-top:14px;">
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#3B2F22;font-weight:bold;margin:0 0 4px;">Dalla Stazione di Giarre&ndash;Riposto</p>
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1714;margin:0;line-height:1.6;">SS114 direzione nord &rarr; Bivio Nunziata &rarr; Via Scorciavacca Montarsi<br><span style="color:#8A7B68;font-size:12px;">Circa 15 minuti</span></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 14px;border-top:1px solid #EFEBE4;padding-top:14px;">
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#3B2F22;font-weight:bold;margin:0 0 4px;">A18 da Catania &mdash; Uscita Fiumefreddo</p>
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1714;margin:0;line-height:1.6;">Uscita <strong>Fiumefreddo</strong> &rarr; SP95 per Mascali &rarr; Nunziata di Mascali<br><span style="color:#8A7B68;font-size:12px;">Circa 35&ndash;40 minuti da Catania centro</span></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top:1px solid #EFEBE4;padding-top:14px;">
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#3B2F22;font-weight:bold;margin:0 0 4px;">A18 da Messina &mdash; Uscita Fiumefreddo</p>
+            <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1714;margin:0;line-height:1.6;">Uscita <strong>Fiumefreddo</strong> &rarr; SP95 per Mascali &rarr; Nunziata di Mascali<br><span style="color:#8A7B68;font-size:12px;">Circa 60&ndash;65 minuti da Messina</span></p>
+          </td>
+        </tr>
+      </table>
+
+      <p class="info-block-text" style="margin-top:20px;border-top:1px solid #EFEBE4;padding-top:16px;">
         <strong>Check-in:</strong> dalle ore <?php echo esc_html($data['checkin_time']); ?><br>
         <strong>Check-out:</strong> entro le ore <?php echo esc_html($data['checkout_time']); ?><br><br>
         Per qualsiasi necessit&agrave; scrivi a

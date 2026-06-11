@@ -203,6 +203,10 @@ class ALM_Admin {
 
         update_option('alm_booking_settings', $settings);
 
+        // WhatsApp webhook URL — opzione separata
+        $wa_url = esc_url_raw($_POST['whatsapp_webhook_url'] ?? '');
+        update_option('alm_whatsapp_webhook_url', $wa_url);
+
         // Chiavi Stripe — salva solo se non provengono da costanti wp-config.php
         if (ALM_Stripe::keys_source() === 'db') {
             $existing = get_option('alm_stripe_keys', []);

@@ -104,6 +104,85 @@ class ALM_Notifications {
     }
 
     /**
+     * Invia ricevuta di pagamento all'ospite.
+     *
+     * @param ALM_Booking $booking
+     * @return bool
+     */
+    public static function send_payment_receipt(ALM_Booking $booking): bool {
+        $data = self::prepare_data($booking->id);
+        if (!$data) return false;
+
+        return self::send_to_guest($data, 'payment-receipt-guest.php',
+            sprintf(__('Ricevuta di pagamento — %s', 'almaretna-booking'), $data['ref'])
+        );
+    }
+
+    /**
+     * Invia messaggio di benvenuto + indicazioni via WhatsApp se il numero è configurato
+     * e il webhook WhatsApp è stato impostato nelle impostazioni admin.
+     *
+     * Il webhook riceve POST con: booking_ref, first_name, guest_name, phone, email,
+     * room_name, checkin_display, checkout_display, nights, total_display, message_text.
+     *
+     * @param ALM_Booking $booking
+     * @return bool
+     */
+    public static function maybe_send_whatsapp_directions(ALM_Booking $booking): bool {
+        $webhook_url = get_option('alm_whatsapp_webhook_url', '');
+        if (!$webhook_url) return false;
+
+        $data = self::prepare_data($booking->id);
+        if (!$data || empty($data['phone'])) return false;
+
+        $phone = preg_replace('/[^0-9+]/', '', $data['phone']);
+        if (strlen($phone) < 8) return false;
+
+        $message = sprintf(
+            "Ciao %s! Ti aspettiamo ad Almaretna.\n\n" .
+            "Riepilogo soggiorno:\n" .
+            "Camera: %s\n" .
+            "Check-in: %s (dalle %s)\n" .
+            "Check-out: %s (entro le %s)\n\n" .
+            "Come arrivarci:\n" .
+            "Via Scorciavacca Montarsi, 48 — Nunziata di Mascali (CT)\n\n" .
+            "Navigazione:\n" .
+            "Google Maps: https://www.google.com/maps/dir/?api=1&destination=Via+Scorciavacca+Montarsi,+48,+Nunziata+di+Mascali,+CT\n" .
+            "Waze: https://waze.com/ul?q=Via+Scorciavacca+Montarsi+48+Nunziata+di+Mascali+CT&navigate=yes\n\n" .
+            "Per info: %s",
+            $data['first_name'],
+            $data['room_name'],
+            $data['checkin_display'], $data['checkin_time'],
+            $data['checkout_display'], $data['checkout_time'],
+            $data['host_email']
+        );
+
+        $response = wp_remote_post($webhook_url, [
+            'timeout'     => 10,
+            'headers'     => ['Content-Type' => 'application/json'],
+            'body'        => wp_json_encode([
+                'phone'          => $phone,
+                'first_name'     => $data['first_name'],
+                'guest_name'     => $data['guest_name'],
+                'booking_ref'    => $data['ref'],
+                'room_name'      => $data['room_name'],
+                'checkin'        => $data['checkin_display'],
+                'checkout'       => $data['checkout_display'],
+                'nights'         => $data['nights'],
+                'total'          => $data['total_display'],
+                'message_text'   => $message,
+            ]),
+        ]);
+
+        if (is_wp_error($response)) {
+            error_log('[Almaretna] WhatsApp webhook error: ' . $response->get_error_message());
+            return false;
+        }
+
+        return wp_remote_retrieve_response_code($response) < 400;
+    }
+
+    /**
      * Schedula il reminder 48h prima del check-in via wp_schedule_single_event().
      *
      * @param ALM_Booking $booking

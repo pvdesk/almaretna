@@ -265,11 +265,23 @@
             el.style.display  = msg ? 'block' : 'none';
         }
 
+        function showPayError(msg) {
+            if (!paymentError) return;
+            var msgEl = paymentError.querySelector('.alm-pay-alert__msg');
+            if (msgEl) { msgEl.textContent = msg; } else { paymentError.textContent = msg; }
+            paymentError.style.display = msg ? 'flex' : 'none';
+            if (msg) { paymentError.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        }
+        if (paymentError) {
+            var closeBtn = paymentError.querySelector('.alm-pay-alert__close');
+            if (closeBtn) closeBtn.addEventListener('click', function () { showPayError(''); });
+        }
+
         function clearErrors() {
             [step1Error, step2Error, step3Error].forEach(function (el) {
                 if (el) { el.textContent = ''; el.style.display = 'none'; }
             });
-            if (paymentError) paymentError.textContent = '';
+            showPayError('');
             wizard.querySelectorAll('.form-error').forEach(function (el) {
                 el.textContent = '';
             });
@@ -756,7 +768,11 @@
             setText(paySummaryCheckout, formatDateDisplay(state.checkoutDate));
             setText(paySummaryTotal,    totalFmt);
 
-            if (submitPaymentBtn) submitPaymentBtn.textContent = 'Paga ' + totalFmt;
+            if (submitPaymentBtn) {
+                var lbl = submitPaymentBtn.querySelector('.alm-pay-btn__label');
+                if (lbl) { lbl.textContent = 'Paga ' + totalFmt; }
+                else { submitPaymentBtn.textContent = 'Paga ' + totalFmt; }
+            }
         }
 
         // ── Stripe Payment Element ────────────────────────────────────────
@@ -812,7 +828,7 @@
                 });
 
                 paymentEl.on('change', function (e) {
-                    if (paymentError) paymentError.textContent = e.error ? e.error.message : '';
+                    showPayError(e.error ? e.error.message : '');
                 });
 
             } catch {
@@ -827,10 +843,10 @@
         submitPaymentBtn && submitPaymentBtn.addEventListener('click', async function () {
             if (!state.stripeReady || !state.stripe || !state.stripeElements) return;
 
-            const origLabel  = this.textContent;
-            this.disabled    = true;
-            this.textContent = i18n.processing || 'Elaborazione in corso…';
-            if (paymentError) paymentError.textContent = '';
+            const btn = this;
+            btn.disabled = true;
+            btn.classList.add('is-loading');
+            showPayError('');
 
             const returnUrl = buildReturnUrl();
 
@@ -842,14 +858,13 @@
                 });
 
                 if (result.error) {
-                    if (paymentError) paymentError.textContent = result.error.message;
-                    this.disabled    = false;
-                    this.textContent = origLabel;
+                    showPayError(result.error.message);
+                    btn.disabled = false;
+                    btn.classList.remove('is-loading');
                     return;
                 }
 
                 if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-                    // Conferma bloccante: aspetta DB + email prima di mostrare la schermata
                     let confirmNetworkError = false;
                     try {
                         const confirmRes = await apiPost('booking/confirm', {
@@ -857,19 +872,15 @@
                             payment_intent_id: result.paymentIntent.id,
                         });
                         if (!confirmRes || confirmRes.code) {
-                            // Backend ha risposto con errore — pagamento ok ma booking non confermato
-                            if (paymentError) {
-                                paymentError.textContent =
-                                    'Pagamento ricevuto — errore nella conferma. ' +
-                                    'Contatta la struttura con riferimento: ' + (state.bookingRef || '');
-                            }
-                            this.disabled    = false;
-                            this.textContent = origLabel;
+                            showPayError(
+                                'Pagamento ricevuto — errore nella conferma. ' +
+                                'Contatta la struttura con riferimento: ' + (state.bookingRef || '')
+                            );
+                            btn.disabled = false;
+                            btn.classList.remove('is-loading');
                             return;
                         }
                     } catch {
-                        // Errore di rete — il pagamento è andato a buon fine, il webhook Stripe
-                        // confermerà la prenotazione; avvisiamo l'utente nella schermata di conferma
                         confirmNetworkError = true;
                     }
                     showConfirmation();
@@ -884,11 +895,9 @@
                 }
 
             } catch {
-                if (paymentError) {
-                    paymentError.textContent = i18n.error_payment || 'Errore nel pagamento. Verifica i dati della carta.';
-                }
-                this.disabled    = false;
-                this.textContent = origLabel;
+                showPayError(i18n.error_payment || 'Errore nel pagamento. Verifica i dati della carta.');
+                btn.disabled = false;
+                btn.classList.remove('is-loading');
             }
         });
 
@@ -992,10 +1001,7 @@
 
             } else if (redirectStatus === 'requires_payment_method') {
                 goToStep(4);
-                if (paymentError) {
-                    paymentError.textContent = i18n.error_payment ||
-                        'Pagamento non completato. Riprova con un\'altra carta.';
-                }
+                showPayError(i18n.error_payment || 'Pagamento non completato. Riprova con un\'altra carta.');
             }
         })();
 

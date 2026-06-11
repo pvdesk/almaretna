@@ -698,12 +698,115 @@ select.form-control {
     min-height: 200px;
 }
 
+/* ─── Payment error alert ────────────────────────────────────── */
 #payment-error {
-    color: var(--color-error);
+    display: none;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    background: #fff5f5;
+    border: 1px solid #fca5a5;
+    border-left: 4px solid #ef4444;
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    color: #b91c1c;
     font-size: var(--fs-sm);
-    margin-top: var(--space-sm);
-    min-height: 20px;
+    font-weight: 500;
+    margin-bottom: var(--space-lg);
+    position: sticky;
+    top: 72px;
+    z-index: 20;
 }
+.alm-pay-alert__icon {
+    flex-shrink: 0;
+    font-size: 1.1em;
+    line-height: 1.5;
+}
+.alm-pay-alert__msg {
+    flex: 1;
+    line-height: 1.5;
+}
+.alm-pay-alert__close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #b91c1c;
+    cursor: pointer;
+    font-size: 1.25em;
+    line-height: 1;
+    padding: 0 0 0 var(--space-sm);
+    opacity: .65;
+}
+.alm-pay-alert__close:hover { opacity: 1; }
+
+/* ─── Checkout layout (step 4) ───────────────────────────────── */
+.alm-checkout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+}
+.alm-checkout__summary {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+.alm-checkout__summary-room {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: var(--fs-lg);
+    flex: 1;
+    min-width: 140px;
+}
+.alm-checkout__summary-meta {
+    color: var(--color-text-light);
+    font-size: var(--fs-sm);
+    flex: 2;
+    min-width: 140px;
+}
+.alm-checkout__summary-sep { opacity: .4; }
+.alm-checkout__summary-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+    font-size: var(--fs-sm);
+    color: var(--color-text-light);
+    text-align: right;
+}
+.alm-checkout__summary-total strong {
+    font-family: var(--font-heading);
+    font-size: var(--fs-xl);
+    color: var(--color-text);
+    white-space: nowrap;
+}
+
+/* ─── Payment button with spinner ────────────────────────────── */
+.alm-pay-btn {
+    width: 100%;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.alm-pay-btn__label { transition: opacity .15s; }
+.alm-pay-btn__spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: alm-spin .7s linear infinite;
+    position: absolute;
+}
+.alm-pay-btn.is-loading .alm-pay-btn__label { opacity: 0; }
+.alm-pay-btn.is-loading .alm-pay-btn__spinner { display: inline-block; }
+@keyframes alm-spin { to { transform: rotate(360deg); } }
 
 /* ─── Availability calendar ──────────────────────────────────── */
 

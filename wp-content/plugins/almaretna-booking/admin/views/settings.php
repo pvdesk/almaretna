@@ -140,6 +140,12 @@ if (!empty($_GET['updated'])) $active_tab = 'struttura';
                                    value="<?php echo esc_attr($s['host_phone'] ?? ''); ?>"
                                    placeholder="+39 095 000 0000" />
                         </div>
+                        <div class="alm-field alm-field--full">
+                            <label for="whatsapp_webhook_url">WhatsApp Webhook URL <span class="alm-hint">Opzionale &mdash; Make.com / Zapier / N8N per invio automatico indicazioni all&rsquo;ospite</span></label>
+                            <input type="url" id="whatsapp_webhook_url" name="whatsapp_webhook_url" class="regular-text"
+                                   value="<?php echo esc_attr(get_option('alm_whatsapp_webhook_url', '')); ?>"
+                                   placeholder="https://hook.make.com/..." />
+                        </div>
                         <div class="alm-field">
                             <label for="checkin_time">Check-in</label>
                             <input type="time" id="checkin_time" name="checkin_time"

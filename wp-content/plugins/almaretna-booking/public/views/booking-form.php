@@ -242,33 +242,36 @@ $cancellation_url = get_permalink(get_page_by_path('cancellazione'))   ?: home_u
 
     <!-- ── STEP 4: Pagamento ─────────────────────────────────────── -->
     <div class="booking-step-content" data-step="4" id="alm-step-4">
-        <div class="booking-form-grid">
 
-            <!-- Pagamento -->
-            <div>
+        <!-- Alert errore pagamento — sticky, visibile come in un e-commerce -->
+        <div class="alm-pay-alert" id="payment-error" role="alert" aria-live="assertive" style="display:none;">
+            <span class="alm-pay-alert__icon" aria-hidden="true">&#9888;</span>
+            <span class="alm-pay-alert__msg"></span>
+            <button type="button" class="alm-pay-alert__close" aria-label="Chiudi errore">&times;</button>
+        </div>
+
+        <div class="alm-checkout">
+
+            <!-- Riepilogo prenotazione compatto -->
+            <div class="alm-checkout__summary">
+                <div class="alm-checkout__summary-room" id="alm-pay-summary-room">—</div>
+                <div class="alm-checkout__summary-meta">
+                    <span id="alm-pay-summary-checkin">—</span>
+                    <span aria-hidden="true"> &rarr; </span>
+                    <span id="alm-pay-summary-checkout">—</span>
+                    <span class="alm-checkout__summary-sep" aria-hidden="true"> &middot; </span>
+                    <span id="alm-pay-guests">—</span>
+                </div>
+                <div class="alm-checkout__summary-total">
+                    <span><?php echo esc_html(alm_t('wiz.total_pay')); ?></span>
+                    <strong id="alm-pay-summary-total">—</strong>
+                </div>
+            </div>
+
+            <!-- Form pagamento -->
+            <div class="alm-checkout__form">
                 <h2 class="form-section-title"><?php echo esc_html(alm_t('wiz.payment')); ?></h2>
 
-                <!-- Riepilogo readonly -->
-                <div style="background:var(--color-bg);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-xl);border:1px solid var(--color-border);">
-                    <div class="booking-summary__row">
-                        <span><?php echo esc_html(alm_t('wiz.room_label')); ?></span>
-                        <strong id="alm-pay-room-name">—</strong>
-                    </div>
-                    <div class="booking-summary__row">
-                        <span><?php echo esc_html(alm_t('wiz.dates')); ?></span>
-                        <span id="alm-pay-dates">—</span>
-                    </div>
-                    <div class="booking-summary__row">
-                        <span><?php echo esc_html(alm_t('wiz.guests')); ?></span>
-                        <span id="alm-pay-guests">—</span>
-                    </div>
-                    <div class="booking-summary__row booking-summary__row--total">
-                        <span><?php echo esc_html(alm_t('wiz.total_pay')); ?></span>
-                        <span id="alm-pay-total">—</span>
-                    </div>
-                </div>
-
-                <!-- Stripe Payment Element -->
                 <div class="stripe-payment-element" id="stripe-payment-element">
                     <div style="text-align:center;color:var(--color-text-light);padding:2rem;">
                         <span class="spinner"></span>
@@ -276,44 +279,21 @@ $cancellation_url = get_permalink(get_page_by_path('cancellazione'))   ?: home_u
                     </div>
                 </div>
 
-                <div id="payment-error" role="alert" aria-live="assertive"></div>
+                <button
+                    type="button"
+                    class="btn btn-primary alm-pay-btn"
+                    id="alm-submit-payment"
+                    disabled
+                >
+                    <span class="alm-pay-btn__label"><?php echo esc_html(alm_t('wiz.pay_now')); ?></span>
+                    <span class="alm-pay-btn__spinner" aria-hidden="true"></span>
+                </button>
 
                 <div class="checkout-box__secure-note">
                     <span class="dashicons dashicons-lock"></span>
                     <?php echo esc_html(alm_t('wiz.pay_secure')); ?>
                 </div>
             </div>
-
-            <!-- Riepilogo sidebar step 4 -->
-            <aside>
-                <div class="booking-summary">
-                    <h3 class="booking-summary__title"><?php echo esc_html(alm_t('wiz.your_booking')); ?></h3>
-                    <p class="booking-summary__room-name" id="alm-pay-summary-room">—</p>
-                    <div class="booking-summary__dates">
-                        <div>
-                            <div class="booking-summary__date-label"><?php echo esc_html(alm_t('wiz.checkin')); ?></div>
-                            <div class="booking-summary__date-value" id="alm-pay-summary-checkin">—</div>
-                        </div>
-                        <div>
-                            <div class="booking-summary__date-label"><?php echo esc_html(alm_t('wiz.checkout')); ?></div>
-                            <div class="booking-summary__date-value" id="alm-pay-summary-checkout">—</div>
-                        </div>
-                    </div>
-                    <div class="booking-summary__row booking-summary__row--total">
-                        <span><?php echo esc_html(alm_t('wiz.total')); ?></span>
-                        <span id="alm-pay-summary-total">—</span>
-                    </div>
-                    <button
-                        type="button"
-                        class="btn btn-primary btn-lg"
-                        id="alm-submit-payment"
-                        style="width:100%;justify-content:center;margin-top:1.5rem;"
-                        disabled
-                    >
-                        <?php echo esc_html(alm_t('wiz.pay_now')); ?>
-                    </button>
-                </div>
-            </aside>
 
         </div>
 

@@ -479,7 +479,9 @@ class ALM_API {
         // Notifiche
         ALM_Notifications::send_confirmation_guest($booking);
         ALM_Notifications::send_confirmation_host($booking);
+        ALM_Notifications::send_payment_receipt($booking);
         ALM_Notifications::schedule_reminder($booking);
+        ALM_Notifications::maybe_send_whatsapp_directions($booking);
 
         return rest_ensure_response([
             'success'      => true,
@@ -573,7 +575,9 @@ class ALM_API {
                 // Notifiche
                 ALM_Notifications::send_confirmation_guest($booking);
                 ALM_Notifications::send_confirmation_host($booking);
+                ALM_Notifications::send_payment_receipt($booking);
                 ALM_Notifications::schedule_reminder($booking);
+                ALM_Notifications::maybe_send_whatsapp_directions($booking);
                 break;
 
             case 'payment_intent.payment_failed':

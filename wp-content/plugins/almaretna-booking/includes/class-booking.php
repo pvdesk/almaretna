@@ -442,6 +442,11 @@ class ALM_Booking {
             )
         );
 
+        // Invia email di cancellazione all'ospite e all'host per ogni prenotazione scaduta
+        foreach ($ids as $booking_id) {
+            ALM_Notifications::send_cancellation((int) $booking_id);
+        }
+
         return (int) $updated;
     }
 

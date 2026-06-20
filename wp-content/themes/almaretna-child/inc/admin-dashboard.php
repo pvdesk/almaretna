@@ -801,6 +801,38 @@ function alm_site_photo_slots(): array {
                 'gallery_6'    => ['label' => 'Galleria 6',        'desc' => 'Strip foto 6'],
             ],
         ],
+        'camere' => [
+            'label' => 'Pagina Camere',
+            'slots' => [
+                'camere_hero' => ['label' => 'Hero', 'desc' => 'Foto fullscreen hero camere'],
+            ],
+        ],
+        'struttura' => [
+            'label' => 'La Villa e i Servizi',
+            'slots' => [
+                'struttura_hero'   => ['label' => 'Hero',   'desc' => 'Foto hero della pagina'],
+                'struttura_foto_1' => ['label' => 'Foto 1', 'desc' => 'Prima foto di contenuto'],
+                'struttura_foto_2' => ['label' => 'Foto 2', 'desc' => 'Seconda foto di contenuto'],
+            ],
+        ],
+        'dove-siamo' => [
+            'label' => 'Come raggiungerci',
+            'slots' => [
+                'dove_hero' => ['label' => 'Hero', 'desc' => 'Foto hero della pagina'],
+            ],
+        ],
+        'contatti' => [
+            'label' => 'Contattaci',
+            'slots' => [
+                'contatti_hero' => ['label' => 'Hero', 'desc' => 'Foto hero della pagina'],
+            ],
+        ],
+        'scopri-sicilia' => [
+            'label' => 'Scopri la Sicilia',
+            'slots' => [
+                'sicilia_hero' => ['label' => 'Hero', 'desc' => 'Foto hero della pagina'],
+            ],
+        ],
         'generale' => [
             'label' => 'Sito Generale',
             'slots' => [

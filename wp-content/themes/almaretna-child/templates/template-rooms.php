@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 get_header();
 
-// Recupera l'immagine Hero per le camere dal Customizer
-$rooms_hero_custom = get_theme_mod('almaretna_rooms_hero_bg');
-$hero_photo = $rooms_hero_custom ?: content_url('uploads/2026/06/camera-matrimoniale.webp');
+// Hero: admin dashboard → customizer → fallback
+$hero_photo = alm_get_site_photo('camere_hero')
+    ?: get_theme_mod('almaretna_rooms_hero_bg')
+    ?: content_url('uploads/2026/06/camera-matrimoniale.webp');
 ?>
 
 <main id="main-content" class="page-rooms">

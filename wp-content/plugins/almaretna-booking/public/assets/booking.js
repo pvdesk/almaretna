@@ -461,29 +461,36 @@
 
         function renderRoomCard(room) {
             const thumb   = room.thumbnail || room.thumbnail_url || '';
-            
+
+            // Suite CARMINA: badge dedicato invece del piano
+            const suiteBadgeHtml = room.is_suite
+                ? '<span class="room-result-card__badge room-result-card__badge--suite">Matrimoniale + Doppia</span>'
+                : '';
+
             let floorText = '';
-            if (room.floor) {
+            if (!room.is_suite && room.floor) {
                 if (room.floor === 'piano-1' || room.floor === '1') floorText = 'Primo Piano';
                 else if (room.floor === 'piano-2' || room.floor === '2') floorText = 'Secondo Piano';
                 else if (room.floor === 'mansarda') floorText = 'Mansarda';
                 else floorText = room.floor.charAt(0).toUpperCase() + room.floor.slice(1);
             }
 
-            const floorBadgeHtml = floorText
+            const floorBadgeHtml = (!room.is_suite && floorText)
                 ? '<span class="room-result-card__badge">' + escHtml(floorText) + '</span>'
                 : '';
 
             const imgHtml = '<div class="room-result-card__image-wrap">' +
-                floorBadgeHtml +
+                (suiteBadgeHtml || floorBadgeHtml) +
                 (thumb
                     ? '<img src="' + escHtml(thumb) + '" alt="' + escHtml(room.title || room.name || '') + '" class="room-result-card__image" loading="lazy" />'
                     : '<div class="room-result-card__img-placeholder"></div>'
                 ) +
                 '</div>';
 
-            const capacityText = 'Fino a ' + (room.capacity_adults || 2) + ' ospiti' +
-                (room.capacity_children > 0 ? ' + ' + room.capacity_children + ' bimbi' : '');
+            const capacityText = room.is_suite
+                ? 'Fino a ' + (room.capacity_adults || 2) + ' adulti + ' + (room.capacity_children || 2) + ' bambini'
+                : 'Fino a ' + (room.capacity_adults || 2) + ' ospiti' +
+                  (room.capacity_children > 0 ? ' + ' + room.capacity_children + ' bimbi' : '');
             
             const bathroomText = room.bathroom_type === 'shared' ? 'Bagno condiviso' : 'Bagno privato';
             const bathroomIcon = room.bathroom_type === 'shared' ? 'dashicons-warning' : 'dashicons-yes-alt';
@@ -507,6 +514,12 @@
 
             const sharingHtml = room.sharing_note
                 ? '<div class="room-result-card__sharing-note">' + escHtml(room.sharing_note) + '</div>'
+                : '';
+
+            const suiteNoteHtml = room.is_suite && room.suite_note
+                ? '<div class="room-result-card__suite-note">' +
+                  '<span class="dashicons dashicons-admin-home" style="font-size:14px;width:14px;height:14px;vertical-align:middle;margin-right:4px;"></span>' +
+                  escHtml(room.suite_note) + '</div>'
                 : '';
 
             const minStayHtml = (room.min_stay && room.min_stay > 1)
@@ -534,6 +547,7 @@
                 metaHtml +
                 amenitiesHtml +
                 minStayHtml +
+                suiteNoteHtml +
                 sharingHtml +
                 '</div>' +
                 '<div class="room-result-card__pricing">' +

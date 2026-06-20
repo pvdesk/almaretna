@@ -459,6 +459,20 @@ select.form-control {
     margin-top: var(--space-xs);
 }
 
+.room-result-card__badge--suite {
+    background: var(--color-secondary);
+}
+
+.room-result-card__suite-note {
+    background: #F5F0E8;
+    border-left: 3px solid var(--color-secondary);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: var(--fs-xs);
+    color: var(--color-text);
+    margin-top: var(--space-xs);
+}
+
 .room-result-card__pricing {
     padding: var(--space-lg);
     display: flex;

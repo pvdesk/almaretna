@@ -178,6 +178,7 @@ class ALM_API {
 
         $available_rooms = ALM_Availability::get_available_rooms($checkin, $checkout, $adults, $children);
         $nights          = ALM_Availability::get_nights($checkin, $checkout);
+        $mode            = ALM_Availability::get_display_mode($adults, $children);
         $result          = [];
 
         foreach ($available_rooms as $room) {
@@ -188,27 +189,36 @@ class ALM_API {
 
             $room_data = $room->to_array();
 
-            // Sharing info per la suite familiare / mansarda
-            $sharing_warning = false;
-            $sharing_note    = '';
-            if ($room->bathroom_type === 'shared') {
-                $partner = $room->get_bathroom_partner();
-                if ($partner) {
-                    $warnings = ALM_Availability::get_sharing_warnings($checkin, $checkout);
-                    foreach ($warnings as $w) {
-                        if (str_contains($w['message'], $room->title)) {
-                            $sharing_warning = true;
-                            break;
-                        }
-                    }
-                }
-                $sharing_note = sprintf(
-                    __('Bagno condiviso con la camera adiacente (%s).', 'almaretna-booking'),
-                    $room->shared_with
-                );
+            // UGO in modalità suite (carmina / multi): presentato come Suite CARMINA
+            $is_suite_mode = $room->is_family_unit && in_array($mode, ['carmina', 'multi'], true);
+
+            if ($is_suite_mode) {
+                $partner         = $room->get_family_partner();
+                $pricing_partner = $partner ? ALM_Pricing::get_price_for_dates($partner->id, $checkin, $checkout) : null;
+                $partner_ppn     = (!is_wp_error($pricing_partner) && $pricing_partner) ? (float) $pricing_partner['price_per_night'] : 0.0;
+                $partner_sub     = (!is_wp_error($pricing_partner) && $pricing_partner) ? (float) $pricing_partner['subtotal'] : 0.0;
+
+                $result[] = array_merge($room_data, [
+                    'is_suite'         => true,
+                    'title'            => 'Suite Familiare CARMINA',
+                    'capacity_children'=> 2,
+                    'sharing_warning'  => false,
+                    'sharing_note'     => '',
+                    'suite_note'       => 'Camera matrimoniale UGO + camera con 2 letti singoli, bagno in comune',
+                    'price_per_night'  => $pricing['price_per_night'] + $partner_ppn,
+                    'total_price'      => $pricing['subtotal'] + $partner_sub,
+                    'nights'           => $nights,
+                    'applied_rate'     => null,
+                ]);
+                continue;
             }
 
+            // Camera singola o matrimoniale standalone
+            $sharing_warning = false;
+            $sharing_note    = '';
+
             $result[] = array_merge($room_data, [
+                'is_suite'        => false,
                 'price_per_night' => $pricing['price_per_night'],
                 'total_price'     => $pricing['subtotal'],
                 'nights'          => $nights,

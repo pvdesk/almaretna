@@ -100,7 +100,36 @@ class ALM_Availability {
     }
 
     /**
-     * Restituisce le camere disponibili per le date e la capacità richiesta.
+     * Determina la modalità di visualizzazione camere in base agli ospiti.
+     *
+     * nerina    → solo camera singola (1 adulto, 0 bambini)
+     * standalone → matrimoniali + UGO singolo (2 adulti, 0 bambini)
+     * carmina   → solo Suite CARMINA (2 adulti + 1-2 bambini, o 1 adulto + bambini)
+     * multi     → matrimoniali + Suite CARMINA (gruppi numerosi o 2A+3B)
+     *
+     * @param int $adults
+     * @param int $children
+     * @return string
+     */
+    public static function get_display_mode(int $adults, int $children): string {
+        if ($adults === 1 && $children === 0) {
+            return 'nerina';
+        }
+        if ($adults === 2 && $children === 0) {
+            return 'standalone';
+        }
+        if ($children >= 1 && $children <= 2) {
+            return 'carmina';
+        }
+        return 'multi';
+    }
+
+    /**
+     * Restituisce le camere disponibili applicando le regole di business
+     * (quale tipologia mostrare in base al numero di ospiti).
+     *
+     * La camera doppia della suite (room_id che termina in -D) non viene
+     * mai restituita individualmente: è sempre inclusa nella Suite CARMINA.
      *
      * @param string $checkin
      * @param string $checkout
@@ -116,20 +145,54 @@ class ALM_Availability {
     ): array {
         $all_rooms = ALM_Room::get_all();
         $available = [];
+        $nights    = static::get_nights($checkin, $checkout);
+        $mode      = static::get_display_mode($adults, $children);
 
         foreach ($all_rooms as $room) {
-            // Verifica capacità adulti
-            if ($room->capacity_adults < $adults) {
+            $is_singola  = $room->capacity_adults === 1;
+            $is_suite_secondary = $room->is_family_unit && str_ends_with($room->room_id, '-D');
+            $is_suite_main      = $room->is_family_unit && !$is_suite_secondary;
+            $is_matrimoniale    = !$is_singola && !$room->is_family_unit;
+
+            // La camera secondaria della suite (doppia) non appare mai da sola
+            if ($is_suite_secondary) {
                 continue;
             }
 
-            // Verifica disponibilità
+            // Applica regole di visualizzazione per modalità
+            switch ($mode) {
+                case 'nerina':
+                    // Solo camere singole
+                    if (!$is_singola) continue 2;
+                    break;
+
+                case 'standalone':
+                    // SARA, ANNAMARIA, UGO standalone — no singole
+                    if ($is_singola) continue 2;
+                    // Verifica capacità adulti per matrimoniali
+                    if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
+                    break;
+
+                case 'carmina':
+                    // Solo Suite CARMINA (UGO come suite)
+                    if (!$is_suite_main) continue 2;
+                    break;
+
+                case 'multi':
+                default:
+                    // SARA, ANNAMARIA, Suite CARMINA — no singole
+                    if ($is_singola) continue 2;
+                    // Matrimoniali: verifica capacità adulti
+                    if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
+                    break;
+            }
+
+            // Verifica disponibilità date
             if (!static::check($room->id, $checkin, $checkout)) {
                 continue;
             }
 
             // Verifica soggiorno minimo
-            $nights = static::get_nights($checkin, $checkout);
             if ($nights < $room->min_stay) {
                 continue;
             }

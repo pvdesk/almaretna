@@ -118,11 +118,8 @@ class ALM_Availability {
         $available = [];
 
         foreach ($all_rooms as $room) {
-            // Verifica capacità
+            // Verifica capacità adulti
             if ($room->capacity_adults < $adults) {
-                continue;
-            }
-            if ($children > 0 && ($room->capacity_adults + $room->capacity_children) < ($adults + $children)) {
                 continue;
             }
 

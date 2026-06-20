@@ -153,6 +153,13 @@ class ALM_Plugin {
             }
         }, 5);
 
+        // Pagina prenota: nonce nel HTML, non deve essere cachetata
+        add_action('template_redirect', static function (): void {
+            if (is_page('prenota') || is_page_template('templates/template-booking.php')) {
+                nocache_headers();
+            }
+        });
+
         // Shortcodes
         $shortcodes = new ALM_Shortcodes();
         $shortcodes->register();

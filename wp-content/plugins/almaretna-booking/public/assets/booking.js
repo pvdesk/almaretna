@@ -416,9 +416,22 @@
                     adults:   state.adults,
                     children: state.children,
                 });
-                const data = Array.isArray(resp) ? resp : (resp.rooms || []);
 
                 if (roomsLoading) roomsLoading.style.display = 'none';
+
+                // Nonce scaduto (pagina in cache): ricarica silenziosamente per ottenerne uno fresco
+                if (resp && resp.code === 'rest_cookie_invalid_nonce') {
+                    window.location.reload();
+                    return;
+                }
+
+                // Altro WP_Error (rate limit, ecc.)
+                if (resp && resp.code) {
+                    showError(step2Error, resp.message || i18n.error_generic || 'Errore. Riprova.');
+                    return;
+                }
+
+                const data = Array.isArray(resp) ? resp : (resp.rooms || []);
 
                 if (!data.length) {
                     if (roomsList) {

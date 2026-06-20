@@ -205,9 +205,9 @@
             Object.keys(params).forEach(function (k) {
                 url.searchParams.set(k, String(params[k]));
             });
+            // Endpoint pubblici: nessun nonce per evitare 403 da pagine in cache
             return fetch(url.toString(), {
                 credentials: 'same-origin',
-                headers: { 'X-WP-Nonce': NONCE },
             }).then(function (r) {
                 return r.json().then(function (data) {
                     return data;
@@ -1140,7 +1140,6 @@
         });
         return fetch(url.toString(), {
             credentials: 'same-origin',
-            headers: { 'X-WP-Nonce': vars.nonce || '' },
         }).then(function (r) { return r.json(); });
     }
 

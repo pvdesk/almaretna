@@ -433,6 +433,27 @@ add_action('admin_head', function (): void { ?>
 .ad-del-btn:hover { background: #f8d7da; color: #721c24; }
 .ad-del-btn.deleting { opacity: .4; pointer-events: none; }
 
+/* Toggle mostra/nascondi periodi */
+.ad-specials-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 4px 0 5px;
+    background: none;
+    border: none;
+    border-bottom: 1px dashed var(--ad-border);
+    cursor: pointer;
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--ad-muted);
+    margin-bottom: 6px;
+    text-align: left;
+    transition: color .15s;
+}
+.ad-specials-toggle:hover { color: var(--ad-dark); }
+.ad-specials-toggle__icon { font-size: .6rem; flex-shrink: 0; }
+
 /* Form aggiungi prezzo speciale */
 .ad-add-toggle {
     font-size: .75rem;
@@ -1431,8 +1452,21 @@ function alm_w_prices(): void {
             </div>
 
             <!-- Lista prezzi speciali -->
-            <?php if (!empty($specials)) : ?>
-            <ul class="ad-specials" id="<?php echo esc_attr($uid); ?>-specials">
+            <?php $sp_count = count($specials); ?>
+            <button class="ad-specials-toggle"
+                    id="<?php echo esc_attr($uid); ?>-specials-toggle"
+                    onclick="almToggleSpecials('<?php echo esc_js($uid); ?>')">
+                <span id="<?php echo esc_attr($uid); ?>-specials-count">
+                    <?php if ($sp_count > 0) : ?>
+                        <?php echo $sp_count; ?> <?php echo $sp_count === 1 ? 'periodo' : 'periodi'; ?> definiti
+                    <?php else : ?>
+                        Nessun periodo speciale
+                    <?php endif; ?>
+                </span>
+                <span class="ad-specials-toggle__icon" id="<?php echo esc_attr($uid); ?>-specials-icon">▼</span>
+            </button>
+            <ul class="ad-specials" id="<?php echo esc_attr($uid); ?>-specials"
+                style="<?php echo $sp_count > 0 ? 'display:none' : ''; ?>">
                 <?php foreach ($specials as $sp) :
                     if (empty($sp['id'])) continue;
                     $d_from = date_i18n('d/m/Y', strtotime((string)($sp['from'] ?? '')));
@@ -1450,9 +1484,6 @@ function alm_w_prices(): void {
                 </li>
                 <?php endforeach; ?>
             </ul>
-            <?php else : ?>
-            <ul class="ad-specials" id="<?php echo esc_attr($uid); ?>-specials"></ul>
-            <?php endif; ?>
 
             <!-- Toggle form aggiungi -->
             <button class="ad-add-toggle"
@@ -1604,6 +1635,25 @@ function alm_dash_inline_js(): void {
 
     /* ── Prezzi camere ── */
 
+    function almToggleSpecials(uid) {
+        var list = document.getElementById(uid + '-specials');
+        var icon = document.getElementById(uid + '-specials-icon');
+        if (!list) return;
+        var hidden = list.style.display === 'none';
+        list.style.display = hidden ? '' : 'none';
+        if (icon) icon.textContent = hidden ? '▲' : '▼';
+    }
+
+    function almUpdateSpecialsCount(uid) {
+        var list  = document.getElementById(uid + '-specials');
+        var badge = document.getElementById(uid + '-specials-count');
+        if (!list || !badge) return;
+        var n = list.querySelectorAll('.ad-special-item').length;
+        badge.textContent = n > 0
+            ? n + ' ' + (n === 1 ? 'periodo' : 'periodi') + ' definiti'
+            : 'Nessun periodo speciale';
+    }
+
     function almToggleAddForm(uid) {
         var form   = document.getElementById(uid + '-form');
         var toggle = document.getElementById(uid + '-toggle');
@@ -1691,6 +1741,7 @@ function alm_dash_inline_js(): void {
                 fromEl.value = ''; toEl.value = ''; priceEl.value = '';
                 if (noteEl) noteEl.value = '';
                 almToggleAddForm(uid);
+                almUpdateSpecialsCount(uid);
             });
     }
 
@@ -1710,6 +1761,7 @@ function alm_dash_inline_js(): void {
                 if (data.success) {
                     var li = document.getElementById('alm-sp-' + entryId);
                     if (li) li.remove();
+                    almUpdateSpecialsCount('alm-pr-' + roomId);
                 } else {
                     btn.classList.remove('deleting');
                 }

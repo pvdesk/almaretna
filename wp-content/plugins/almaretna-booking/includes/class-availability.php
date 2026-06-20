@@ -149,15 +149,12 @@ class ALM_Availability {
         $mode      = static::get_display_mode($adults, $children);
 
         foreach ($all_rooms as $room) {
-            $is_singola  = $room->capacity_adults === 1;
-            $is_suite_secondary = $room->is_family_unit && str_ends_with($room->room_id, '-D');
-            $is_suite_main      = $room->is_family_unit && !$is_suite_secondary;
-            $is_matrimoniale    = !$is_singola && !$room->is_family_unit;
-
-            // La camera secondaria della suite (doppia) non appare mai da sola
-            if ($is_suite_secondary) {
-                continue;
-            }
+            $is_singola      = $room->capacity_adults === 1;
+            // UGO = componente matrimoniale della suite (room_id termina in -M)
+            $is_ugo          = $room->is_family_unit && str_ends_with($room->room_id, '-M');
+            // CARMINA = stanza quadrupla con proprio prezzo (room_id termina in -D)
+            $is_carmina      = $room->is_family_unit && str_ends_with($room->room_id, '-D');
+            $is_matrimoniale = !$is_singola && !$room->is_family_unit;
 
             // Applica regole di visualizzazione per modalità
             switch ($mode) {
@@ -167,22 +164,22 @@ class ALM_Availability {
                     break;
 
                 case 'standalone':
-                    // SARA, ANNAMARIA, UGO standalone — no singole
+                    // SARA, ANNAMARIA, UGO standalone — no singole, no CARMINA quadrupla
                     if ($is_singola) continue 2;
-                    // Verifica capacità adulti per matrimoniali
+                    if ($is_carmina) continue 2;
                     if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
                     break;
 
                 case 'carmina':
-                    // Solo Suite CARMINA (UGO come suite)
-                    if (!$is_suite_main) continue 2;
+                    // Solo CARMINA quadrupla — no singole, no UGO standalone, no matrimoniali
+                    if (!$is_carmina) continue 2;
                     break;
 
                 case 'multi':
                 default:
-                    // SARA, ANNAMARIA, Suite CARMINA — no singole
+                    // SARA, ANNAMARIA, CARMINA quadrupla — no singole, no UGO standalone
                     if ($is_singola) continue 2;
-                    // Matrimoniali: verifica capacità adulti
+                    if ($is_ugo) continue 2;
                     if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
                     break;
             }

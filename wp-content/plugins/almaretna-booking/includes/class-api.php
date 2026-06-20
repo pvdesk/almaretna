@@ -189,36 +189,14 @@ class ALM_API {
 
             $room_data = $room->to_array();
 
-            // UGO in modalità suite (carmina / multi): presentato come Suite CARMINA
-            $is_suite_mode = $room->is_family_unit && in_array($mode, ['carmina', 'multi'], true);
-
-            if ($is_suite_mode) {
-                $partner         = $room->get_family_partner();
-                $pricing_partner = $partner ? ALM_Pricing::get_price_for_dates($partner->id, $checkin, $checkout) : null;
-                $partner_ppn     = (!is_wp_error($pricing_partner) && $pricing_partner) ? (float) $pricing_partner['price_per_night'] : 0.0;
-                $partner_sub     = (!is_wp_error($pricing_partner) && $pricing_partner) ? (float) $pricing_partner['subtotal'] : 0.0;
-
-                $result[] = array_merge($room_data, [
-                    'is_suite'         => true,
-                    'title'            => 'Suite Familiare CARMINA',
-                    'capacity_children'=> 2,
-                    'sharing_warning'  => false,
-                    'sharing_note'     => '',
-                    'suite_note'       => 'Camera matrimoniale UGO + camera con 2 letti singoli, bagno in comune',
-                    'price_per_night'  => $pricing['price_per_night'] + $partner_ppn,
-                    'total_price'      => $pricing['subtotal'] + $partner_sub,
-                    'nights'           => $nights,
-                    'applied_rate'     => null,
-                ]);
-                continue;
-            }
-
-            // Camera singola o matrimoniale standalone
-            $sharing_warning = false;
-            $sharing_note    = '';
+            // CARMINA (room_id termina in -D) = quadrupla con proprio prezzo
+            $is_carmina = $room->is_family_unit && str_ends_with($room->room_id, '-D');
 
             $result[] = array_merge($room_data, [
-                'is_suite'        => false,
+                'is_suite'        => $is_carmina,
+                'suite_note'      => $is_carmina ? 'Camera matrimoniale + camera con 2 letti singoli, bagno in comune' : '',
+                'sharing_warning' => false,
+                'sharing_note'    => '',
                 'price_per_night' => $pricing['price_per_night'],
                 'total_price'     => $pricing['subtotal'],
                 'nights'          => $nights,
@@ -226,8 +204,6 @@ class ALM_API {
                     'name'  => $pricing['applied_rate']['rate_name'] ?? '',
                     'price' => $pricing['applied_rate']['price_per_night'],
                 ] : null,
-                'sharing_warning' => $sharing_warning,
-                'sharing_note'    => $sharing_note,
             ]);
         }
 

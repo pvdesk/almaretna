@@ -66,6 +66,63 @@ class ALM_Availability {
             return false;
         }
 
+        // ── Piano Intero: blocco incrociato ──────────────────────────────────
+        $is_entire_floor = (bool) get_post_meta($room_post_id, '_room_is_entire_floor', true);
+
+        if ($is_entire_floor) {
+            // Non disponibile se qualsiasi altra camera è prenotata/bloccata
+            $conflict = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$prefix}alm_bookings
+                 WHERE room_id != %d
+                   AND status NOT IN ('cancelled')
+                   AND checkin_date < %s AND checkout_date > %s",
+                $room_post_id, $checkout, $checkin
+            ));
+            if ($conflict > 0) return false;
+
+            $conflict = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$prefix}alm_blocks
+                 WHERE room_id != %d
+                   AND date_from < %s AND date_to > %s",
+                $room_post_id, $checkout, $checkin
+            ));
+            if ($conflict > 0) return false;
+        } else {
+            // Camera normale: non disponibile se il Piano Intero è prenotato/bloccato
+            static $ef_ids_cache = null;
+            if ($ef_ids_cache === null) {
+                $ef_ids_cache = get_posts([
+                    'post_type'      => 'almaretna_room',
+                    'post_status'    => 'publish',
+                    'posts_per_page' => -1,
+                    'fields'         => 'ids',
+                    'meta_query'     => [['key' => '_room_is_entire_floor', 'value' => '1']],
+                ]) ?: [];
+            }
+
+            if (!empty($ef_ids_cache)) {
+                $phs  = implode(',', array_fill(0, count($ef_ids_cache), '%d'));
+                $args = array_merge($ef_ids_cache, [$checkout, $checkin]);
+
+                $ef_conflict = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$prefix}alm_bookings
+                     WHERE room_id IN ($phs)
+                       AND status NOT IN ('cancelled')
+                       AND checkin_date < %s AND checkout_date > %s",
+                    ...$args
+                ));
+                if ($ef_conflict > 0) return false;
+
+                $ef_conflict = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$prefix}alm_blocks
+                     WHERE room_id IN ($phs)
+                       AND date_from < %s AND date_to > %s",
+                    ...$args
+                ));
+                if ($ef_conflict > 0) return false;
+            }
+        }
+
         // ── Logica suite familiare (P2-FAM-M / P2-FAM-D) ─────────────────────
         try {
             $room = new ALM_Room($room_post_id);
@@ -118,7 +175,7 @@ class ALM_Availability {
         if ($adults === 2 && $children === 0) {
             return 'standalone';
         }
-        if ($children >= 1 && $children <= 2) {
+        if ($adults <= 2 && $children >= 1 && $children <= 2) {
             return 'carmina';
         }
         return 'multi';
@@ -156,32 +213,35 @@ class ALM_Availability {
             $is_carmina      = $room->is_family_unit && str_ends_with($room->room_id, '-D');
             $is_matrimoniale = !$is_singola && !$room->is_family_unit;
 
-            // Applica regole di visualizzazione per modalità
-            switch ($mode) {
-                case 'nerina':
-                    // Solo camere singole
-                    if (!$is_singola) continue 2;
-                    break;
+            // Piano Intero: bypassa il filtro per tipo ospiti, appare sempre
+            if (!$room->is_entire_floor) {
+                // Applica regole di visualizzazione per modalità
+                switch ($mode) {
+                    case 'nerina':
+                        // Solo camere singole
+                        if (!$is_singola) continue 2;
+                        break;
 
-                case 'standalone':
-                    // SARA, ANNAMARIA, UGO standalone — no singole, no CARMINA quadrupla
-                    if ($is_singola) continue 2;
-                    if ($is_carmina) continue 2;
-                    if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
-                    break;
+                    case 'standalone':
+                        // SARA, ANNAMARIA, UGO standalone — no singole, no CARMINA quadrupla
+                        if ($is_singola) continue 2;
+                        if ($is_carmina) continue 2;
+                        if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
+                        break;
 
-                case 'carmina':
-                    // Solo CARMINA quadrupla — no singole, no UGO standalone, no matrimoniali
-                    if (!$is_carmina) continue 2;
-                    break;
+                    case 'carmina':
+                        // Solo CARMINA quadrupla — no singole, no UGO standalone, no matrimoniali
+                        if (!$is_carmina) continue 2;
+                        break;
 
-                case 'multi':
-                default:
-                    // SARA, ANNAMARIA, CARMINA quadrupla — no singole, no UGO standalone
-                    if ($is_singola) continue 2;
-                    if ($is_ugo) continue 2;
-                    if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
-                    break;
+                    case 'multi':
+                    default:
+                        // SARA, ANNAMARIA, CARMINA quadrupla — no singole, no UGO standalone
+                        if ($is_singola) continue 2;
+                        if ($is_ugo) continue 2;
+                        if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
+                        break;
+                }
             }
 
             // Verifica disponibilità date

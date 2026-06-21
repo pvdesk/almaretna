@@ -52,6 +52,9 @@ class ALM_Room {
     /** @var string[] Room ID delle camere della suite familiare. */
     public array $family_unit_rooms;
 
+    /** @var bool True se è il Piano Intero (blocca tutte le altre camere). */
+    public bool $is_entire_floor;
+
     /** @var int Soggiorno minimo in notti. */
     public int $min_stay;
 
@@ -84,6 +87,7 @@ class ALM_Room {
         $this->shared_with       = (string) get_post_meta($post->ID, '_room_shared_with', true);
         $this->beds24_id         = (string) get_post_meta($post->ID, '_room_beds24_id', true);
         $this->is_family_unit    = (bool)   get_post_meta($post->ID, '_room_is_family_unit', true);
+        $this->is_entire_floor   = (bool)   get_post_meta($post->ID, '_room_is_entire_floor', true);
         $this->min_stay          = (int)   (get_post_meta($post->ID, '_room_min_stay', true) ?: 1);
         $this->active            = get_post_meta($post->ID, '_room_active', true) !== '0';
 
@@ -231,6 +235,7 @@ class ALM_Room {
             'shared_with'      => $this->shared_with,
             'is_family_unit'   => $this->is_family_unit,
             'family_unit_rooms'=> $this->family_unit_rooms,
+            'is_entire_floor'  => $this->is_entire_floor,
             'min_stay'         => $this->min_stay,
             'active'           => $this->active,
             'amenities'        => $amenities,

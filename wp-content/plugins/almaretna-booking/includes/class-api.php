@@ -190,13 +190,16 @@ class ALM_API {
             $room_data = $room->to_array();
 
             // CARMINA (room_id termina in -D) = quadrupla con proprio prezzo
-            $is_carmina = $room->is_family_unit && str_ends_with($room->room_id, '-D');
+            $is_carmina      = $room->is_family_unit && str_ends_with($room->room_id, '-D');
+            $is_entire_floor = $room->is_entire_floor;
 
             $result[] = array_merge($room_data, [
-                'is_suite'        => $is_carmina,
-                'suite_note'      => $is_carmina ? 'Camera matrimoniale + camera con 2 letti singoli, bagno in comune' : '',
-                'sharing_warning' => false,
-                'sharing_note'    => '',
+                'is_suite'           => $is_carmina,
+                'is_entire_floor'    => $is_entire_floor,
+                'suite_note'         => $is_carmina ? 'Camera matrimoniale + camera con 2 letti singoli, bagno in comune' : '',
+                'entire_floor_note'  => $is_entire_floor ? 'Accesso esclusivo a tutte le camere del piano' : '',
+                'sharing_warning'    => false,
+                'sharing_note'       => '',
                 'price_per_night' => $pricing['price_per_night'],
                 'total_price'     => $pricing['subtotal'],
                 'nights'          => $nights,

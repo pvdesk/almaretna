@@ -462,35 +462,42 @@
         function renderRoomCard(room) {
             const thumb   = room.thumbnail || room.thumbnail_url || '';
 
+            // Piano Intero: badge dedicato
+            const entireFloorBadgeHtml = room.is_entire_floor
+                ? '<span class="room-result-card__badge room-result-card__badge--entire-floor">Piano Intero</span>'
+                : '';
+
             // Suite CARMINA: badge dedicato invece del piano
-            const suiteBadgeHtml = room.is_suite
+            const suiteBadgeHtml = (!room.is_entire_floor && room.is_suite)
                 ? '<span class="room-result-card__badge room-result-card__badge--suite">Matrimoniale + Doppia</span>'
                 : '';
 
             let floorText = '';
-            if (!room.is_suite && room.floor) {
+            if (!room.is_suite && !room.is_entire_floor && room.floor) {
                 if (room.floor === 'piano-1' || room.floor === '1') floorText = 'Primo Piano';
                 else if (room.floor === 'piano-2' || room.floor === '2') floorText = 'Secondo Piano';
                 else if (room.floor === 'mansarda') floorText = 'Mansarda';
                 else floorText = room.floor.charAt(0).toUpperCase() + room.floor.slice(1);
             }
 
-            const floorBadgeHtml = (!room.is_suite && floorText)
+            const floorBadgeHtml = (!room.is_suite && !room.is_entire_floor && floorText)
                 ? '<span class="room-result-card__badge">' + escHtml(floorText) + '</span>'
                 : '';
 
             const imgHtml = '<div class="room-result-card__image-wrap">' +
-                (suiteBadgeHtml || floorBadgeHtml) +
+                (entireFloorBadgeHtml || suiteBadgeHtml || floorBadgeHtml) +
                 (thumb
                     ? '<img src="' + escHtml(thumb) + '" alt="' + escHtml(room.title || room.name || '') + '" class="room-result-card__image" loading="lazy" />'
                     : '<div class="room-result-card__img-placeholder"></div>'
                 ) +
                 '</div>';
 
-            const capacityText = room.is_suite
-                ? 'Fino a ' + (room.capacity_adults || 2) + ' adulti + ' + (room.capacity_children || 2) + ' bambini'
-                : 'Fino a ' + (room.capacity_adults || 2) + ' ospiti' +
-                  (room.capacity_children > 0 ? ' + ' + room.capacity_children + ' bimbi' : '');
+            const capacityText = room.is_entire_floor
+                ? 'Tutte le camere del piano'
+                : room.is_suite
+                    ? 'Fino a ' + (room.capacity_adults || 2) + ' adulti + ' + (room.capacity_children || 2) + ' bambini'
+                    : 'Fino a ' + (room.capacity_adults || 2) + ' ospiti' +
+                      (room.capacity_children > 0 ? ' + ' + room.capacity_children + ' bimbi' : '');
             
             const bathroomText = room.bathroom_type === 'shared' ? 'Bagno condiviso' : 'Bagno privato';
             const bathroomIcon = room.bathroom_type === 'shared' ? 'dashicons-warning' : 'dashicons-yes-alt';
@@ -522,6 +529,12 @@
                   escHtml(room.suite_note) + '</div>'
                 : '';
 
+            const entireFloorNoteHtml = room.is_entire_floor && room.entire_floor_note
+                ? '<div class="room-result-card__entire-floor-note">' +
+                  '<span class="dashicons dashicons-admin-home" style="font-size:14px;width:14px;height:14px;vertical-align:middle;margin-right:4px;"></span>' +
+                  escHtml(room.entire_floor_note) + '</div>'
+                : '';
+
             const minStayHtml = (room.min_stay && room.min_stay > 1)
                 ? '<div style="color:var(--color-text-light);font-size:.75rem;margin-top:.25rem;">' +
                   '<span class="dashicons dashicons-calendar-alt" style="font-size:14px;width:14px;height:14px;vertical-align:middle;margin-right:4px;"></span>' +
@@ -548,6 +561,7 @@
                 amenitiesHtml +
                 minStayHtml +
                 suiteNoteHtml +
+                entireFloorNoteHtml +
                 sharingHtml +
                 '</div>' +
                 '<div class="room-result-card__pricing">' +

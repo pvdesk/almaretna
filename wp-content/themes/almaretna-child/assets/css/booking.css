@@ -463,9 +463,23 @@ select.form-control {
     background: var(--color-secondary);
 }
 
+.room-result-card__badge--entire-floor {
+    background: #8B6914;
+}
+
 .room-result-card__suite-note {
     background: #F5F0E8;
     border-left: 3px solid var(--color-secondary);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: var(--fs-xs);
+    color: var(--color-text);
+    margin-top: var(--space-xs);
+}
+
+.room-result-card__entire-floor-note {
+    background: #FDF6E3;
+    border-left: 3px solid #8B6914;
     padding: var(--space-sm) var(--space-md);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     font-size: var(--fs-xs);

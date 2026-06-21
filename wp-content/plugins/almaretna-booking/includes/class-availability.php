@@ -215,7 +215,7 @@ class ALM_Availability {
 
             // Piano Intero: bypassa il filtro per tipo ospiti ma ha capacità massima
             if ($room->is_entire_floor) {
-                if (($adults + $children) > $room->capacity_adults) continue;
+                if ($adults > $room->capacity_adults || $children > $room->capacity_children) continue;
             } else {
                 // Applica regole di visualizzazione per modalità
                 switch ($mode) {

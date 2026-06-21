@@ -213,8 +213,10 @@ class ALM_Availability {
             $is_carmina      = $room->is_family_unit && str_ends_with($room->room_id, '-D');
             $is_matrimoniale = !$is_singola && !$room->is_family_unit;
 
-            // Piano Intero: bypassa il filtro per tipo ospiti, appare sempre
-            if (!$room->is_entire_floor) {
+            // Piano Intero: bypassa il filtro per tipo ospiti ma ha capacità massima
+            if ($room->is_entire_floor) {
+                if (($adults + $children) > $room->capacity_adults) continue;
+            } else {
                 // Applica regole di visualizzazione per modalità
                 switch ($mode) {
                     case 'nerina':

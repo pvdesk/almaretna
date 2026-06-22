@@ -762,21 +762,29 @@ add_action('wp_ajax_alm_add_special_price', function (): void {
     }
     if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
 
-    $raw  = get_post_meta($room_id, '_room_special_prices', true);
-    $list = $raw ? json_decode($raw, true) : [];
-    if (!is_array($list)) $list = [];
+    // Il form mostra date inclusive; alm_rates usa date_to esclusiva (giorno dopo la fine)
+    $to_exclusive = date('Y-m-d', strtotime($to . ' +1 day'));
 
-    $new = [
-        'id'    => wp_generate_uuid4(),
-        'from'  => $from,
-        'to'    => $to,
-        'price' => round($price, 2),
-        'note'  => $note,
-    ];
-    $list[] = $new;
+    $rate_id = ALM_Pricing::add_rate($room_id, [
+        'date_from'       => $from,
+        'date_to'         => $to_exclusive,
+        'price_per_night' => $price,
+        'rate_name'       => $note,
+        'min_stay'        => 1,
+        'channel'         => 'all',
+    ]);
 
-    update_post_meta($room_id, '_room_special_prices', wp_json_encode($list));
-    wp_send_json_success($new);
+    if (is_wp_error($rate_id)) {
+        wp_send_json_error($rate_id->get_error_message());
+    }
+
+    wp_send_json_success([
+        'id'              => $rate_id,
+        'date_from'       => $from,
+        'date_to'         => $to_exclusive,
+        'price_per_night' => round($price, 2),
+        'rate_name'       => $note,
+    ]);
 });
 
 /* ═══════════════════════════════════════════════════════════════
@@ -787,19 +795,14 @@ add_action('wp_ajax_alm_delete_special_price', function (): void {
     check_ajax_referer(ALM_DASH_NONCE, 'nonce');
     if (!current_user_can('edit_posts')) wp_send_json_error('Permesso negato');
 
-    $room_id   = (int) ($_POST['room_id'] ?? 0);
-    $entry_id  = sanitize_text_field($_POST['entry_id'] ?? '');
+    $room_id  = (int) ($_POST['room_id']  ?? 0);
+    $entry_id = (int) ($_POST['entry_id'] ?? 0);
 
     if (!$room_id || !$entry_id) wp_send_json_error('Dati mancanti');
     if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
 
-    $raw  = get_post_meta($room_id, '_room_special_prices', true);
-    $list = $raw ? json_decode($raw, true) : [];
-    if (!is_array($list)) $list = [];
-
-    $list = array_values(array_filter($list, fn($e) => ($e['id'] ?? '') !== $entry_id));
-    update_post_meta($room_id, '_room_special_prices', wp_json_encode($list));
-    wp_send_json_success();
+    $ok = ALM_Pricing::delete_rate($entry_id);
+    $ok ? wp_send_json_success() : wp_send_json_error('Errore eliminazione');
 });
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1410,10 +1413,8 @@ function alm_w_prices(): void {
             <p class="ad-empty">Nessuna camera trovata.</p>
         <?php else :
             foreach ($rooms as $room) :
-                $base_price    = (float) get_post_meta($room->ID, '_room_base_price', true);
-                $specials_raw  = get_post_meta($room->ID, '_room_special_prices', true);
-                $specials      = $specials_raw ? json_decode($specials_raw, true) : [];
-                if (!is_array($specials)) $specials = [];
+                $base_price = (float) get_post_meta($room->ID, '_room_base_price', true);
+                $specials   = ALM_Pricing::get_all_rates_for_room($room->ID);
                 $has_thumb     = has_post_thumbnail($room->ID);
                 $thumb_url     = $has_thumb ? get_the_post_thumbnail_url($room->ID, 'thumbnail') : '';
                 $uid           = 'alm-pr-' . (int)$room->ID;
@@ -1469,18 +1470,20 @@ function alm_w_prices(): void {
                 style="<?php echo $sp_count > 0 ? 'display:none' : ''; ?>">
                 <?php foreach ($specials as $sp) :
                     if (empty($sp['id'])) continue;
-                    $d_from = date_i18n('d/m/Y', strtotime((string)($sp['from'] ?? '')));
-                    $d_to   = ($sp['to'] !== $sp['from'])
-                        ? ' → ' . date_i18n('d/m/Y', strtotime((string)($sp['to'] ?? '')))
+                    $d_from       = date_i18n('d/m/Y', strtotime((string)($sp['date_from'] ?? '')));
+                    // date_to è esclusiva: mostra il giorno precedente come fine periodo
+                    $to_inclusive = date('Y-m-d', strtotime((string)($sp['date_to'] ?? '') . ' -1 day'));
+                    $d_to         = ($to_inclusive !== ($sp['date_from'] ?? ''))
+                        ? ' → ' . date_i18n('d/m/Y', strtotime($to_inclusive))
                         : '';
                 ?>
                 <li class="ad-special-item" id="alm-sp-<?php echo esc_attr($sp['id']); ?>">
-                    <span class="ad-special-item__note"><?php echo esc_html($sp['note'] ?: '—'); ?></span>
+                    <span class="ad-special-item__note"><?php echo esc_html($sp['rate_name'] ?: '—'); ?></span>
                     <span class="ad-special-item__dates"><?php echo esc_html($d_from . $d_to); ?></span>
-                    <span class="ad-special-item__price">€<?php echo esc_html(number_format((float)($sp['price'] ?? 0), 0, ',', '.')); ?></span>
+                    <span class="ad-special-item__price">€<?php echo esc_html(number_format((float)($sp['price_per_night'] ?? 0), 0, ',', '.')); ?></span>
                     <button class="ad-del-btn"
                             title="Elimina"
-                            onclick="almDeleteSpecialPrice(this,<?php echo (int)$room->ID; ?>,'<?php echo esc_js($sp['id']); ?>','<?php echo esc_js($nonce); ?>')">✕</button>
+                            onclick="almDeleteSpecialPrice(this,<?php echo (int)$room->ID; ?>,<?php echo (int)$sp['id']; ?>,'<?php echo esc_js($nonce); ?>')">✕</button>
                 </li>
                 <?php endforeach; ?>
             </ul>
@@ -1721,20 +1724,24 @@ function alm_dash_inline_js(): void {
         fetch(window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: fd })
             .then(function(r){ return r.json(); })
             .then(function(data) {
-                if (!data.success) return;
-                var sp = data.data;
+                if (!data.success) { alert(data.data || 'Errore nel salvataggio'); return; }
+                var sp   = data.data;
                 var list = document.getElementById(uid + '-specials');
                 if (list) {
-                    var dFrom = new Date(sp.from).toLocaleDateString('it-IT');
-                    var dTo   = (sp.to !== sp.from) ? ' → ' + new Date(sp.to).toLocaleDateString('it-IT') : '';
+                    // date_to è esclusiva, mostra il giorno precedente
+                    var toInclusive = new Date(sp.date_to);
+                    toInclusive.setDate(toInclusive.getDate() - 1);
+                    var dFrom = new Date(sp.date_from).toLocaleDateString('it-IT');
+                    var dTo   = (toInclusive.toISOString().slice(0,10) !== sp.date_from)
+                        ? ' → ' + toInclusive.toLocaleDateString('it-IT') : '';
                     var li = document.createElement('li');
                     li.className = 'ad-special-item';
                     li.id = 'alm-sp-' + sp.id;
                     li.innerHTML =
-                        '<span class="ad-special-item__note">' + (sp.note || '—') + '</span>' +
+                        '<span class="ad-special-item__note">' + (sp.rate_name || '—') + '</span>' +
                         '<span class="ad-special-item__dates">' + dFrom + dTo + '</span>' +
-                        '<span class="ad-special-item__price">€' + Math.round(sp.price) + '</span>' +
-                        '<button class="ad-del-btn" title="Elimina" onclick="almDeleteSpecialPrice(this,' + roomId + ',\'' + sp.id + '\',\'' + nonce + '\')">✕</button>';
+                        '<span class="ad-special-item__price">€' + Math.round(sp.price_per_night) + '</span>' +
+                        '<button class="ad-del-btn" title="Elimina" onclick="almDeleteSpecialPrice(this,' + roomId + ',' + sp.id + ',\'' + nonce + '\')">✕</button>';
                     list.appendChild(li);
                 }
                 // Reset form

@@ -159,10 +159,11 @@ class ALM_Availability {
     /**
      * Determina la modalità di visualizzazione camere in base agli ospiti.
      *
-     * nerina    → solo camera singola (1 adulto, 0 bambini)
-     * standalone → matrimoniali + UGO singolo (2 adulti, 0 bambini)
-     * carmina   → solo Suite CARMINA (2 adulti + 1-2 bambini, o 1 adulto + bambini)
-     * multi     → matrimoniali + Suite CARMINA (gruppi numerosi o 2A+3B)
+     * nerina     → matrimoniali + singola (1 adulto, 0 bambini)
+     * standalone → matrimoniali + LUMIA standalone (2 adulti, 0 bambini)
+     * carmina    → solo ZAGARA quadrupla (≤2 adulti + 1-2 bambini)
+     * large      → ZAGARA, LUMIA, SCIARA — no LEVANTE (6+ persone totali)
+     * multi      → LEVANTE, SCIARA, ZAGARA (3-5 persone)
      *
      * @param int $adults
      * @param int $children
@@ -178,15 +179,14 @@ class ALM_Availability {
         if ($adults <= 2 && $children >= 1 && $children <= 2) {
             return 'carmina';
         }
+        if (($adults + $children) >= 6) {
+            return 'large';
+        }
         return 'multi';
     }
 
     /**
-     * Restituisce le camere disponibili applicando le regole di business
-     * (quale tipologia mostrare in base al numero di ospiti).
-     *
-     * La camera doppia della suite (room_id che termina in -D) non viene
-     * mai restituita individualmente: è sempre inclusa nella Suite CARMINA.
+     * Restituisce le camere disponibili applicando le regole di business.
      *
      * @param string $checkin
      * @param string $checkout
@@ -207,9 +207,9 @@ class ALM_Availability {
 
         foreach ($all_rooms as $room) {
             $is_singola      = $room->capacity_adults === 1;
-            // UGO = componente matrimoniale della suite (room_id termina in -M)
+            // LUMIA = componente matrimoniale della suite (room_id termina in -M)
             $is_ugo          = $room->is_family_unit && str_ends_with($room->room_id, '-M');
-            // CARMINA = stanza quadrupla con proprio prezzo (room_id termina in -D)
+            // ZAGARA = quadrupla familiare con proprio prezzo (room_id termina in -D)
             $is_carmina      = $room->is_family_unit && str_ends_with($room->room_id, '-D');
             $is_matrimoniale = !$is_singola && !$room->is_family_unit;
 
@@ -220,28 +220,32 @@ class ALM_Availability {
                 // Applica regole di visualizzazione per modalità
                 switch ($mode) {
                     case 'nerina':
-                        // Solo camere singole
-                        if (!$is_singola) continue 2;
+                        // 1A, 0B: LEVANTE, SCIARA (matrimoniali) + singola se attiva
+                        if ($room->is_family_unit) continue 2;
                         break;
 
                     case 'standalone':
-                        // SARA, ANNAMARIA, UGO standalone — no singole, no CARMINA quadrupla
+                        // 2A, 0B: LEVANTE, SCIARA, LUMIA — no singole, no ZAGARA quadrupla
                         if ($is_singola) continue 2;
                         if ($is_carmina) continue 2;
-                        if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
                         break;
 
                     case 'carmina':
-                        // Solo CARMINA quadrupla — no singole, no UGO standalone, no matrimoniali
+                        // ≤2A, 1-2B: solo ZAGARA quadrupla
                         if (!$is_carmina) continue 2;
+                        break;
+
+                    case 'large':
+                        // 6+ persone: ZAGARA, LUMIA, SCIARA — no singole, no LEVANTE (P2-M01)
+                        if ($is_singola) continue 2;
+                        if ($is_matrimoniale && $room->room_id === 'P2-M01') continue 2;
                         break;
 
                     case 'multi':
                     default:
-                        // SARA, ANNAMARIA, CARMINA quadrupla — no singole, no UGO standalone
+                        // 3-5 persone: LEVANTE, SCIARA, ZAGARA — no singole, no LUMIA standalone
                         if ($is_singola) continue 2;
                         if ($is_ugo) continue 2;
-                        if ($is_matrimoniale && $room->capacity_adults < $adults) continue 2;
                         break;
                 }
             }

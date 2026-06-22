@@ -162,7 +162,7 @@ class ALM_Availability {
      * nerina     → matrimoniali + singola (1 adulto, 0 bambini)
      * standalone → matrimoniali + LUMIA standalone (2 adulti, 0 bambini)
      * carmina    → solo ZAGARA quadrupla (≤2 adulti + 1-2 bambini)
-     * large      → ZAGARA, LUMIA, SCIARA — no LEVANTE (6+ persone totali)
+     * large      → LEVANTE, SCIARA, ZAGARA, LUMIA — tutte tranne singola (6+ persone totali)
      * multi      → LEVANTE, SCIARA, ZAGARA (3-5 persone)
      *
      * @param int $adults
@@ -236,9 +236,8 @@ class ALM_Availability {
                         break;
 
                     case 'large':
-                        // 6+ persone: ZAGARA, LUMIA, SCIARA — no singole, no LEVANTE (P2-M01)
+                        // 6+ persone: LEVANTE, SCIARA, ZAGARA, LUMIA — no singole
                         if ($is_singola) continue 2;
-                        if ($is_matrimoniale && $room->room_id === 'P2-M01') continue 2;
                         break;
 
                     case 'multi':

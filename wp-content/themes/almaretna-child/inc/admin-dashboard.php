@@ -765,7 +765,8 @@ add_action('wp_ajax_alm_add_special_price', function (): void {
     // Il form mostra date inclusive; alm_rates usa date_to esclusiva (giorno dopo la fine)
     $to_exclusive = date('Y-m-d', strtotime($to . ' +1 day'));
 
-    $rate_id = ALM_Pricing::add_rate($room_id, [
+    $rate_id = ALM_Pricing::create_rate([
+        'room_id'         => $room_id,
         'date_from'       => $from,
         'date_to'         => $to_exclusive,
         'price_per_night' => $price,
@@ -801,8 +802,9 @@ add_action('wp_ajax_alm_delete_special_price', function (): void {
     if (!$room_id || !$entry_id) wp_send_json_error('Dati mancanti');
     if (get_post_type($room_id) !== 'almaretna_room') wp_send_json_error('Post non valido');
 
-    $ok = ALM_Pricing::delete_rate($entry_id);
-    $ok ? wp_send_json_success() : wp_send_json_error('Errore eliminazione');
+    global $wpdb;
+    $ok = $wpdb->delete($wpdb->prefix . 'alm_rates', ['id' => $entry_id], ['%d']);
+    ($ok !== false) ? wp_send_json_success() : wp_send_json_error('Errore eliminazione');
 });
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1728,11 +1730,21 @@ function alm_dash_inline_js(): void {
                 var sp   = data.data;
                 var list = document.getElementById(uid + '-specials');
                 if (list) {
+                    // Parsa date come local time (non UTC) per evitare shift di fuso
+                    function parseLocalDate(s) {
+                        var p = s.split('-');
+                        return new Date(+p[0], +p[1] - 1, +p[2]);
+                    }
+                    function fmtYMD(d) {
+                        return d.getFullYear() + '-' +
+                            String(d.getMonth() + 1).padStart(2,'0') + '-' +
+                            String(d.getDate()).padStart(2,'0');
+                    }
                     // date_to è esclusiva, mostra il giorno precedente
-                    var toInclusive = new Date(sp.date_to);
+                    var toInclusive = parseLocalDate(sp.date_to);
                     toInclusive.setDate(toInclusive.getDate() - 1);
-                    var dFrom = new Date(sp.date_from).toLocaleDateString('it-IT');
-                    var dTo   = (toInclusive.toISOString().slice(0,10) !== sp.date_from)
+                    var dFrom = parseLocalDate(sp.date_from).toLocaleDateString('it-IT');
+                    var dTo   = (fmtYMD(toInclusive) !== sp.date_from)
                         ? ' → ' + toInclusive.toLocaleDateString('it-IT') : '';
                     var li = document.createElement('li');
                     li.className = 'ad-special-item';
